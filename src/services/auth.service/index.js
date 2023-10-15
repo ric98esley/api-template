@@ -7,13 +7,21 @@ const { config } = require('../../config');
 const { models } = require('../../libs/sequelize');
 
 const UserService = require('../user.service');
+const { Op } = require('sequelize');
 const service = new UserService();
 
 class AuthService {
   async getUser(username, password) {
-    const user = await models.Auth.findOne({
+    const user = await models.User.findOne({
       where: {
-        username,
+        [Op.or]: [
+          {
+            email: username
+          },
+          {
+            username
+          }
+        ]
       },
     });
 
@@ -28,7 +36,7 @@ class AuthService {
       throw boom.unauthorized('usuario o contraseña incorrecto');
     }
     delete user.dataValues.password;
-    user.dataValues.id  = user.dataValues.userId;
+    user.dataValues.id = user.dataValues.userId;
     delete user.dataValues.userId;
 
     return user;
@@ -48,27 +56,23 @@ class AuthService {
     };
   }
 
-  async attempt({
-    username,
-    ip,
-
-  }){
+  async attempt({ username, ip }) {
     const attempt = await models.Attempt.create({
       username,
-      ip
-    })
-    return attempt 
+      ip,
+    });
+    return attempt;
   }
 
   async sendRecovery(email) {
-    const user = await service.findByEmail(email);
+    const user = await models.Auth.findOne({ where: { email } });
     if (!user) {
       throw boom.unauthorized();
     }
     const payload = { sub: user.id };
     const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '15min' });
     const link = `http://myfrontend.com/recovery?token=${token}`;
-    await service.update(user.id, { recoveryToken: token });
+    await service.update({ id: user.id, changes: { recoveryToken: token } });
     const mail = {
       from: config.smtpEmail,
       to: `${user.email}`,
@@ -79,6 +83,24 @@ class AuthService {
     return rta;
   }
 
+  async changePassword(token, newPassword) {
+    try {
+      const payload = jwt.verify(token, config.jwtSecret);
+      const user = await service.findOne({ id: payload.sub });
+      if (user.recoveryToken !== token) {
+        throw boom.unauthorized();
+      }
+      const hash = await bcryptjs.hash(newPassword, 10);
+      await service.update({
+        id: user.id,
+        changes: { recoveryToken: null, password: hash },
+      });
+      return { message: 'password changed' };
+    } catch (error) {
+      throw boom.unauthorized();
+    }
+  }
+
   async sendMail(infoMail) {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -86,7 +108,7 @@ class AuthService {
       port: 465,
       auth: {
         user: config.smtpEmail,
-        pass: config.smtpPassword,
+        pass: config.smtpPass,
       },
     });
     await transporter.sendMail(infoMail);

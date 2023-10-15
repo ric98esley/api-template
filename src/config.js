@@ -14,7 +14,9 @@ const config = {
   dbPort: process.env.DB_PORT,
   jwtSecret: process.env.JWT_SECRET,
   smtpEmail: process.env.SMTP_EMAIL,
-  smtpPassword: process.env.SMTP_PASSWORD,
+  smtpHost: process.env.SMTP_HOST,
+  smtpPort: process.env.SMTP_PORT,
+  smtpPass: process.env.SMTP_PASS,
   dialect: process.env.DIALECT || 'mysql'
 };
 

@@ -1,4 +1,4 @@
-const { Model, DataTypes, Sequelize } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 
 const COSTUMER_TABLE = 'costumers';
 
@@ -20,16 +20,6 @@ const CostumerSchema = {
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER,
-  },
-  email: {
-    allowNull: true,
-    type: DataTypes.STRING,
-    unique: true,
-    validate: {
-      isEmail: {
-        msg: 'must be a email',
-      },
-    },
   },
   name: {
     allowNull: false,
@@ -98,9 +88,9 @@ const CostumerSchema = {
 class Costumer extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
-    this.hasOne(models.Auth, {
+    this.hasOne(models.User, {
       as: 'profile',
-      foreignKey: 'userId'
+      foreignKey: 'costumerId'
     })
   }
 

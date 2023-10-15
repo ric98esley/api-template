@@ -223,7 +223,6 @@ class UsersServices {
   }
 
   async update({ id, changes, groupId }) {
-    console.log(groupId);
     const user = await this.findOne({ id, groupId });
     const rta = await user.update(changes);
     return rta;

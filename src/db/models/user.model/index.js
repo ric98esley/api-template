@@ -43,6 +43,16 @@ const UserSchema = {
       this.setDataValue('username', value.trim().toLowerCase());
     },
   },
+  email: {
+    allowNull: true,
+    type: DataTypes.STRING,
+    unique: true,
+    validate: {
+      isEmail: {
+        msg: 'must be a email',
+      },
+    },
+  },
   password: {
     allowNull: false,
     type: DataTypes.STRING(60),
@@ -75,7 +85,7 @@ const UserSchema = {
 class User extends Model {
   static associate(models) {
     this.belongsTo(models.Costumer, {
-      foreignKey: 'userId',
+      foreignKey: 'costumerId',
     });
   }
 
