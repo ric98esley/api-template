@@ -18,19 +18,17 @@ const createdAt = Joi.date();
 
 const createUserSchema = Joi.object({
   profile: Joi.object({
-    username: username.min(5).required(),
-    password: password.required(),
-    role,
-    isActive,
+    name: name.required().min(3),
+    lastName,
+    phone,
+    cardId: cardId.min(3).max(35),
+    address,
   }),
-  email,
-  name: name.required().min(3),
-  lastName,
-  groupId: id,
-  phone,
-  cardId: cardId.min(3).max(35),
-  managerId: id,
-  address,
+  username: username.min(5).required(),
+  email: email.required(),
+  password: password.required(),
+  role,
+  isActive,
 });
 
 const updateUserSchema = Joi.object({

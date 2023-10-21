@@ -3,7 +3,7 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-const { config } = require('../../config');
+const { emailConfig, configFront, authConfig } = require('../../config');
 const { models } = require('../../libs/sequelize');
 
 const UserService = require('../user.service');
@@ -23,6 +23,7 @@ class AuthService {
           }
         ]
       },
+      attributes: ['id', 'username', 'email', 'role', 'password', 'permissions', 'isActive']
     });
 
     if (!user) {
@@ -33,11 +34,10 @@ class AuthService {
     }
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
+      console.error('match')
       throw boom.unauthorized('usuario o contraseña incorrecto');
     }
     delete user.dataValues.password;
-    user.dataValues.id = user.dataValues.userId;
-    delete user.dataValues.userId;
 
     return user;
   }
@@ -48,7 +48,7 @@ class AuthService {
       role: user.role,
     };
 
-    const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '12h' });
+    const token = jwt.sign(payload, authConfig.jwtSecret, { expiresIn: '12h' });
 
     return {
       user,
@@ -65,16 +65,16 @@ class AuthService {
   }
 
   async sendRecovery(email) {
-    const user = await models.Auth.findOne({ where: { email } });
+    const user = await models.User.findOne({ where: { email } });
     if (!user) {
       throw boom.unauthorized();
     }
     const payload = { sub: user.id };
-    const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '15min' });
-    const link = `http://myfrontend.com/recovery?token=${token}`;
+    const token = jwt.sign(payload, authConfig.jwtRecovery, { expiresIn: '15min' });
+    const link = `${configFront.frontUrl}/recovery?token=${token}`;
     await service.update({ id: user.id, changes: { recoveryToken: token } });
     const mail = {
-      from: config.smtpEmail,
+      from: emailConfig.smtpEmail,
       to: `${user.email}`,
       subject: 'Email para recuperar contraseña',
       html: `<b>Ingresa a este link => ${link}</b>`,
@@ -85,15 +85,14 @@ class AuthService {
 
   async changePassword(token, newPassword) {
     try {
-      const payload = jwt.verify(token, config.jwtSecret);
-      const user = await service.findOne({ id: payload.sub });
+      const payload = jwt.verify(token, authConfig.jwtRecovery);
+      const user = await models.User.findByPk(payload.sub);
       if (user.recoveryToken !== token) {
         throw boom.unauthorized();
       }
-      const hash = await bcryptjs.hash(newPassword, 10);
       await service.update({
         id: user.id,
-        changes: { recoveryToken: null, password: hash },
+        changes: { recoveryToken: null, password: newPassword },
       });
       return { message: 'password changed' };
     } catch (error) {
@@ -103,12 +102,12 @@ class AuthService {
 
   async sendMail(infoMail) {
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: emailConfig.smtpHost,
       secure: true,
       port: 465,
       auth: {
-        user: config.smtpEmail,
-        pass: config.smtpPass,
+        user: emailConfig.smtpEmail,
+        pass: emailConfig.smtpPass,
       },
     });
     await transporter.sendMail(infoMail);

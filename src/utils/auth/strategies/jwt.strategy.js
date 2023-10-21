@@ -1,10 +1,10 @@
 const { Strategy, ExtractJwt } = require('passport-jwt');
 
-const { config } = require('../../../config');
+const { authConfig } = require('../../../config');
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: config.jwtSecret,
+  secretOrKey: authConfig.jwtSecret,
   expiresIn: '6d'
 }
 

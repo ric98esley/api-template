@@ -7,37 +7,26 @@ class UsersServices {
   constructor() {}
 
   async create(data) {
-    const newUser = await models.User.create(data);
+    const newUser = await models.User.create(data, {
+      include: ['profile'],
+    });
     delete newUser.dataValues.password;
     return newUser;
   }
 
-
-  async findOne({ id, groupId }) {
+  async findOne({ id }) {
     const options = {
       include: [
         {
-          model: models.User,
-          as: 'createdBy',
+          as: 'profile',
+          model: models.Customer,
           attributes: ['id', 'name', 'lastName'],
         },
-        {
-          model: models.User,
-          as: 'manager',
-          attributes: ['id', 'name', 'lastName'],
-        },
-        {
-          model: models.Group,
-          as: 'group'
-        }
       ],
       where: {
         id,
-        ...(groupId && {
-          groupId,
-        }),
       },
-      attributes: ['id', 'email', 'name', 'lastName', 'phone', 'cardId', 'address', 'createdAt'],
+      attributes: ['id', 'username', 'email', 'role', 'createdAt'],
     };
     const user = await models.User.findOne(options);
     if (!user) {
@@ -222,8 +211,8 @@ class UsersServices {
     };
   }
 
-  async update({ id, changes, groupId }) {
-    const user = await this.findOne({ id, groupId });
+  async update({ id, changes }) {
+    const user = await this.findOne({ id });
     const rta = await user.update(changes);
     return rta;
   }

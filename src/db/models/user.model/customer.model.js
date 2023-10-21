@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
+const { USER_TABLE } = require('.');
 
-const COSTUMER_TABLE = 'costumers';
+const CUSTOMER_TABLE = 'customers';
 
 /**
  * @description description of each field in the table
@@ -14,7 +15,7 @@ const COSTUMER_TABLE = 'costumers';
  */
 
 
-const CostumerSchema = {
+const CustomerSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
@@ -45,31 +46,30 @@ const CostumerSchema = {
       this.setDataValue('phone', value.trim().toUpperCase());
     },
   },
-  storeId: {
-    field: 'store_id',
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  createdById: {
-    allowNull: true,
-    type: DataTypes.INTEGER,
-    field: 'created_by_id',
-  },
   cardId: {
-    allowNull: false,
+    allowNull: true,
     type: DataTypes.STRING(25),
     field: 'card_id',
     set(value) {
       this.setDataValue('cardId', value.trim().toUpperCase());
     },
   },
-  address: {
+  userId: {
+    unique: true,
+    type: DataTypes.INTEGER,
+    field: 'user_id',
     allowNull: true,
-    type: DataTypes.TEXT,
-    field: 'address',
-    set(value) {
-      this.setDataValue('address', value.trim());
+    references: {
+      model: USER_TABLE,
+      key: 'id',
     },
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
+  },
+  createdById: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+    field: 'created_by_id',
   },
   createdAt: {
     field: 'created_at',
@@ -85,23 +85,23 @@ const CostumerSchema = {
   },
 };
 
-class Costumer extends Model {
+class Customer extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
-    this.hasOne(models.User, {
-      as: 'profile',
-      foreignKey: 'costumerId'
+    this.belongsTo(models.User, {
+      as: 'user',
+      foreignKey: 'userID'
     })
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: COSTUMER_TABLE,
-      modelName: 'Costumer',
+      tableName: CUSTOMER_TABLE,
+      modelName: 'Customer',
       timestamps: true,
     };
   }
 }
 
-module.exports = { COSTUMER_TABLE, CostumerSchema, Costumer };
+module.exports = { CUSTOMER_TABLE, CustomerSchema, Customer };

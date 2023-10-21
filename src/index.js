@@ -16,9 +16,10 @@ const {
   handleSQLError,
   handleFKError,
 } = require("./middlewares/error.handler");
+const { config } = require("./config");
 
 const app = express();
-const port = 3001;
+const port = config.port;
 
 app.use(express.json());
 

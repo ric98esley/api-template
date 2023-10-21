@@ -1,8 +1,8 @@
 const ROLES = {
-  COSTUMER: 'cliente',
-  SELLER: 'vendedor',
-  ADMIN: 'administrador',
-  AUDITOR: 'auditor',
+  CUSTOMER: 'customer',
+  SELLER: 'seller',
+  ADMIN: 'admin',
+  AUDIT: 'audit',
   SUPERUSER: 'superuser',
 };
 
@@ -31,24 +31,24 @@ const permissions = {
   },
   users: {
     create: {
-      all: [ROLES.SUPERUSER, ROLES.AUDITOR],
-      group: [ROLES.ASISTENTE, ROLES.RECEPTOR],
-      own: [],
+      all: [ROLES.SUPERUSER, ROLES.AUDIT],
+      store: [ROLES.ADMIN, ROLES.SELLER],
+      own: [ROLES.CUSTOMER],
     },
     read: {
-      all: [ROLES.SUPERUSER, ROLES.AUDITOR],
-      group: [ROLES.TECNICO, ROLES.ASISTENTE, ROLES.RECEPTOR],
+      all: [ROLES.SUPERUSER, ROLES.AUDIT],
+      store: [ROLES.ADMIN, ROLES.SELLER],
       own: [ROLES.TAQUILLA],
     },
     update: {
-      all: [ROLES.SUPERUSER, ROLES.AUDITOR],
-      group: [ROLES.ASISTENTE, ROLES.RECEPTOR],
-      own: [],
+      all: [ROLES.SUPERUSER, ROLES.AUDIT],
+      store: [],
+      own: [ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER],
     },
     delete: {
-      all: [ROLES.SUPERUSER, ROLES.AUDITOR],
+      all: [ROLES.SUPERUSER, ROLES.AUDIT],
       group: [],
-      own: [],
+      own: [ROLES.ADMIN, ROLES.SELLER, ROLES.CUSTOMER],
     },
   }
 };

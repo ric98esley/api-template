@@ -1,6 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
 const { ROLES } = require('../../../utils/roles');
-const { COSTUMER_TABLE } = require('./costumer.model');
 
 const USER_TABLE = 'users';
 
@@ -15,7 +14,7 @@ const USER_TABLE = 'users';
  * @property {boolean} field - rename the field
  */
 
-const roles = Object.values(ROLES)
+const roles = Object.values(ROLES);
 
 const UserSchema = {
   id: {
@@ -23,17 +22,6 @@ const UserSchema = {
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER,
-  },
-  costumerId: {
-    unique: true,
-    type: DataTypes.INTEGER,
-    field: 'costumer_id',
-    references: {
-      model: COSTUMER_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
   },
   username: {
     allowNull: false,
@@ -63,7 +51,7 @@ const UserSchema = {
     validate: {
       isIn: [roles],
     },
-    defaultValue: 'taquilla',
+    defaultValue: 'customer',
   },
   permissions: {
     type: DataTypes.TEXT,
@@ -72,7 +60,7 @@ const UserSchema = {
   recoveryToken: {
     field: 'recovery_token',
     allowNull: true,
-    type: DataTypes.STRING
+    type: DataTypes.STRING,
   },
   isActive: {
     allowNull: false,
@@ -80,12 +68,25 @@ const UserSchema = {
     field: 'active',
     defaultValue: false,
   },
+  createdAt: {
+    field: 'created_at',
+    type: DataTypes.DATE,
+  },
+  updatedAt: {
+    field: 'updated_at',
+    type: DataTypes.DATE,
+  },
+  deletedAt: {
+    field: 'deleted_at',
+    type: DataTypes.DATE,
+  },
 };
 
 class User extends Model {
   static associate(models) {
-    this.belongsTo(models.Costumer, {
-      foreignKey: 'costumerId',
+    this.hasOne(models.Customer, {
+      as: 'profile',
+      foreignKey: 'userId',
     });
   }
 
@@ -94,7 +95,7 @@ class User extends Model {
       sequelize,
       tableName: USER_TABLE,
       modelName: 'User',
-      timestamps: false,
+      timestamps: true,
     };
   }
 }
