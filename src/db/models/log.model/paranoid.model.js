@@ -2,8 +2,6 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const PARANOID_TABLE = 'paranoid';
 
-const { actions } = require('../../../utils/roles');
-
 /**
  * @description description of each field in the table
  * @typedef {Object} field definition
