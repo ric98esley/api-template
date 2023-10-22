@@ -89,7 +89,7 @@ router.post(
       body.createdById = user.sub;
       const newUser = await service.create(body);
 
-      const log = await logService.create({
+      await logService.create({
         type: ACTIONS.CREATE,
         table: 'users',
         targetId: newUser.dataValues.id,
@@ -97,6 +97,19 @@ router.post(
         ip: req.ip,
         createdById: user.sub
       })
+
+      if(newUser.dataValues.profile) {
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'customer',
+          targetId: newUser.dataValues.profile?.id,
+          details: `El usuario ${newUser.dataValues.username} ha creado un perfil`,
+          ip: req.ip,
+          createdById: user.sub
+        })
+      }
+
+      console.log(newUser);
       res.status(201).json(newUser);
     } catch (error) {
       next(error);

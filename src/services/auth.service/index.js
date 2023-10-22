@@ -16,14 +16,14 @@ class AuthService {
       where: {
         [Op.or]: [
           {
-            email: username
+            email: username,
           },
           {
-            username
-          }
-        ]
+            username,
+          },
+        ],
       },
-      attributes: ['id', 'username', 'email', 'role', 'password', 'isActive']
+      attributes: ['id', 'username', 'email', 'role', 'password', 'isActive'],
     });
 
     if (!user) {
@@ -34,7 +34,7 @@ class AuthService {
     }
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
-      console.error('match')
+      console.error('match');
       throw boom.unauthorized('usuario o contraseña incorrecto');
     }
     delete user.dataValues.password;
@@ -63,7 +63,7 @@ class AuthService {
       targetId: user.id,
       details: `El usuario ${user.username} a entrado al sistema`,
       ip,
-      createdById: user.id
+      createdById: user.id,
     });
     return attempt;
   }
@@ -74,7 +74,9 @@ class AuthService {
       throw boom.unauthorized();
     }
     const payload = { sub: user.id };
-    const token = jwt.sign(payload, authConfig.jwtRecovery, { expiresIn: '15min' });
+    const token = jwt.sign(payload, authConfig.jwtRecovery, {
+      expiresIn: '15min',
+    });
     const link = `${configFront.frontUrl}/recovery?token=${token}`;
     await service.update({ id: user.id, changes: { recoveryToken: token } });
     const mail = {
@@ -84,7 +86,10 @@ class AuthService {
       html: `<b>Ingresa a este link => ${link}</b>`,
     };
     const rta = await this.sendMail(mail);
-    return rta;
+    return {
+      user,
+      rta,
+    };
   }
 
   async changePassword(token, newPassword) {
@@ -98,7 +103,7 @@ class AuthService {
         id: user.id,
         changes: { recoveryToken: null, password: newPassword },
       });
-      return { message: 'password changed' };
+      return { user, message: 'password changed' };
     } catch (error) {
       throw boom.unauthorized();
     }
