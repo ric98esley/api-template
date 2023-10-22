@@ -13,6 +13,7 @@ const config = {
   dbName: process.env.DB_NAME,
   dbPort: process.env.DB_PORT,
   dialect: process.env.DIALECT || 'mysql',
+  logging: process.env.LOGGING == 'true' ? console.log : false
 };
 
 const authConfig = {

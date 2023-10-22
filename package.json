@@ -7,6 +7,8 @@
     "start": "node src/index.js",
     "dev": "nodemon  --ignore thunder/ --watch src/ --ignore src/db/migrations src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "seed:all": "sequelize-cli db:seed:all",
+    "seed:undo": "sequelize-cli db:seed:undo:all",
     "migrations:generate": "sequelize migration:generate --name",
     "migrations:run": "sequelize db:migrate --debug",
     "migrations:revert": "sequelize db:migrate:undo",
