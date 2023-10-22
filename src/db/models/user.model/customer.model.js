@@ -90,7 +90,7 @@ class Customer extends Model {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
     this.belongsTo(models.User, {
       as: 'user',
-      foreignKey: 'userID'
+      foreignKey: 'userId'
     })
   }
 

@@ -5,18 +5,23 @@ const boom = require('@hapi/boom');
 const UserService = require('../../services/user.service');
 const validatorHandler = require('../../middlewares/validator.handler');
 const {
-  checkRoles,
   checkPermissions,
-  checkRoles2,
+  checkUser,
   checkAuth,
 } = require('../../middlewares/auth.handler');
+
+const LogService = require('../../services/log.service');
+
+const logService = new LogService()
 
 const {
   updateUserSchema,
   createUserSchema,
   getUserSchema,
   getSearch,
+  searchUser,
 } = require('../../schemas/user.schema.js');
+const { SCOPE, ACTIONS } = require('../../utils/roles');
 
 const router = express.Router();
 const service = new UserService();
@@ -24,13 +29,14 @@ const service = new UserService();
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
-  checkRoles2({ route: 'users', crud: 'read' }),
-  // validatorHandler(getSearch, 'query'),
+  checkUser(),
+  validatorHandler(searchUser, 'query'),
   checkAuth({ route: 'users', crud: 'read' }),
   async (req, res, next) => {
     try {
       const toSearch = req.query;
       let users = await service.find(toSearch);
+
       res.json(users);
     } catch (error) {
       next(error);
@@ -54,8 +60,9 @@ router.get(
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  checkRoles('tecnico', 'auditor', 'superuser'),
-  // validatorHandler(getUserSchema, 'params'),
+  checkUser(),
+  validatorHandler(getUserSchema, 'params'),
+  checkAuth({ route: 'users', crud: 'create' }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -70,9 +77,9 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
-  checkRoles('auditor', 'superuser', 'receptor'),
-  // validatorHandler(createUserSchema, 'body'),
-  checkPermissions,
+  checkUser(),
+  validatorHandler(createUserSchema, 'body'),
+  checkAuth({route: SCOPE.USERS, crud: ACTIONS.CREATE}),
   async (req, res, next) => {
     try {
       const body = req.body;
@@ -81,6 +88,15 @@ router.post(
         throw boom.forbidden("you can't create a superuser");
       body.createdById = user.sub;
       const newUser = await service.create(body);
+
+      const log = await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'users',
+        targetId: newUser.dataValues.id,
+        details: 'Se registrado un nuevo usuario',
+        ip: req.ip,
+        createdById: user.sub
+      })
       res.status(201).json(newUser);
     } catch (error) {
       next(error);
@@ -91,7 +107,6 @@ router.post(
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  checkRoles('auditor', 'superuser', 'receptor'),
   // validatorHandler(getUserSchema, 'params'),
   // validatorHandler(updateUserSchema, 'body'),
   checkPermissions,
@@ -112,7 +127,6 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  checkRoles('auditor', 'superuser'),
   // validatorHandler(getUserSchema, 'params'),
   async (req, res, next) => {
     try {
@@ -131,7 +145,6 @@ router.delete(
 router.get(
   '/:id/assets',
   passport.authenticate('jwt', { session: false }),
-  checkRoles('auditor', 'superuser'),
   // validatorHandler(getSearch, 'query'),
   async (req, res, next) => {
     try {

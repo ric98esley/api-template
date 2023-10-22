@@ -3,17 +3,28 @@ const passport = require('passport');
 
 const AuthService = require('./../../services/auth.service');
 const UsersServices = require('../../services/user.service');
+const LogService = require('../../services/log.service');
 
 const router = express.Router();
 const authService = new AuthService();
 const userService = new UsersServices();
+const logService = new LogService();
 
 router.post('/login',
   passport.authenticate('local', {session: false}),
   async (req, res, next) => {
     try {
       const user = req.user;
-      await authService.attempt({ username: user.username, ip: req.ip });
+
+      console.log(user);
+      const log = await logService.create({
+        type: 'login',
+        table: 'users',
+        targetId: user.id,
+        details: `El usuario ${user.username} a entrado al sistema`,
+        ip: req.ip,
+        createdById: user.id
+      })
 
       res.json(authService.signToken(user));
     } catch (error) {

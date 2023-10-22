@@ -45,7 +45,7 @@ const updateUserSchema = Joi.object({
   address,
   password,
 });
-const getSearch = Joi.object({
+const searchUser = Joi.object({
   username,
   sort: toSearch,
   order: toSearch.valid('ASC', 'DESC'),
@@ -55,7 +55,7 @@ const getSearch = Joi.object({
   lastName,
   email: toSearch,
   isActive,
-  search: toSearch,
+  profile: toSearch,
   role,
   all: Joi.boolean(),
   limit,
@@ -75,5 +75,5 @@ module.exports = {
   createUserSchema,
   updateUserSchema,
   getUserSchema,
-  getSearch,
+  searchUser,
 };

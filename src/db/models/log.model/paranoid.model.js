@@ -1,6 +1,8 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const ATTEMPT_TABLE = 'attempt';
+const PARANOID_TABLE = 'paranoid';
+
+const { actions } = require('../../../utils/roles');
 
 /**
  * @description description of each field in the table
@@ -8,28 +10,32 @@ const ATTEMPT_TABLE = 'attempt';
  * @property {boolean} allowNull - false=NOT NULL
  * @property {boolean} autoIncrement - each insert, increase the counter
  * @property {boolean} primaryKey - define is primary key
- * @property {DataTypes} type - expresion to match SQL type
+ * @property {boolean} type - expresion to match SQL type
  * @property {boolean} unique - difne as unique the field
- * @property {string} field - rename the field
+ * @property {boolean} field - rename the field
  */
 
-const AttemptSchema = {
+const ParanoidSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  username: {
-    allowNull: false,
-    type: DataTypes.STRING,
-    set(value) {
-      this.setDataValue('username', value.trim().toLowerCase());
-    },
+  executedSQL: {
+    type: DataTypes.TEXT,
+    field: 'executed_sql',
+    allowNull: true,
   },
-  ip: {
-    allowNull: false,
-    type: DataTypes.STRING,
+  reverseSQL: {
+    type: DataTypes.TEXT,
+    field: 'reverse_sql',
+    allowNull: true,
+  },
+  logUser: {
+    type: DataTypes.TEXT,
+    field: 'log_user',
+    allowNull: true,
   },
   createdAt: {
     allowNull: false,
@@ -39,18 +45,22 @@ const AttemptSchema = {
   },
 };
 
-class Attempt extends Model {
+class Paranoid extends Model {
   static associate(models) {
+    this.belongsTo(models.User, {
+      as: 'createdBy',
+      foreignKey: 'createdById',
+    });
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: ATTEMPT_TABLE,
-      modelName: 'Attempt',
+      tableName: PARANOID_TABLE,
+      modelName: 'Paranoid',
       timestamps: false,
     };
   }
 }
 
-module.exports = { ATTEMPT_TABLE, AttemptSchema, Attempt };
+module.exports = { PARANOID_TABLE, ParanoidSchema, Paranoid };

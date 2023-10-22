@@ -2,22 +2,21 @@ const bcryptjs = require('bcryptjs');
 
 
 const { User, UserSchema } = require("./user.model");
-const { Attempt, AttemptSchema } = require("./user.model/attempt.model");
-const { Customer, CustomerSchema } = require("./user.model/customer.model")
+const { Customer, CustomerSchema } = require("./user.model/customer.model");
+const { Log, LogSchema } = require('./log.model');
 
 function setupModels(sequelize) {
 
   // INICIALIZA MODELOS
   Customer.init(CustomerSchema, Customer.config(sequelize));
   User.init(UserSchema, User.config(sequelize));
-  Attempt.init(AttemptSchema, Attempt.config(sequelize));
+  Log.init(LogSchema, Log.config(sequelize));
 
   // INICIALIZA ASSOCIACIONES
 
   Customer.associate(sequelize.models);
   User.associate(sequelize.models);
-  Attempt.associate(sequelize.models)
-
+  Log.associate(sequelize.models);
 
   // HOOKS
 

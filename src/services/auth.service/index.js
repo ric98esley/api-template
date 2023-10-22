@@ -23,7 +23,7 @@ class AuthService {
           }
         ]
       },
-      attributes: ['id', 'username', 'email', 'role', 'password', 'permissions', 'isActive']
+      attributes: ['id', 'username', 'email', 'role', 'password', 'isActive']
     });
 
     if (!user) {
@@ -56,10 +56,14 @@ class AuthService {
     };
   }
 
-  async attempt({ username, ip }) {
-    const attempt = await models.Attempt.create({
-      username,
+  async attempt({ user, ip }) {
+    const attempt = await models.Log.create({
+      type: 'login',
+      table: 'users',
+      targetId: user.id,
+      details: `El usuario ${user.username} a entrado al sistema`,
       ip,
+      createdById: user.id
     });
     return attempt;
   }

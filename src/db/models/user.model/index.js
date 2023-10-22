@@ -1,5 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
-const { ROLES } = require('../../../utils/roles');
+const { roles } = require('../../../utils/roles');
 
 const USER_TABLE = 'users';
 
@@ -14,7 +14,6 @@ const USER_TABLE = 'users';
  * @property {boolean} field - rename the field
  */
 
-const roles = Object.values(ROLES);
 
 const UserSchema = {
   id: {
@@ -52,10 +51,6 @@ const UserSchema = {
       isIn: [roles],
     },
     defaultValue: 'customer',
-  },
-  permissions: {
-    type: DataTypes.TEXT,
-    allowNull: true,
   },
   recoveryToken: {
     field: 'recovery_token',

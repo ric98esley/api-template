@@ -1,37 +1,16 @@
 const boom = require('@hapi/boom');
 
 const sequelize = require('../libs/sequelize');
-const { permissions } = require('../utils/roles');
+const { permissions, grants, POSSESSION } = require('../utils/roles');
+const authHandlers = require('../utils/roles/handlers');
 
-function checkRoles(...roles) {
+function checkUser() {
   return async (req, res, next) => {
     try {
       const user = req.user;
-      const checkedUser = await getUser(user.sub);
-
-      if (!checkedUser.isActive) next(boom.unauthorized());
-
-      if (roles.includes(checkedUser.role)) {
-        next();
-      } else {
-        next(boom.forbidden());
-      }
-    } catch (error) {
-      next(boom.internal());
-    }
-  };
-}
-function checkRoles2({ route, crud }) {
-  return async (req, res, next) => {
-    try {
-      const user = req.user;
-      const roles = permissions[route][crud];
       const checkedUser = await getUser(user.sub);
       if (!checkedUser.isActive) return next(boom.unauthorized());
-      const allRoles = [...roles.all, ...roles.group, ...roles.own];
-      if (!allRoles.includes(checkedUser.role)) {
-        return next(boom.forbidden());
-      }
+      if (checkedUser.role !== user.role) return next(boom.unauthorized());
       next();
     } catch (error) {
       next(boom.serverUnavailable());
@@ -70,8 +49,8 @@ async function getGroups(userId, next) {
 
 async function getUser(userId) {
   try {
-    const rta = await sequelize.models.Auth.findOne({
-      userId
+    const rta = await sequelize.models.User.findOne({
+      id: userId,
     });
 
     return rta.dataValues;
@@ -83,49 +62,28 @@ async function getUser(userId) {
 function checkAuth({ route, crud }) {
   return async (req, res, next) => {
     try {
-      const auths = permissions[route][crud];
       const user = req.user;
+      if(!grants[user.role]) throw boom.forbidden();
+      const { possession, callback } = grants[user.role][route][crud];
 
-      if (auths.all.includes(user.role)) {
-        return next();
+
+      if (possession === POSSESSION.ANY) {
+        if (callback) {
+          callback(req);
+        }
       }
 
-      if (auths.group.includes(user.role)) {
-        const groupId = await getGroups(user.sub, next);
-        if (crud === 'read') {
-          req.query.groupId = groupId;
-        }
-
-        if (crud === 'update') {
-          if (req.body.groupId) {
-            const isIn = groupId.includes(req.body.groupId);
-            if (!isIn) throw new Error();
-          }
-
-          req.query.groupId = groupId;
-        }
-        if (crud === 'create') {
-          const isIn = groupId.includes(req.body.groupId);
-          if (!isIn) throw new Error();
-        }
-        return next();
+      if (possession === POSSESSION.STORE) {
+        const resolver = authHandlers[possession][crud]
+        if(resolver) resolver()
       }
 
-      if (auths.own.includes(user.role)) {
-        if (crud === 'read') {
-          req.query.managerId = user.sub;
+      if (possession === POSSESSION.OWN) {
+        if (callback) {
+          callback(req);
         }
-
-        if (crud === 'update') {
-          if (req.body.userId) {
-            const isIn = req.query.userId == user.sub;
-            if (!isIn) throw new Error();
-          }
-        }
-        return next();
       }
-      console.log(req.user);
-      return next();
+      next();
     } catch (error) {
       return next(error);
     }
@@ -180,8 +138,7 @@ async function checkSuperuser(req, res, next) {
 }
 
 module.exports = {
-  checkRoles,
-  checkRoles2,
+  checkUser,
   checkSuperuser,
   checkPermissions,
   checkAuth,

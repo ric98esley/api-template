@@ -11,6 +11,7 @@ class UsersServices {
       include: ['profile'],
     });
     delete newUser.dataValues.password;
+
     return newUser;
   }
 
@@ -83,60 +84,35 @@ class UsersServices {
   async find({
     sort = 'createdAt',
     order = 'DESC',
-    search,
-    groupId,
+    profile,
     username,
-    name,
-    lastName,
     role,
-    email,
     isActive,
     all,
-    cardId,
     limit = 10,
     offset = 0,
     startDate,
     endDate,
   }) {
     let where = {
-      ...(name && {
-        name: {
-          [Op.like]: `%${name}%`,
+      ...(role && {
+        role: {
+          [Op.like]: `%${role}%`,
         },
       }),
-      ...(search && {
+      ...(username && {
         [Op.or]: [
           {
-            name: {
-              [Op.like]: `%${search}%`,
-            },
-          },
-          {
-            lastName: {
-              [Op.like]: `%${search}%`,
-            },
-          },
-          {
             email: {
-              [Op.like]: `%${search}%`,
+              [Op.like]: `%${username}%`,
             },
           },
           {
-            cardId: {
-              [Op.like]: `%${search}%`,
+            username: {
+              [Op.like]: `%${username}%`,
             },
           },
         ],
-      }),
-      ...(lastName && {
-        lastName: {
-          [Op.like]: `%${lastName}`,
-        },
-      }),
-      ...(email && {
-        email: {
-          [Op.like]: `%${email}%`,
-        },
       }),
       ...(!all &&
         isActive && {
@@ -144,14 +120,6 @@ class UsersServices {
             [Op.eq]: isActive,
           },
         }),
-      ...(groupId && {
-        groupId,
-      }),
-      ...(cardId && {
-        cardId: {
-          [Op.like]: `%${cardId}%`,
-        },
-      }),
       ...(startDate &&
         endDate && {
           createdAt: {
@@ -166,43 +134,48 @@ class UsersServices {
       where,
       include: [
         {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'name', 'lastName'],
-        },
-        {
-          model: models.User,
-          as: 'manager',
-          attributes: ['id', 'name', 'lastName'],
-        },
-        {
-          model: models.Group,
-          as: 'group',
-          attributes: ['id', 'name', 'code'],
-        },
-        {
-          model: models.Auth,
+          model: models.Customer,
           as: 'profile',
-          ...(role ||
-            (username && {
-              where: {
-                ...(role && {
-                  role: {
-                    [Op.like]: `%${role}%`,
+          attributes: ['id', 'name', 'lastName', 'phone', 'cardId'],
+          ...(profile && {
+            where: {
+              [Op.or]: [
+                {
+                  name: {
+                    [Op.like]: `%${profile}%`,
                   },
-                }),
-                ...(username && {
-                  username: {
-                    [Op.like]: `%${username}%`,
+                },
+                {
+                  lastName: {
+                    [Op.like]: `%${profile}%`,
                   },
-                }),
-              },
-            })),
-          attributes: ['role'],
+                },
+                {
+                  cardId: {
+                    [Op.like]: `%${profile}%`,
+                  },
+                },
+                {
+                  phone: {
+                    [Op.like]: `%${profile}%`,
+                  },
+                },
+              ],
+            },
+          }),
         },
       ],
       order: [[sort, order]],
-      attributes: ['id', 'email', 'name', 'lastName', 'phone', 'cardId'],
+      attributes: [
+        'id',
+        'email',
+        'username',
+        'role',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
     };
     const { count, rows } = await models.User.findAndCountAll(options);
     return {

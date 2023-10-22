@@ -7,7 +7,7 @@ let colors = require('colors');
 const { config } = require("./../config");
 const setupModels = require("./../db/models");
 
-// U R I 
+// U R I
 
 const USER = encodeURIComponent(config.dbUser);
 const PASSWORD = encodeURIComponent(config.dbPassword);
@@ -16,7 +16,7 @@ console.log(URI)
 
 const sequelize = new Sequelize(URI, {
   dialect: `${config.dialect}`,
-  logging: console.log,
+  logging: config.logging,
 });
 
 sequelize
