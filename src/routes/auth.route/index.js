@@ -17,8 +17,6 @@ router.post(
   async (req, res, next) => {
     try {
       const user = req.user;
-
-      console.log(user);
       await logService.create({
         type: 'login',
         table: 'users',

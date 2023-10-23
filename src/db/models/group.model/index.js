@@ -66,10 +66,16 @@ const GroupSchema = {
     },
   },
   createdAt: {
-    allowNull: false,
-    type: DataTypes.DATE,
     field: 'created_at',
-    defaultValue: Sequelize.NOW,
+    type: DataTypes.DATE,
+  },
+  updatedAt: {
+    field: 'updated_at',
+    type: DataTypes.DATE,
+  },
+  deletedAt: {
+    field: 'deleted_at',
+    type: DataTypes.DATE,
   },
 };
 
@@ -97,7 +103,7 @@ class Group extends Model {
       sequelize,
       tableName: GROUP_TABLE,
       modelName: 'Group',
-      timestamps: false,
+      timestamps: true,
     };
   }
 }
