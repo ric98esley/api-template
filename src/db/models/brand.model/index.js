@@ -40,10 +40,16 @@ const BrandSchema = {
     onDelete: 'RESTRICT',
   },
   createdAt: {
-    allowNull: false,
-    type: DataTypes.DATE,
     field: 'created_at',
-    defaultValue: Sequelize.NOW,
+    type: DataTypes.DATE,
+  },
+  updatedAt: {
+    field: 'updated_at',
+    type: DataTypes.DATE,
+  },
+  deletedAt: {
+    field: 'deleted_at',
+    type: DataTypes.DATE,
   },
 };
 
@@ -52,10 +58,10 @@ class Brand extends Model {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
     this.belongsToMany(models.Category, {
       as: 'categories',
-      through: models.AssetModel,
+      through: models.Model,
       foreignKey: 'brand_id',
     });
-    this.hasMany(models.AssetModel, {
+    this.hasMany(models.Model, {
       as: 'models',
       foreignKey: 'brandId',
     });
@@ -66,7 +72,7 @@ class Brand extends Model {
       sequelize,
       tableName: BRAND_TABLE,
       modelName: 'Brand',
-      timestamps: false,
+      timestamps: true,
     };
   }
 }

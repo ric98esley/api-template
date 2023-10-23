@@ -1,9 +1,9 @@
-const { Model, DataTypes, Sequelize } = require("sequelize");
+const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const MODEL_TABLE = "models";
-const { USER_TABLE } = require("../user.model");
-const { CATEGORY_TABLE } = require("./category.model");
-const { ASSET_BRAND_TABLE } = require("./brand.model");
+const MODEL_TABLE = 'models';
+const { USER_TABLE } = require('../user.model');
+const { CATEGORY_TABLE } = require('../category.model');
+const { ASSET_BRAND_TABLE } = require('../brand.model');
 /**
  * @description description of each field in the table
  * @typedef {Object} field definition
@@ -27,40 +27,60 @@ const ModelSchema = {
     type: DataTypes.STRING(45),
     set(value) {
       this.setDataValue('name', value.trim().toUpperCase());
-    }
+    },
+  },
+  unit: {
+    allowNull: true,
+    type: DataTypes.STRING(10),
+    defaultValue: 'unit'
+  },
+  min: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   },
   categoryId: {
     allowNull: false,
     type: DataTypes.INTEGER,
-    field: "category_id",
+    field: 'category_id',
     references: {
       model: CATEGORY_TABLE,
-      key: "id",
+      key: 'id',
     },
-    onUpdate: "RESTRICT",
-    onDelete: "RESTRICT",
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
   },
   brandId: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    field: "brand_id",
+    field: 'brand_id',
     references: {
       model: ASSET_BRAND_TABLE,
-      key: "id",
+      key: 'id',
     },
-    onUpdate: "RESTRICT",
-    onDelete: "RESTRICT",
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
+  },
+  purchaseCost: {
+    allowNull: true,
+    type: DataTypes.DECIMAL,
+    field: 'purchase_cost',
+  },
+  depreciationRate: {
+    allowNull: true,
+    type: DataTypes.DECIMAL,
+    field: 'depreciation_rate',
   },
   createdById: {
     allowNull: false,
     type: DataTypes.INTEGER,
-    field: "created_by",
+    field: 'created_by',
     references: {
       model: USER_TABLE,
-      key: "id",
+      key: 'id',
     },
-    onUpdate: "RESTRICT",
-    onDelete: "RESTRICT",
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
   },
   createdAt: {
     field: 'created_at',
@@ -76,22 +96,25 @@ const ModelSchema = {
   },
 };
 
-class Model extends Model {
+class AssetModel extends Model {
   static associate(models) {
-    this.belongsTo(models.User, { as: "createdBy", foreignKey: "createdById" });
-    this.hasMany(models.Asset, {as: "assets" , foreignKey: "modelId"})
-    this.belongsTo(models.Category, { as: "category", foreignKey: "categoryId" });
-    this.belongsTo(models.Brand, { as: "brand", foreignKey: "brandId" });
+    this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
+    this.hasMany(models.Asset, { as: 'assets', foreignKey: 'modelId' });
+    this.belongsTo(models.Category, {
+      as: 'category',
+      foreignKey: 'categoryId',
+    });
+    this.belongsTo(models.Brand, { as: 'brand', foreignKey: 'brandId' });
   }
 
   static config(sequelize) {
     return {
       sequelize,
       tableName: MODEL_TABLE,
-      modelName: "Model",
+      modelName: 'Model',
       timestamps: true,
     };
   }
 }
 
-module.exports = { MODEL_TABLE, ModelSchema, Model };
+module.exports = { MODEL_TABLE, ModelSchema, AssetModel };

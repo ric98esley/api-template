@@ -14,7 +14,7 @@ const { USER_TABLE } = require('../user.model');
  * @property {boolean} field - rename the field
  */
 
-const category_types = ['asset', 'accessory', 'consumable' ]
+const category_types = ['asset', 'accessory', 'consumable']
 
 const CategorySchema = {
   id: {
@@ -81,13 +81,13 @@ class Category extends Model {
       as: 'createdBy',
       foreignKey: 'createdById',
     });
-    this.belongsToMany(models.Hardware, {
-      through: models.CategorySpecification,
+    this.belongsToMany(models.HardwareSpec, {
+      through: models.CategorySpec,
       as: 'customFields',
       foreignKey: 'category_id'
     });
     this.belongsToMany(models.Brand, {
-      through: models.AssetModel,
+      through: models.Model,
       as: 'brands',
       foreignKey: 'category_id'
     })
