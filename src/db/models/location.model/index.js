@@ -143,12 +143,9 @@ class Location extends Model {
     this.belongsTo(models.Location, { as: 'parent', foreignKey: 'parentId' });
     this.belongsTo(models.Group, { as: 'group', foreignKey: 'groupId' });
     this.belongsTo(models.LocationType, { as: 'type', foreignKey: 'typeId' });
-    this.hasMany(models.Assignment, {
-      as: 'assignments',
-      foreignKey: 'locationId',
-    });
-    this.hasMany(models.Assignment, {
-      as: 'oldAssignments',
+    this.belongsToMany(models.OrderRecord, {
+      through: models.Movement,
+      as: 'records',
       foreignKey: 'locationId',
     });
   }
@@ -158,7 +155,8 @@ class Location extends Model {
       sequelize,
       tableName: LOCATION_TABLE,
       modelName: 'Location',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

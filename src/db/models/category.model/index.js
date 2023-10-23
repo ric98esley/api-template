@@ -98,7 +98,8 @@ class Category extends Model {
       sequelize,
       tableName: CATEGORY_TABLE,
       modelName: 'Category',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

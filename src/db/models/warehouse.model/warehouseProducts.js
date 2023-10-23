@@ -102,7 +102,8 @@ class WarehouseProducts extends Model {
       sequelize,
       tableName: WAREHOUSE_PRODUCTS_TABLE,
       modelName: 'WarehouseProducts',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

@@ -21,7 +21,9 @@ router.post(
         type: 'login',
         table: 'users',
         targetId: user.id,
-        details: `El usuario ${user.username} a entrado al sistema`,
+        details: {
+          message: `El usuario ${user.username} a entrado al sistema`
+        },
         ip: req.ip,
         createdById: user.id,
       });

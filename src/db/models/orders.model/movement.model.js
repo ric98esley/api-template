@@ -120,7 +120,8 @@ class Movement extends Model {
       sequelize,
       tableName: MOVEMENT_TABLE,
       modelName: 'Movement',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

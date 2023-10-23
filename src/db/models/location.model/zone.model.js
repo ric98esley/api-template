@@ -67,7 +67,8 @@ class Zone extends Model {
       sequelize,
       tableName: ZONE_TABLE,
       modelName: "Zone",
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

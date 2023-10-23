@@ -15,7 +15,7 @@ class UsersServices {
     return newUser;
   }
 
-  async findOne({ id }) {
+  async findOne({ id, email, username }) {
     const options = {
       include: [
         {
@@ -25,7 +25,15 @@ class UsersServices {
         },
       ],
       where: {
-        id,
+        ...(id && {
+          id,
+        }),
+        ...(email && {
+          email,
+        }),
+        ...(username && {
+          username,
+        }),
       },
       attributes: ['id', 'username', 'email', 'role', 'createdAt'],
     };
@@ -33,52 +41,6 @@ class UsersServices {
     if (!user) {
       throw boom.notFound('User not found');
     }
-    return user;
-  }
-  async findOneUsername(username) {
-    // Only for login
-    const user = await models.User.findOne({
-      where: {
-        username: username,
-      },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: {
-            exclude: [
-              'password',
-              'phone',
-              'cardId',
-              'createdById',
-              'managerId',
-              'locationId',
-              'address',
-              'createdAt',
-            ],
-          },
-        },
-        {
-          model: models.User,
-          as: 'manager',
-          attributes: {
-            exclude: [
-              'password',
-              'phone',
-              'cardId',
-              'createdById',
-              'managerId',
-              'locationId',
-              'address',
-              'createdAt',
-            ],
-          },
-        },
-      ],
-      attributes: {
-        exclude: ['createdById', 'managerId', 'locationId'],
-      },
-    });
     return user;
   }
   async find({
@@ -192,9 +154,7 @@ class UsersServices {
 
   async delete(id) {
     const user = await this.findOne({ id });
-    const rta = await user.update({
-      isActive: false,
-    });
+    const rta = await user.destroy();
     return rta;
   }
 }

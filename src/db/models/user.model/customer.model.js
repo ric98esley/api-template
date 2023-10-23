@@ -99,7 +99,8 @@ class Customer extends Model {
       sequelize,
       tableName: CUSTOMER_TABLE,
       modelName: 'Customer',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

@@ -65,7 +65,8 @@ class LocationType extends Model {
       sequelize,
       tableName: LOCATION_TYPE_TABLE,
       modelName: 'LocationType',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

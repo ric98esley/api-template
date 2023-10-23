@@ -57,6 +57,10 @@ const UserSchema = {
     allowNull: true,
     type: DataTypes.STRING,
   },
+  groupId: {
+    field: 'group_id',
+    type: DataTypes.INTEGER
+  },
   isActive: {
     allowNull: false,
     type: DataTypes.BOOLEAN,
@@ -90,7 +94,8 @@ class User extends Model {
       sequelize,
       tableName: USER_TABLE,
       modelName: 'User',
-      timestamps: true,
+      timestamps: true, 
+      paranoid: true,
     };
   }
 }

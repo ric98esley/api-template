@@ -64,6 +64,7 @@ function checkAuth({ route, crud }) {
     try {
       const user = req.user;
       if(!grants[user.role]) throw boom.forbidden();
+      if(!grants[user.role][route]) throw boom.forbidden();
       const { possession, callback } = grants[user.role][route][crud];
 
 

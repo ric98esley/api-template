@@ -103,7 +103,8 @@ class Group extends Model {
       sequelize,
       tableName: GROUP_TABLE,
       modelName: 'Group',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

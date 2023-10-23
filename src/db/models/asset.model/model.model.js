@@ -116,7 +116,8 @@ class AssetModel extends Model {
       sequelize,
       tableName: MODEL_TABLE,
       modelName: 'Model',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

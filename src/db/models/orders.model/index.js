@@ -126,7 +126,8 @@ class OrderRecord extends Model {
       sequelize,
       tableName: ORDERS_RECORDS_TABLE,
       modelName: 'OrderRecord',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

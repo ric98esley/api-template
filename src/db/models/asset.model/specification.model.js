@@ -99,7 +99,7 @@ class HardwareSpec extends Model {
       sequelize,
       tableName: HARDWARE_SPEC_TABLE,
       modelName: 'HardwareSpec',
-      timestamps: true,
+      timestamps: true, 
       paranoid: true,
     };
   }

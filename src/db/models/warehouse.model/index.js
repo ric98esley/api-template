@@ -90,7 +90,8 @@ class Warehouse extends Model {
       sequelize,
       tableName: WAREHOUSE_TABLE,
       modelName: 'Warehouse',
-      timestamps: true,
+      timestamps: true, 
+paranoid: true
     };
   }
 }

@@ -147,7 +147,7 @@ class Asset extends Model {
       sequelize,
       tableName: ASSET_TABLE,
       modelName: 'Asset',
-      timestamps: true,
+      timestamps: true, 
       paranoid: true,
     };
   }

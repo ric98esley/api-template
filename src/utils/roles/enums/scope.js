@@ -1,6 +1,7 @@
 
 const SCOPE = {
-  USERS: 'users'
+  USERS: 'users',
+  CUSTOMER: 'customer',
 }
 
 module.exports = SCOPE;

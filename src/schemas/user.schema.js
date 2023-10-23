@@ -42,8 +42,7 @@ const updateUserSchema = Joi.object({
   cardId,
   groupId: id,
   managerId: id,
-  address,
-  password,
+  address
 });
 const searchUser = Joi.object({
   username,

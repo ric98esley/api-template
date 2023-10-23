@@ -46,6 +46,7 @@ router.get(
 
 router.get(
   '/me',
+  checkUser(),
   passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     try {
@@ -120,17 +121,32 @@ router.post(
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  // validatorHandler(getUserSchema, 'params'),
-  // validatorHandler(updateUserSchema, 'body'),
+  checkUser(),
+  validatorHandler(getUserSchema, 'params'),
+  validatorHandler(updateUserSchema, 'body'),
+  checkAuth({route: SCOPE.USERS, crud: ACTIONS.UPDATE}),
   checkPermissions,
   async (req, res, next) => {
     try {
+      const user = req.user;
       const { groupId } = req.query;
       const { id } = req.params;
       const body = req.body;
 
-      const User = await service.update({ id, changes: body, groupId });
-      res.json(User);
+      const userUpdated = await service.update({ id, changes: body, groupId });
+
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'users',
+        targetId: id,
+        details: {
+          message: `Se modificado el usuario ${userUpdated.dataValues.id}`,
+          query: body
+        },
+        ip: req.ip,
+        createdById: user.sub
+      })
+      res.json(userUpdated);
     } catch (error) {
       next(error);
     }
@@ -145,8 +161,17 @@ router.delete(
     try {
       const { id } = req.params;
       const user = await service.delete(id);
+
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'users',
+        targetId: id,
+        details: `Se ha ocultado el usuario ${user.dataValues.id}`,
+        ip: req.ip,
+        createdById: user.sub
+      })
       res.status(202).json({
-        msg: 'Haz desactivado el usario',
+        msg: 'Haz ocultado el usuario',
         user: user,
       });
     } catch (error) {
