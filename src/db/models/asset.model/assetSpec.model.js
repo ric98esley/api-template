@@ -98,7 +98,7 @@ const AssetSpecSchema = {
 
 class AssetSpec extends Model {
   static associate(models) {
-    this.belongsTo(models.Hardware, {
+    this.belongsTo(models.HardwareSpec, {
       as: 'type',
       foreignKey: 'typeId'
     });

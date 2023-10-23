@@ -3,7 +3,7 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 const MODEL_TABLE = 'models';
 const { USER_TABLE } = require('../user.model');
 const { CATEGORY_TABLE } = require('../category.model');
-const { ASSET_BRAND_TABLE } = require('../brand.model');
+const { BRAND_TABLE } = require('../brand.model');
 /**
  * @description description of each field in the table
  * @typedef {Object} field definition
@@ -31,7 +31,7 @@ const ModelSchema = {
   },
   unit: {
     allowNull: true,
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(20),
     defaultValue: 'unit'
   },
   min: {
@@ -55,7 +55,7 @@ const ModelSchema = {
     type: DataTypes.INTEGER,
     field: 'brand_id',
     references: {
-      model: ASSET_BRAND_TABLE,
+      model: BRAND_TABLE,
       key: 'id',
     },
     onUpdate: 'RESTRICT',
@@ -63,12 +63,16 @@ const ModelSchema = {
   },
   purchaseCost: {
     allowNull: true,
-    type: DataTypes.DECIMAL,
+    type: DataTypes.DECIMAL(9,2),
     field: 'purchase_cost',
+  },
+  currency: {
+    allowNull: true,
+    type: DataTypes.STRING,
   },
   depreciationRate: {
     allowNull: true,
-    type: DataTypes.DECIMAL,
+    type: DataTypes.DECIMAL(9,2),
     field: 'depreciation_rate',
   },
   createdById: {
