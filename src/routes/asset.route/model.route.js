@@ -87,9 +87,9 @@ router.delete(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      await service.delete({ id });
+      const model = await service.delete({ id });
       res.status(202).json({
-        msg: 'Model deleted ' + id,
+        message: 'Model deleted ' + model.dataValues.name,
       });
     } catch (error) {
       next(error);

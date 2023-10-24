@@ -134,11 +134,11 @@ class AssetsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'name', 'lastName', 'username'],
+          attributes: ['id', 'username'],
         },
         {
-          model: models.Deposit,
-          as: 'deposit',
+          model: models.Warehouse,
+          as: 'warehouse',
           attributes: ['id', 'name', 'state'],
         },
         {
@@ -160,58 +160,58 @@ class AssetsServices {
             },
           ],
         },
+        // {
+        //   model: models.Assignment,
+        //   as: 'assignment',
+        //   where: {
+        //     isCurrent: true,
+        //   },
+        //   required: false,
+        //   include: [
+        //     {
+        //       model: models.User,
+        //       as: 'checkoutBy',
+        //       attributes: ['id', 'name', 'lastName', 'username'],
+        //     },
+        //     {
+        //       model: models.Location,
+        //       as: 'location',
+        //       include: [
+        //         {
+        //           model: models.Group,
+        //           as: 'group',
+        //           attributes: ['id', 'name', 'code'],
+        //         },
+        //         {
+        //           model: models.User,
+        //           as: 'manager',
+        //           attributes: ['id', 'name', 'lastName', 'username', 'phone'],
+        //         },
+        //         {
+        //           model: models.LocationType,
+        //           as: 'type',
+        //           attributes: ['id', 'name'],
+        //         },
+        //       ],
+        //       attributes: [
+        //         'id',
+        //         'code',
+        //         'name',
+        //         'isActive',
+        //         'phone',
+        //         'rif',
+        //         'address',
+        //       ],
+        //     },
+        //   ],
+        //   attributes: ['id', 'checkingAt', 'checkoutAt', 'isCurrent'],
+        // },
         {
-          model: models.Assignment,
-          as: 'assignment',
-          where: {
-            isCurrent: true,
-          },
-          required: false,
-          include: [
-            {
-              model: models.User,
-              as: 'checkoutBy',
-              attributes: ['id', 'name', 'lastName', 'username'],
-            },
-            {
-              model: models.Location,
-              as: 'location',
-              include: [
-                {
-                  model: models.Group,
-                  as: 'group',
-                  attributes: ['id', 'name', 'code'],
-                },
-                {
-                  model: models.User,
-                  as: 'manager',
-                  attributes: ['id', 'name', 'lastName', 'username', 'phone'],
-                },
-                {
-                  model: models.LocationType,
-                  as: 'type',
-                  attributes: ['id', 'name'],
-                },
-              ],
-              attributes: [
-                'id',
-                'code',
-                'name',
-                'isActive',
-                'phone',
-                'rif',
-                'address',
-              ],
-            },
-          ],
-          attributes: ['id', 'checkingAt', 'checkoutAt', 'isCurrent'],
-        },
-        {
-          model: models.AssetSpecification,
+          model: models.AssetSpec,
           as: 'specifications',
           include: [
             {
-              model: models.Hardware,
+              model: models.HardwareSpec,
               as: 'type',
               attributes: ['id', 'name'],
             },
@@ -246,13 +246,13 @@ class AssetsServices {
     enabled,
     groupId,
     invoiceId,
-    deposit,
+    warehouse,
     status,
     all,
     model,
     brand,
     category,
-    depositId,
+    warehouseId,
     modelId,
     categoryId,
     brandId,
@@ -291,23 +291,23 @@ class AssetsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'name', 'lastName', 'username'],
+          attributes: ['id', 'username'],
         },
         {
-          model: models.Deposit,
-          as: 'deposit',
+          model: models.Warehouse,
+          as: 'warehouse',
           required: true,
           attributes: ['id', 'name', 'state'],
           where: {
-            ...(depositId && {
-              id: depositId,
+            ...(warehouseId && {
+              id: warehouseId,
             }),
             ...(status && {
               state: status,
             }),
-            ...(deposit && {
+            ...(warehouse && {
               name: {
-                [Op.like]: `%${deposit}%`,
+                [Op.like]: `%${warehouse}%`,
               },
             }),
             ...(groupId && {
@@ -373,53 +373,53 @@ class AssetsServices {
           ],
           attributes: ['id', 'name'],
         },
+        // {
+        //   model: models.Assignment,
+        //   as: 'assignment',
+        //   required: false,
+        //   where: {
+        //     isCurrent: {
+        //       [Op.is]: true,
+        //     },
+        //   },
+        //   include: [
+        //     {
+        //       model: models.User,
+        //       as: 'checkoutBy',
+        //       attributes: ['id', 'name', 'lastName', 'username'],
+        //     },
+        //     {
+        //       model: models.Asset,
+        //       as: 'asset',
+        //       include: [
+        //         {
+        //           model: models.Model,
+        //           as: 'model',
+        //           attributes: {
+        //             exclude: ['createdById', 'createdAt', 'categoryId'],
+        //           },
+        //           include: ['category', 'brand'],
+        //         },
+        //       ],
+        //     },
+        //     {
+        //       model: models.Location,
+        //       as: 'location',
+        //     },
+        //     {
+        //       model: models.User,
+        //       as: 'user',
+        //       attributes: ['id', 'name', 'lastName', 'username', 'phone'],
+        //     },
+        //   ],
+        //   attributes: ['id', 'assignmentType', 'checkingAt', 'checkoutAt'],
+        // },
         {
-          model: models.Assignment,
-          as: 'assignment',
-          required: false,
-          where: {
-            isCurrent: {
-              [Op.is]: true,
-            },
-          },
-          include: [
-            {
-              model: models.User,
-              as: 'checkoutBy',
-              attributes: ['id', 'name', 'lastName', 'username'],
-            },
-            {
-              model: models.Asset,
-              as: 'asset',
-              include: [
-                {
-                  model: models.Model,
-                  as: 'model',
-                  attributes: {
-                    exclude: ['createdById', 'createdAt', 'categoryId'],
-                  },
-                  include: ['category', 'brand'],
-                },
-              ],
-            },
-            {
-              model: models.Location,
-              as: 'location',
-            },
-            {
-              model: models.User,
-              as: 'user',
-              attributes: ['id', 'name', 'lastName', 'username', 'phone'],
-            },
-          ],
-          attributes: ['id', 'assignmentType', 'checkingAt', 'checkoutAt'],
-        },
-        {
-          model: models.AssetSpecification,
+          model: models.AssetSpec,
           as: 'specifications',
           include: [
             {
-              model: models.Hardware,
+              model: models.HardwareSpec,
               as: 'type',
               attributes: ['id', 'name'],
             },
@@ -453,7 +453,7 @@ class AssetsServices {
     sort = 'createdAt',
     order = 'DESC',
     groupId,
-    deposit,
+    warehouse,
     status,
     model,
     brand,
@@ -482,9 +482,9 @@ class AssetsServices {
         ...(status && {
           state: status,
         }),
-        ...(deposit && {
+        ...(warehouse && {
           warehouse: {
-            [Op.like]: `%${deposit}%`,
+            [Op.like]: `%${warehouse}%`,
           },
         }),
         ...(groupId && {
