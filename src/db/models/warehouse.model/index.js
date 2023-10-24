@@ -33,7 +33,7 @@ const WarehouseSchema = {
       this.setDataValue('name', value.trim().toUpperCase());
     }
   },
-  state: {
+  status: {
     type: DataTypes.STRING(15),
     allowNull: false,
     validate: {
