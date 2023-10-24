@@ -57,6 +57,7 @@ function setupModels(sequelize) {
   Asset.associate(sequelize.models);
   CategorySpec.associate(sequelize.models);
   AssetSpec.associate(sequelize.models);
+  HardwareSpec.associate(sequelize.models);
 
   Zone.associate(sequelize.models);
   LocationType.associate(sequelize.models);

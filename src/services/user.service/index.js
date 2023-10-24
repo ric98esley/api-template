@@ -21,7 +21,12 @@ class UsersServices {
         {
           as: 'profile',
           model: models.Customer,
-          attributes: ['id', 'name', 'lastName'],
+          attributes: ['id', 'name', 'lastName', 'phone', 'cardId', 'createdAt', 'updatedAt'],
+        },
+        {
+          as: 'group',
+          model: models.Group,
+          attributes: ['id', 'name'],
         },
       ],
       where: {
@@ -35,7 +40,7 @@ class UsersServices {
           username,
         }),
       },
-      attributes: ['id', 'username', 'email', 'role', 'createdAt'],
+      attributes: ['id', 'username', 'email', 'role', 'createdAt', 'updatedAt', 'deletedAt'],
     };
     const user = await models.User.findOne(options);
     if (!user) {

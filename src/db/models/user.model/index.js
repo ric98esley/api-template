@@ -87,6 +87,10 @@ class User extends Model {
       as: 'profile',
       foreignKey: 'userId',
     });
+    this.belongsTo(models.Group, {
+      as: 'group',
+      foreignKey: 'groupId'
+    })
   }
 
   static config(sequelize) {
@@ -94,7 +98,7 @@ class User extends Model {
       sequelize,
       tableName: USER_TABLE,
       modelName: 'User',
-      timestamps: true, 
+      timestamps: true,
       paranoid: true,
     };
   }

@@ -33,7 +33,14 @@ const OrderRecordSchema = {
   },
   type: {
     allowNull: false,
-    field: 'transaction_type',
+    field: 'type',
+    type: DataTypes.STRING(8),
+    validate: {
+      isIn: [['checking', 'checkout']],
+    },
+  },
+  description: {
+    allowNull: false,
     type: DataTypes.STRING(20),
     validate: {
       isIn: [actionType],

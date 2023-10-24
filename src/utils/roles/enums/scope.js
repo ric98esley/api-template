@@ -1,7 +1,9 @@
 
 const SCOPE = {
   USERS: 'users',
-  CUSTOMER: 'customer',
+  CUSTOMER: 'customers',
+  CATEGORIES: 'categories',
+  SPECIFICATIONS: 'specifications',
 }
 
 module.exports = SCOPE;

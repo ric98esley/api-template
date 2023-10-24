@@ -30,6 +30,34 @@ const grantSuperuser = {
     [ACTIONS.DELETE]: {
       possession: POSSESSION.ANY
     }
+  },
+  [SCOPE.CATEGORIES]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.SPECIFICATIONS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
   }
 }
 

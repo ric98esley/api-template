@@ -44,7 +44,7 @@ const updateUserSchema = Joi.object({
   managerId: id,
   address
 });
-const searchUser = Joi.object({
+const searchUserSchema = Joi.object({
   username,
   sort: toSearch,
   order: toSearch.valid('ASC', 'DESC'),
@@ -74,5 +74,5 @@ module.exports = {
   createUserSchema,
   updateUserSchema,
   getUserSchema,
-  searchUser,
+  searchUserSchema,
 };

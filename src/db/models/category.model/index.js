@@ -36,7 +36,7 @@ const CategorySchema = {
     type: DataTypes.STRING(20),
     allowNull: false,
     validate: {
-      isIn: category_types
+      isIn: [category_types]
     },
     set(value) {
       this.setDataValue('type', value.trim());
@@ -84,7 +84,7 @@ class Category extends Model {
     this.belongsToMany(models.HardwareSpec, {
       through: models.CategorySpec,
       as: 'customFields',
-      foreignKey: 'category_id'
+      foreignKey: 'categoryId'
     });
     this.belongsToMany(models.Brand, {
       through: models.Model,

@@ -7,15 +7,13 @@ class CustomersServices {
   constructor() {}
 
   async create(data) {
-    const newCustomer = await models.Customer.create(data, {
-      include: ['customer'],
-    });
+    const newCustomer = await models.Customer.create(data);
     delete newCustomer.dataValues.password;
 
     return newCustomer;
   }
 
-  async findOne({ id, name, lastName }) {
+  async findOne({ id, phone }) {
     const options = {
       include: [
         {
@@ -28,11 +26,8 @@ class CustomersServices {
         ...(id && {
           id,
         }),
-        ...(name && {
-          name,
-        }),
-        ...(lastName && {
-          lastName,
+        ...(phone && {
+          phone,
         }),
       },
     };
@@ -105,9 +100,7 @@ class CustomersServices {
 
   async delete(id) {
     const customer = await this.findOne({ id });
-    const rta = await customer.update({
-      isActive: false,
-    });
+    const rta = await customer.destroy();
     return rta;
   }
 }

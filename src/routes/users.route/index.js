@@ -19,8 +19,8 @@ const {
   createUserSchema,
   getUserSchema,
   getSearch,
-  searchUser,
-} = require('../../schemas/user.schema.js');
+  searchUserSchema,
+} = require('../../schemas/user.schema/index.js');
 const { SCOPE, ACTIONS } = require('../../utils/roles');
 
 const router = express.Router();
@@ -30,7 +30,7 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(searchUser, 'query'),
+  validatorHandler(searchUserSchema, 'query'),
   checkAuth({ route: 'users', crud: 'read' }),
   async (req, res, next) => {
     try {
@@ -156,7 +156,7 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-  // validatorHandler(getUserSchema, 'params'),
+  validatorHandler(getUserSchema, 'params'),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -171,7 +171,7 @@ router.delete(
         createdById: user.sub
       })
       res.status(202).json({
-        msg: 'Haz ocultado el usuario',
+        message: 'Haz ocultado el usuario',
         user: user,
       });
     } catch (error) {

@@ -1,8 +1,10 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes, Sequelize } = require('sequelize');
+
+const LOCATION_PRODUCTS_TABLE = 'location_has_products';
 const { USER_TABLE } = require('../user.model');
+const { ASSET_TABLE } = require('../asset.model');
+const { LOCATION_TABLE } = require('../location.model');
 
-
-const HARDWARE_SPEC_TABLE = 'hardware_specifications';
 /**
  * @description description of each field in the table
  * @typedef {Object} field definition
@@ -14,47 +16,45 @@ const HARDWARE_SPEC_TABLE = 'hardware_specifications';
  * @property {boolean} field - rename the field
  */
 
-const HardwareSpecSchema = {
+const LocationProductsSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  name: {
+  assetId: {
     allowNull: false,
-    type: DataTypes.STRING(45),
-    unique: true,
-    set(value) {
-      this.setDataValue('name', value.trim().toUpperCase());
-    }
+    type: DataTypes.INTEGER,
+    field: 'product_id',
+    references: {
+      model: ASSET_TABLE,
+      key: 'id',
+    },
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
+  },
+  quantity: {
+    allowNull: false,
+    type: DataTypes.DECIMAL(9,2),
+    allowNull: false,
+    defaultValue: 0
+  },
+  locationId: {
+    allowNull: false,
+    field: 'location_id',
+    type: DataTypes.INTEGER,
+    references: {
+      model: LOCATION_TABLE,
+      key: 'id',
+    },
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
   },
   createdById: {
     allowNull: false,
     type: DataTypes.INTEGER,
     field: 'created_by_id',
-    references: {
-      model: USER_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
-  },
-  updatedById: {
-    allowNull: true,
-    type: DataTypes.INTEGER,
-    field: 'updated_by_id',
-    references: {
-      model: USER_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
-  },
-  deletedById: {
-    allowNull: true,
-    type: DataTypes.INTEGER,
-    field: 'deleted_by_id',
     references: {
       model: USER_TABLE,
       key: 'id',
@@ -76,33 +76,31 @@ const HardwareSpecSchema = {
   },
 };
 
-class HardwareSpec extends Model {
+class LocationProducts extends Model {
   static associate(models) {
-    this.belongsToMany(models.Category, {
-      as: 'categories',
-      through: models.CategorySpec,
-      foreignKey: 'type_id'
-    })
     this.belongsTo(models.User, {
       as: 'createdBy',
       foreignKey: 'createdById'
     })
-    this.belongsTo(models.User, {
-      as: 'updatedBy',
-      foreignKey: 'updatedById'
+    this.belongsTo(models.Deposit,{
+      as: 'deposit',
+      foreignKey: 'depositId'
+    })
+    this.belongsTo(models.Product, {
+      as: 'product',
+      foreignKey: 'productId'
     })
   }
 
   static config(sequelize) {
-
     return {
       sequelize,
-      tableName: HARDWARE_SPEC_TABLE,
-      modelName: 'HardwareSpec',
+      tableName: WAREHOUSE_PRODUCTS_TABLE,
+      modelName: 'LocationProducts',
       timestamps: true,
-      paranoid: true,
+paranoid: true
     };
   }
 }
 
-module.exports = { HARDWARE_SPEC_TABLE, HardwareSpecSchema, HardwareSpec };
+module.exports = { LOCATION_PRODUCTS_TABLE, LocationProductsSchema, LocationProducts };
