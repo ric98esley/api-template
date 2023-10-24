@@ -5,15 +5,11 @@ const passport = require('passport');
 
 const AssetsService = require('../../services/asset.service');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { checkRoles, checkPermissions } = require('../../middlewares/auth.handler');
+const { checkPermissions } = require('../../middlewares/auth.handler');
 
-// imports routes
+// import routes
 
-// const stateRoute = require('./deposit.router');
 const modelRoute = require('./model.route');
-// const historyRoute = require('./history.router');
-
-// import schema validator
 
 const {
   updateAssetSchema,
@@ -51,7 +47,6 @@ router.get(
 router.get(
   '/excel',
   passport.authenticate('jwt', { session: false }),
-
   validatorHandler(searchAsset, 'query'),
   checkPermissions,
   async (req, res, next) => {
@@ -97,7 +92,6 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
-
   validatorHandler(createBulkAssetSchema, 'body'),
   async (req, res, next) => {
     try {
