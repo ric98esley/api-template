@@ -109,8 +109,6 @@ router.post(
           createdById: user.sub
         })
       }
-
-      console.log(newUser);
       res.status(201).json(newUser);
     } catch (error) {
       next(error);
