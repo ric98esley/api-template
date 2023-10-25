@@ -73,7 +73,49 @@ const grantSuperuser = {
       possession: POSSESSION.ANY
     }
   },
+  [SCOPE.MODELS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
   [SCOPE.GROUPS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.ASSETS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.WAREHOUSES]: {
     [ACTIONS.CREATE]: {
       possession: POSSESSION.ANY,
     },

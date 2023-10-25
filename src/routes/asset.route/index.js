@@ -4,8 +4,9 @@ const passport = require('passport');
 // Imports helpers
 
 const AssetsService = require('../../services/asset.service');
+const LogService = require('../../services/log.service');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { checkPermissions } = require('../../middlewares/auth.handler');
+const { checkPermissions, checkUser, checkAuth } = require('../../middlewares/auth.handler');
 
 // import routes
 
@@ -17,13 +18,14 @@ const {
   searchAsset,
   createBulkAssetSchema,
 } = require('../../schemas/asset.schema');
-// const AssignmentService = require('../../services/orders.service/assignments.service');
 const { generateExcel } = require('../../helpers/toExcel.helper');
+const { ACTIONS } = require('../../utils/roles');
 
 const router = express.Router();
 const service = new AssetsService();
-// const invoiceService = new InvoicesService();
-// const assignmentsService = new AssignmentService();
+const logService = new LogService();
+
+
 
 // router.use('/history', historyRoute);
 router.use('/models', modelRoute);
@@ -31,13 +33,14 @@ router.use('/models', modelRoute);
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(searchAsset, 'query'),
-  checkPermissions,
+  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
     const toSearch = req.query;
     try {
-      let Assets = await service.find(toSearch);
-      res.json(Assets);
+      const assets = await service.find(toSearch);
+      res.json(assets);
     } catch (error) {
       next(error);
     }
@@ -47,11 +50,11 @@ router.get(
 router.get(
   '/excel',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(searchAsset, 'query'),
-  checkPermissions,
+  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-
       const query = req.query;
 
       const assets = await service.vFind(query);
@@ -75,7 +78,9 @@ router.get(
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: 'assets', crud: 'read' }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -92,37 +97,31 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(createBulkAssetSchema, 'body'),
+  checkAuth({ route: 'assets', crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
-      const { assets, invoice, invoiceId} = req.body;
+      const { assets } = req.body;
       const user = req.user;
 
       const newAssets = await service.createBulk({ assets, user });
 
-      if(invoiceId) {
-        const assetIds = newAssets.created.map((asset) => {
-          return asset.id;
-        });
-        await invoiceService.addAssets({
-          id: invoiceId,
-          assets: assetIds,
-          userId: user.sub
-        });
-      }
-      if (invoice) {
-        invoice.createdById = user.sub;
-        const assetIds = newAssets.created.map((asset) => {
-          return asset.id;
-        });
-        console.log(assetIds)
-        const newInvoice = await invoiceService.create(invoice);
-        await invoiceService.addAssets({
-          id: newInvoice.id,
-          assets: assetIds,
-          userId: user.sub
+      for(const asset of newAssets.created ) {
+        const details = {
+          message: `Se ha creado el activo ${asset.dataValues.serial}`,
+          query: data,
+        };
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'assets',
+          targetId: asset.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: user.sub
         });
       }
+
       res.status(201).json(newAssets);
     } catch (error) {
       next(error);
@@ -133,9 +132,10 @@ router.post(
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-
+  checkUser(),
   validatorHandler(getAssetSchema, 'params'),
   validatorHandler(updateAssetSchema, 'body'),
+  checkAuth({ route: 'assets', crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -143,6 +143,19 @@ router.patch(
       const user = req.user;
       body.updatedById = user.sub;
       const asset = await service.update(id, body);
+
+      const details = {
+        message: `Se ha modificado el activo ${asset.dataValues.serial}`,
+        query: body,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'assets',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub
+      });
       res.json(asset);
     } catch (error) {
       next(error);
@@ -161,8 +174,21 @@ router.delete(
 
       const asset = await service.delete({ id, deletedById: user.sub });
 
+      const details = {
+        message: `Se ha ocultado el activo ${asset.dataValues.serial}`,
+      };
+      await logService.create({
+        type: ACTIONS.DELETE,
+        table: 'assets',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub
+      });
+
       res.status(202).json({
         message: 'Has ocultado ' + asset.serial,
+        target: asset
       });
     } catch (error) {
       next(error);
@@ -173,7 +199,6 @@ router.delete(
 router.get(
   '/:id/assets',
   passport.authenticate('jwt', { session: false }),
-
   validatorHandler(getAssetSchema, 'params'),
   validatorHandler(searchAsset, 'query'),
   async (req, res, next) => {

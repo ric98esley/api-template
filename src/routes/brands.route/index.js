@@ -51,7 +51,7 @@ router.post(
       const brand = await service.create(body);
 
       const details = {
-        message: `Se ha creado creado la marca ${brand.dataValues.name}`,
+        message: `Se ha creado la marca ${brand.dataValues.name}`,
       };
       await logService.create({
         type: ACTIONS.CREATE,
@@ -85,7 +85,7 @@ router.patch(
       const brand = await service.update({ id, changes: data });
 
       const details = {
-        message: `Se ha creado modificado la marca`,
+        message: `Se ha modificado la marca`,
         query: data,
       };
       await logService.create({

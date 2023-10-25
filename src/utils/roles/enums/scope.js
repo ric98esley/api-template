@@ -7,6 +7,8 @@ const SCOPE = {
   BRANDS: 'brands',
   MODELS: 'models',
   GROUPS: 'groups',
+  ASSETS: 'assets',
+  WAREHOUSES: 'warehouses'
 }
 
 module.exports = SCOPE;

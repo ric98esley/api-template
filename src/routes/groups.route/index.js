@@ -56,7 +56,7 @@ router.post(
       const newGroup = await groupService.create(body);
 
       const details = {
-        message: `Se ha creado creado el grupo ${newGroup.dataValues.name}`,
+        message: `Se ha creado el grupo ${newGroup.dataValues.name}`,
       };
       await logService.create({
         type: ACTIONS.CREATE,
