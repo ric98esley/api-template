@@ -2,18 +2,19 @@ const express = require('express');
 const passport = require('passport');
 
 const HardwareSpecificationsServices = require('../../services/category.service/specification.service');
+const LogService = require('../../services/log.service');
+
+const logService = new LogService();
 
 const validatorHandler = require('../../middlewares/validator.handler');
-const {
-  checkUser,
-  checkAuth,
-} = require('../../middlewares/auth.handler');
+const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const {
   searchSpecification,
   createSpecification,
   updateSpecification,
   getSpecification,
 } = require('../../schemas/category.schema/specification.schema');
+const { ACTIONS } = require('../../utils/roles');
 
 const service = new HardwareSpecificationsServices();
 
@@ -45,15 +46,22 @@ router.post(
   checkAuth({ route: 'specifications', crud: 'create' }),
   async (req, res, next) => {
     try {
-      const { name } = req.body;
+      const data = req.body;
       const user = req.user;
 
       const newSpecification = await service.create({
-        data: {
-          name,
-        },
+        data,
         user,
       });
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'specifications',
+        targetId: newSpecification.dataValues.id,
+        details: `Se ha creado ${newSpecification.dataValues.name}`,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
       res.status(201).json(newSpecification);
     } catch (error) {
       next(error);
@@ -71,16 +79,29 @@ router.patch(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { name } = req.body;
+      const data = req.body;
       const user = req.user;
 
       const newSpecification = await service.update({
-        data: {
-          name,
-        },
+        data,
         user,
         id,
       });
+
+      const details = {
+        message: `Se ha modificado la especificación`,
+        query: data,
+      };
+
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'specifications',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
       res.status(201).json(newSpecification);
     } catch (error) {
       next(error);
@@ -93,7 +114,6 @@ router.get(
   checkUser(),
   validatorHandler(getSpecification, 'params'),
   checkAuth({ route: 'specifications', crud: 'read' }),
-
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -122,7 +142,16 @@ router.delete(
         id,
         user,
       });
-      res.json(specification);
+
+      await logService.create({
+        type: ACTIONS.DELETE,
+        table: 'specifications',
+        targetId: id,
+        details: 'Se ha ocultado la especificación',
+        ip: req.ip,
+        createdById: user.sub,
+      });
+      res.json({ message: 'se ha ocultado la especificación', target: specification });
     } catch (error) {
       next(error);
     }
