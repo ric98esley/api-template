@@ -71,7 +71,9 @@ router.post(
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getCategory, 'params'),
+  checkAuth({ route: 'categories', crud: 'read' }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -86,8 +88,10 @@ router.get(
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getCategory, 'params'),
   validatorHandler(updateCategory, 'body'),
+  checkAuth({ route: 'categories', crud: 'read' }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -119,7 +123,9 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getCategory, 'params'),
+  checkAuth({ route: 'categories', crud: 'read' }),
   async (req, res, next) => {
     try {
       const { id } = req.params;

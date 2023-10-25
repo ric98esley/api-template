@@ -3,7 +3,16 @@ const passport = require('passport');
 
 const BrandsServices = require('../../services/brand.service');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { createBrand, searchBrand, getBrand } = require('../../schemas/brand.schema');
+const {
+  createBrand,
+  searchBrand,
+  getBrand,
+} = require('../../schemas/brand.schema');
+const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
+const { ACTIONS } = require('../../utils/roles');
+
+const LogService = require('../../services/log.service');
+const logService = new LogService();
 
 const service = new BrandsServices();
 
@@ -12,16 +21,17 @@ const router = express.Router();
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(searchBrand, 'query'),
+  checkAuth({ route: 'brands', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-
       const queries = req.query;
       const brands = await service.find(queries);
 
-      res.status(200).json(brands)
+      res.status(200).json(brands);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 );
@@ -29,32 +39,63 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
-
+  checkUser(),
   validatorHandler(createBrand, 'body'),
+  checkAuth({ route: 'brands', crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const body = req.body;
+      const user = req.user;
       body.createdById = req.user.sub;
 
       const brand = await service.create(body);
 
+      const details = {
+        message: `Se ha creado creado la marca ${brand.dataValues.name}`,
+      };
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'brands',
+        targetId: brand.dataValues.id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
       res.status(201).json(brand);
     } catch (error) {
       next(error);
     }
   }
 );
+
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getBrand, 'params'),
   validatorHandler(createBrand, 'body'),
+  checkAuth({ route: 'brands', crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
-      const { id } = req.params
-      const body = req.body;
+      const { id } = req.params;
+      const data = req.body;
+      const user = req.user;
 
-      const brand = await service.update({id, changes: body});
+      const brand = await service.update({ id, changes: data });
+
+      const details = {
+        message: `Se ha creado modificado la marca`,
+        query: data,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'brands',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
 
       res.status(201).json(brand);
     } catch (error) {
@@ -62,21 +103,36 @@ router.patch(
     }
   }
 );
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
-
+  checkUser(),
   validatorHandler(getBrand, 'params'),
+  checkAuth({ route: 'brands', crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
-      const { id } = req.params
+      const { id } = req.params;
       const brand = await service.delete({ id });
+      const user = req.user;
 
-      res.status(201).json(brand);
+      const details = {
+        message: `Se ha ocultado la marca`,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'brands',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
+      res.status(201).json({message: 'Se ha ocultado la marca', target: brand});
     } catch (error) {
       next(error);
     }
   }
 );
 
-module.exports = router
+module.exports = router;

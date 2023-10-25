@@ -108,6 +108,7 @@ router.patch(
     }
   }
 );
+
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -127,6 +128,7 @@ router.get(
     }
   }
 );
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),

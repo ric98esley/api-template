@@ -2,7 +2,7 @@ const express = require('express');
 const passport = require('passport');
 
 // Middlewares
-const { checkRoles, checkPermissions } = require('../../middlewares/auth.handler');
+const { checkAuth, checkUser } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
 
 // Schemas
@@ -14,6 +14,10 @@ const {
 } = require('../../schemas/group.schema');
 const GroupsService = require('../../services/group.service');
 
+const LogService = require('../../services/log.service');
+const logService = new LogService();
+const { ACTIONS } = require('../../utils/roles');
+
 const router = express.Router();
 
 // service
@@ -23,8 +27,9 @@ const groupService = new GroupsService();
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(searchGroup, 'query'),
-  checkPermissions,
+  checkAuth({ route: 'groups', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const query = req.query;
@@ -40,12 +45,27 @@ router.get(
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(createGroup, 'body'),
+  checkAuth({ route: 'groups', crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
+      const user = req.user;
       const body = req.body;
-      body.createdById = req.user.sub;
+      body.createdById = user.sub;
       const newGroup = await groupService.create(body);
+
+      const details = {
+        message: `Se ha creado creado el grupo ${newGroup.dataValues.name}`,
+      };
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'groups',
+        targetId: newGroup.dataValues.id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
 
       res.status(200).json(newGroup);
     } catch (error) {
@@ -57,13 +77,29 @@ router.post(
 router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getGroup, 'params'),
   validatorHandler(updateGroup, 'body'),
+  checkAuth({ route: 'groups', crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
+      const user = req.user;
       const { id } = req.params;
       const changes = req.body;
       const groupUpdated = await groupService.update({ changes, id });
+
+      const details = {
+        message: `Se ha modificado el grupo`,
+        query: changes,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'groups',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
 
       res.status(201).json(groupUpdated);
     } catch (error) {
@@ -74,13 +110,30 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getGroup, 'params'),
+  checkAuth({ route: 'categories', crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
+      const user = req.user;
       const groupDeleted = await groupService.delete({ id });
 
-      res.status(201).json(groupDeleted);
+      const details = {
+        message: `Se ha ocultado el grupo ${groupDeleted.dataValues.name}`,
+      };
+      await logService.create({
+        type: ACTIONS.DELETE,
+        table: 'groups',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
+      res
+        .status(201)
+        .json({ message: 'Se ha ocultado el grupo', target: groupDeleted });
     } catch (error) {
       next(error);
     }

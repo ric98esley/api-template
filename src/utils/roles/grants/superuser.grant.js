@@ -58,7 +58,35 @@ const grantSuperuser = {
     [ACTIONS.DELETE]: {
       possession: POSSESSION.ANY
     }
-  }
+  },
+  [SCOPE.BRANDS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.GROUPS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
 }
 
 module.exports = {
