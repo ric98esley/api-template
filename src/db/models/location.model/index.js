@@ -5,6 +5,7 @@ const { ZONE_TABLE } = require('./zone.model');
 const { USER_TABLE } = require('../user.model');
 const { LOCATION_TYPE_TABLE } = require('./type.model');
 const { GROUP_TABLE } = require('../group.model');
+const { CUSTOMER_TABLE } = require('../user.model/customer.model');
 
 /**
  * @description description of each field in the table
@@ -92,19 +93,12 @@ const LocationSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  parentId: {
-    field: 'parent_id',
-    allowNull: true,
-    type: DataTypes.INTEGER,
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
-  },
   managerId: {
     allowNull: true,
     type: DataTypes.INTEGER,
     field: 'manager_id',
     references: {
-      model: USER_TABLE,
+      model: CUSTOMER_TABLE,
       key: 'id',
     },
     onUpdate: 'RESTRICT',
@@ -138,9 +132,8 @@ const LocationSchema = {
 class Location extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
-    this.belongsTo(models.User, { as: 'manager', foreignKey: 'managerId' });
+    this.belongsTo(models.Customer, { as: 'manager', foreignKey: 'managerId' });
     this.belongsTo(models.Zone, { as: 'zone', foreignKey: 'zoneId' });
-    this.belongsTo(models.Location, { as: 'parent', foreignKey: 'parentId' });
     this.belongsTo(models.Group, { as: 'group', foreignKey: 'groupId' });
     this.belongsTo(models.LocationType, { as: 'type', foreignKey: 'typeId' });
     this.belongsToMany(models.OrderRecord, {

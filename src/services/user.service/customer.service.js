@@ -17,8 +17,8 @@ class CustomersServices {
     const options = {
       include: [
         {
-          as: 'User',
-          model: models.Customer,
+          as: 'user',
+          model: models.User,
           attributes: ['id', 'username', 'email', 'role', 'createdAt'],
         },
       ],
@@ -30,6 +30,8 @@ class CustomersServices {
           phone,
         }),
       },
+      attributes: ['id', 'name', 'lastName', 'phone', 'cardId', 'createdAt'],
+
     };
     const customer = await models.Customer.findOne(options);
     if (!customer) {
@@ -98,7 +100,7 @@ class CustomersServices {
     return rta;
   }
 
-  async delete(id) {
+  async delete({ id }) {
     const customer = await this.findOne({ id });
     const rta = await customer.destroy();
     return rta;

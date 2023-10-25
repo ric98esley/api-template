@@ -170,7 +170,7 @@ router.delete(
       })
       res.status(202).json({
         message: 'Haz ocultado el usuario',
-        user: user,
+        target: user,
       });
     } catch (error) {
       next(error);

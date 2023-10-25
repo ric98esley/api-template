@@ -6,7 +6,7 @@ const passport = require('passport');
 const AssetsService = require('../../services/asset.service');
 const LogService = require('../../services/log.service');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { checkPermissions, checkUser, checkAuth } = require('../../middlewares/auth.handler');
+const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 
 // import routes
 

@@ -39,7 +39,7 @@ router.get('/google', async (req, res, next) => {
   try {
   } catch (error) {}
 });
-router.post('/sing-up', async (req, res, next) => {
+router.post('/sign-up', async (req, res, next) => {
   try {
     const data = req.body;
     data.isActive = true;

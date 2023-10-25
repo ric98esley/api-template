@@ -44,7 +44,6 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getUserSchema, 'params'),
-  validatorHandler(searchUserSchema, 'params'),
   checkAuth({ route: 'customers', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
@@ -109,7 +108,7 @@ router.patch(
         createdById: user.sub,
       });
 
-      res.json(newCustomer);
+      res.json(updateCustomer);
     } catch (error) {
       next(error);
     }
@@ -133,14 +132,14 @@ router.delete(
         type: ACTIONS.DELETE,
         table: 'customers',
         targetId: id,
-        details: `El cliente ${updateCustomer.dataValues.name} se ha oculto un perfil`,
+        details: `El cliente ${customer.dataValues.name} se ha oculto un perfil`,
         ip: req.ip,
         createdById: user.sub,
       });
 
       res.status(202).json({
         message: 'Haz ocultado el perfil',
-        customer: customer,
+        target: customer,
       });
     } catch (error) {
       next(error);
