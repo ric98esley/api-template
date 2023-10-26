@@ -63,18 +63,20 @@ class AssetsServices {
   async createBulk({ assets, user }) {
     console.log('create bulk');
     const createdById = user.sub;
-
+    console.log(assets);
     const data = assets.map((asset) => {
       return {
         ...asset,
         createdById,
         updatedById: createdById,
         countChecking: 1,
-        specifications: asset.specifications.map((specificaction) => ({
-          ...specificaction,
-          createdById,
-          updatedById: createdById,
-        })),
+        ...(asset.specifications && {
+          specifications: asset.specifications.map((specification) => ({
+            ...specification,
+            createdById,
+            updatedById: createdById,
+          })),
+        }),
       };
     });
 
@@ -122,7 +124,7 @@ class AssetsServices {
     return res;
   }
 
-  async findOne({ id, enabled }) {
+  async findOne({ id, enabled, warehouseId, status, warehouse, groupId }) {
     const options = {
       where: {
         id,
@@ -137,9 +139,35 @@ class AssetsServices {
           attributes: ['id', 'username'],
         },
         {
-          model: models.Warehouse,
-          as: 'warehouse',
-          attributes: ['id', 'name', 'state'],
+          model: models.Location,
+          as: 'location',
+          required: true,
+          attributes: ['id', 'name', 'code', 'typeId'],
+          include: [
+            {
+              model: models.LocationType,
+              as: 'type',
+              attributes: ['id', 'name', 'status'],
+              where: {
+                ...(status && {
+                  status,
+                }),
+              }
+            },
+          ],
+          where: {
+            ...(warehouseId && {
+              id: warehouseId,
+            }),
+            ...(warehouse && {
+              name: {
+                [Op.like]: `%${warehouse}%`,
+              },
+            }),
+            ...(groupId && {
+              groupId,
+            }),
+          },
         },
         {
           model: models.Model,
@@ -302,8 +330,8 @@ class AssetsServices {
             {
               model: models.LocationType,
               as: 'type',
-              attributes: ['id', 'name', 'status']
-            }
+              attributes: ['id', 'name', 'status'],
+            },
           ],
           where: {
             ...(warehouseId && {
@@ -515,7 +543,16 @@ class AssetsServices {
       },
       order: [[sort, order]],
       distinct: true,
-      attributes: ['id', 'serial', 'category', 'model', 'brand', 'code', 'location', 'createdAt'],
+      attributes: [
+        'id',
+        'serial',
+        'category',
+        'model',
+        'brand',
+        'code',
+        'location',
+        'createdAt',
+      ],
     };
 
     const { count, rows } = await models.VAsset.findAndCountAll(options);

@@ -4,7 +4,6 @@ const { createAssetSpecification } = require('../category.schema/specification.s
 const id = Joi.number().integer();
 const serial = Joi.string();
 const modelId = Joi.number().integer();
-const depositId = Joi.number().integer();
 const purchaseCost = Joi.number();
 const deprecationRate = Joi.number();
 const notes = Joi.string().min(10);
@@ -22,7 +21,8 @@ const invoiceDate = Joi.date();
 const createAssetSchema = Joi.object({
   serial: serial.required(),
   modelId: modelId.required(),
-  depositId: depositId.required(),
+  locationId: id.required(),
+  notes,
   purchaseCost,
   deprecationRate,
   specifications: createAssetSpecification,
@@ -40,10 +40,10 @@ const createBulkAssetSchema = Joi.object({
 }).oxor('invoiceId', 'invoice');
 
 const updateAssetSchema = Joi.object({
-  depositId,
+  locationId: id,
   modelId,
   purchaseCost,
-  deprecitionRate: deprecationRate,
+  deprecationRate,
   notes,
 });
 

@@ -107,7 +107,6 @@ router.post(
       for(const asset of newAssets.created ) {
         const details = {
           message: `Se ha creado el activo ${asset.dataValues.serial}`,
-          query: data,
         };
         await logService.create({
           type: ACTIONS.CREATE,
