@@ -3,6 +3,7 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 const { USER_TABLE } = require('../user.model');
 const { MODEL_TABLE } = require('./model.model');
 const { WAREHOUSE_TABLE } = require('../warehouse.model');
+const { LOCATION_TABLE } = require('../location.model');
 
 const ASSET_TABLE = 'assets';
 /**
@@ -42,12 +43,12 @@ const AssetSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  warehouseId: {
+  locationId: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    field: 'warehouse_id',
+    field: 'location_id',
     references: {
-      model: WAREHOUSE_TABLE,
+      model: LOCATION_TABLE,
       key: 'id',
     },
     onUpdate: 'RESTRICT',

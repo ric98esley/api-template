@@ -14,6 +14,8 @@ const LOCATION_TYPE_TABLE = 'location_types';
  * @property {boolean} field - rename the field
  */
 
+const status = ['asignado', 'desplegable', 'pendiente', 'archivado'];
+
 const LocationTypeSchema = {
   id: {
     allowNull: false,
@@ -28,7 +30,15 @@ const LocationTypeSchema = {
     type: DataTypes.STRING(45),
     set(value) {
       this.setDataValue('name', value.trim().toUpperCase());
-    }
+    },
+  },
+  status: {
+    type: DataTypes.STRING(15),
+    allowNull: false,
+    validate: {
+      isIn: [status],
+    },
+    defaultValue: status[1],
   },
   createdById: {
     allowNull: false,
@@ -65,8 +75,8 @@ class LocationType extends Model {
       sequelize,
       tableName: LOCATION_TYPE_TABLE,
       modelName: 'LocationType',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

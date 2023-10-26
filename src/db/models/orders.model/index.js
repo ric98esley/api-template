@@ -16,12 +16,11 @@ const { LOCATION_TABLE } = require('../location.model');
  */
 
 const actionType = [
-  'checkout',
-  'checking',
   'sale',
   'warranty',
   'purchase',
   'request',
+  'borrowing'
 ];
 
 const OrderRecordSchema = {

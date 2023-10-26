@@ -38,10 +38,21 @@ const MovementSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  locationId: {
+  from: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    field: 'location_id',
+    field: 'from',
+    references: {
+      model: LOCATION_TABLE,
+      key: 'id',
+    },
+    onUpdate: 'RESTRICT',
+    onDelete: 'RESTRICT',
+  },
+  to: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+    field: 'to',
     references: {
       model: LOCATION_TABLE,
       key: 'id',
@@ -55,10 +66,10 @@ const MovementSchema = {
     allowNull: false,
     defaultValue: 1
   },
-  isCurrent: {
+  current: {
     allowNull: false,
     type: DataTypes.BOOLEAN,
-    field: 'is_current',
+    field: 'current',
     defaultValue: true,
   },
   orderId: {

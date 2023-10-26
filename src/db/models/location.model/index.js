@@ -18,6 +18,7 @@ const { CUSTOMER_TABLE } = require('../user.model/customer.model');
  * @property {boolean} field - rename the field
  */
 
+
 const LocationSchema = {
   id: {
     allowNull: false,

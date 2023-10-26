@@ -34,12 +34,6 @@ const LocationProductsSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  quantity: {
-    allowNull: false,
-    type: DataTypes.DECIMAL(9,2),
-    allowNull: false,
-    defaultValue: 0
-  },
   locationId: {
     allowNull: false,
     field: 'location_id',
@@ -50,6 +44,12 @@ const LocationProductsSchema = {
     },
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
+  },
+  quantity: {
+    allowNull: false,
+    type: DataTypes.DECIMAL(9,2),
+    allowNull: false,
+    defaultValue: 0
   },
   createdById: {
     allowNull: false,
@@ -65,14 +65,7 @@ const LocationProductsSchema = {
   createdAt: {
     field: 'created_at',
     type: DataTypes.DATE,
-  },
-  updatedAt: {
-    field: 'updated_at',
-    type: DataTypes.DATE,
-  },
-  deletedAt: {
-    field: 'deleted_at',
-    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW
   },
 };
 
@@ -97,8 +90,7 @@ class LocationProducts extends Model {
       sequelize,
       tableName: WAREHOUSE_PRODUCTS_TABLE,
       modelName: 'LocationProducts',
-      timestamps: true,
-paranoid: true
+      timestamps: false,
     };
   }
 }
