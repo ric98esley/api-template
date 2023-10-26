@@ -25,9 +25,6 @@ const router = express.Router();
 const service = new AssetsService();
 const logService = new LogService();
 
-
-
-// router.use('/history', historyRoute);
 router.use('/models', modelRoute);
 
 router.get(

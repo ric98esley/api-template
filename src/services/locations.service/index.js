@@ -25,7 +25,7 @@ class LocationsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'name', 'lastName', 'username'],
+          attributes: ['id', 'username'],
         },
         {
           model: models.Group,
@@ -33,25 +33,23 @@ class LocationsServices {
           attributes: ['id', 'name', 'code'],
         },
         {
-          model: models.User,
+          model: models.Customer,
           as: 'manager',
-          attributes: ['id', 'name', 'lastName', 'username'],
+          attributes: ['id', 'name', 'lastName'],
         },
         {
           model: models.Zone,
           as: 'zone',
+          attributes: ['id', 'name'],
+
         },
-        'type',
+        {
+          model: models.LocationType,
+          as:'type',
+          attributes: ['id', 'name']
+        },
       ],
-      attributes: {
-        exclude: [
-          'createdById',
-          'managerId',
-          'zoneId',
-          'locationParent',
-          'groupId',
-        ],
-      },
+      attributes: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdAt', 'updatedAt', 'deletedAt'],
     };
     const location = await models.Location.findOne(options);
     if (!location) {
@@ -150,18 +148,7 @@ class LocationsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: {
-            exclude: [
-              'password',
-              'phone',
-              'cardId',
-              'createdById',
-              'managerId',
-              'locationId',
-              'address',
-              'createdAt',
-            ],
-          },
+          attributes: ['id', 'username']
         },
         {
           model: models.Group,
@@ -173,38 +160,25 @@ class LocationsServices {
               },
             },
           }),
+          attributes: ['id', 'name', 'code']
         },
         {
-          model: models.User,
+          model: models.Customer,
           as: 'manager',
-          attributes: {
-            exclude: [
-              'password',
-              'phone',
-              'cardId',
-              'createdById',
-              'managerId',
-              'locationId',
-              'address',
-              'createdAt',
-            ],
-          },
+          attributes: ['id', 'name', 'lastName']
         },
         {
           model: models.Zone,
           as: 'zone',
+          attributes: ['id', 'name']
         },
-        'type',
+        {
+          model: models.LocationType,
+          as: 'type',
+          attributes: ['id', 'name', 'status']
+        },
       ],
-      attributes: {
-        exclude: [
-          'createdById',
-          'managerId',
-          'zoneId',
-          'locationParent',
-          'groupId',
-        ],
-      },
+      attributes: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdAt'],
       order: [[sort, order]],
     };
     const { count, rows } = await models.Location.findAndCountAll(options);
