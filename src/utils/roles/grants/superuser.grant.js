@@ -129,6 +129,76 @@ const grantSuperuser = {
       possession: POSSESSION.ANY
     }
   },
+  [SCOPE.LOCATIONS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.LOCATIONS_TYPE]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.ZONES]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.CONSUMABLES]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.ACCESSORIES]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
 }
 
 module.exports = {

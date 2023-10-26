@@ -8,7 +8,13 @@ const SCOPE = {
   MODELS: 'models',
   GROUPS: 'groups',
   ASSETS: 'assets',
-  WAREHOUSES: 'warehouses'
+  WAREHOUSES: 'warehouses',
+  LOCATIONS: 'locations',
+  LOCATIONS_TYPE: 'locations_types',
+  ZONES: 'zones',
+  MODELS: 'models',
+  CONSUMABLES: 'consumables',
+  ACCESSORIES: 'accessories'
 }
 
 module.exports = SCOPE;

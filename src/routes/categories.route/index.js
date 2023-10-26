@@ -30,7 +30,7 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(searchCategory, 'query'),
-  checkAuth({ route: 'categories', crud: 'read' }),
+  checkAuth({ route: 'categories', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const data = req.query
@@ -47,7 +47,7 @@ router.post(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(createCategory, 'body'),
-  checkAuth({ route: 'categories', crud: 'create' }),
+  checkAuth({ route: 'categories', crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const data = req.body;
@@ -73,7 +73,7 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getCategory, 'params'),
-  checkAuth({ route: 'categories', crud: 'read' }),
+  checkAuth({ route: 'categories', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -91,12 +91,12 @@ router.patch(
   checkUser(),
   validatorHandler(getCategory, 'params'),
   validatorHandler(updateCategory, 'body'),
-  checkAuth({ route: 'categories', crud: 'read' }),
+  checkAuth({ route: 'categories', crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
+      const user = req.user;
       const { id } = req.params;
       const data = req.body;
-
 
       const details = {
         message: `Se ha creado modificado la categoría`,
@@ -125,17 +125,18 @@ router.delete(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getCategory, 'params'),
-  checkAuth({ route: 'categories', crud: 'read' }),
+  checkAuth({ route: 'categories', crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      await service.delete(id);
+      const user = req.user;
+      const category = await service.delete(id);
 
       const details = {
         message: `Se ha creado ocultado la categoría`,
       };
       await logService.create({
-        type: ACTIONS.UPDATE,
+        type: ACTIONS.DELETE,
         table: 'categories',
         targetId: id,
         details,
@@ -144,7 +145,8 @@ router.delete(
       });
 
       res.status(202).json({
-        msg: 'category deleted ' + id,
+        message: 'category deleted ' + category.dataValues.name,
+        target: category
       });
     } catch (error) {
       next(error);

@@ -157,22 +157,10 @@ class GroupsService {
               ],
             },
           }),
-          include: [
-            // manager
-            {
-              model: models.User,
-              as: 'manager',
-              attributes: ['id', 'username', 'email'],
-            },
-            // createdBy
-            {
-              model: models.User,
-              as: 'createdBy',
-              attributes: ['id', 'username', 'email'],
-            },
-          ],
+          attributes: ['id', 'code', 'name'],
         },
       ],
+      attributes: ['id', 'code', 'name', 'enabled', 'createdAt'],
       order: [[sort, order]],
     };
 

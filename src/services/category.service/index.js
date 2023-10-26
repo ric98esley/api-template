@@ -99,17 +99,17 @@ class CategoryServices {
           },
           attributes: ['id', 'name', 'createdAt'],
         },
-        {
-          model: models.Brand,
-          as: 'brands',
-          include: {
-            model: models.Model,
-            as: 'models',
-          },
-          through: {
-            attributes: [],
-          },
-        },
+        // {
+        //   model: models.Brand,
+        //   as: 'brands',
+        //   include: {
+        //     model: models.Model,
+        //     as: 'models',
+        //   },
+        //   through: {
+        //     attributes: [],
+        //   },
+        // },
       ],
       distinct: true,
       order: [[sort, order]],
@@ -118,21 +118,21 @@ class CategoryServices {
 
     const { rows, count } = await models.Category.findAndCountAll(options);
 
-    const rowsCopy = JSON.parse(JSON.stringify(rows));
+    // const rowsCopy = JSON.parse(JSON.stringify(rows));
 
-    const filteredRows = rowsCopy.map((row) => {
-      const brands = row.brands.map((brand) => {
-        const models = brand.models.filter(
-          (model) => model.categoryId === row.id
-        );
-        return { ...brand, models };
-      });
-      return { ...row, brands };
-    });
+    // const filteredRows = rowsCopy.map((row) => {
+    //   const brands = row.brands.map((brand) => {
+    //     const models = brand.models.filter(
+    //       (model) => model.categoryId === row.id
+    //     );
+    //     return { ...brand, models };
+    //   });
+    //   return { ...row, brands };
+    // });
 
     return {
       total: count,
-      rows: filteredRows,
+      rows,
     };
   }
 
