@@ -5,8 +5,9 @@ const customerRouter = require('./users.route/customers.route');
 const authRouter = require('./auth.route');
 const categoriesRouter = require('./categories.route');
 const brandsRouter = require('./brands.route');
-const assetsRouter = require('./asset.route');
+const assetsRouter = require('./assets.route');
 const warehouseRouter = require('./warehouse.route');
+const locationRouter = require('./locations.route');
 const groupsRouter = require('./groups.route');
 
 function routerApi(app) {
@@ -19,6 +20,8 @@ function routerApi(app) {
   router.use('/brands', brandsRouter);
   router.use('/assets', assetsRouter);
   router.use('/groups', groupsRouter);
+  router.use('/warehouse', warehouseRouter);
+  router.use('/locations', locationRouter);
 }
 
 module.exports = routerApi;

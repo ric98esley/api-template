@@ -6,7 +6,7 @@ const serial = Joi.string();
 const modelId = Joi.number().integer();
 const depositId = Joi.number().integer();
 const purchaseCost = Joi.number();
-const deprecitionRate = Joi.number();
+const deprecationRate = Joi.number();
 const notes = Joi.string().min(10);
 const limit = Joi.number().integer();
 const offset = Joi.number().integer();
@@ -24,7 +24,7 @@ const createAssetSchema = Joi.object({
   modelId: modelId.required(),
   depositId: depositId.required(),
   purchaseCost,
-  deprecitionRate,
+  deprecationRate,
   specifications: createAssetSpecification,
 });
 
@@ -43,7 +43,7 @@ const updateAssetSchema = Joi.object({
   depositId,
   modelId,
   purchaseCost,
-  deprecitionRate,
+  deprecitionRate: deprecationRate,
   notes,
 });
 

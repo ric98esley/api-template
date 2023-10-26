@@ -25,8 +25,6 @@ const getAssetModel = Joi.object({
 const searchModel = Joi.object({
     id,
     name,
-    categoryId: id,
-    brandId: id,
     category: name,
     brand: name,
     limit,

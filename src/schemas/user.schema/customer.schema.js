@@ -1,11 +1,7 @@
 const Joi = require('joi');
 
 const id = Joi.number().integer();
-const email = Joi.string().email();
-const password = Joi.string().min(8);
-const role = Joi.string();
-const isActive = Joi.boolean();
-const username = Joi.string();
+
 const name = Joi.string();
 const lastName = Joi.string().min(3);
 const phone = Joi.string().max(20).empty('');
@@ -22,6 +18,7 @@ const createCustomerSchema = Joi.object({
   phone,
   cardId: cardId.min(3).max(35),
   address,
+  userId: id
 });
 
 const updateCustomerSchema = Joi.object({
@@ -33,11 +30,14 @@ const updateCustomerSchema = Joi.object({
 });
 
 const searchCustomerSchema = Joi.object({
+  search: toSearch,
   name,
   lastName,
   phone,
   cardId,
   address,
+  limit,
+  offset,
 })
 
 

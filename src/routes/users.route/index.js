@@ -123,7 +123,6 @@ router.patch(
   validatorHandler(getUserSchema, 'params'),
   validatorHandler(updateUserSchema, 'body'),
   checkAuth({route: SCOPE.USERS, crud: ACTIONS.UPDATE}),
-  checkPermissions,
   async (req, res, next) => {
     try {
       const user = req.user;

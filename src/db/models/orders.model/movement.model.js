@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-const MOVEMENT_TABLE = 'MOVEMENT';
+const MOVEMENT_TABLE = 'movements';
 
 const { ASSET_TABLE } = require('../asset.model');
 const { USER_TABLE } = require('../user.model');
