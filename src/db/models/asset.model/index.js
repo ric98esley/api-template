@@ -118,9 +118,9 @@ const AssetSchema = {
 class Asset extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
-    this.belongsTo(models.Warehouse, {
-      as: 'warehouse',
-      foreignKey: 'warehouseId',
+    this.belongsTo(models.Location, {
+      as: 'location',
+      foreignKey: 'locationId',
     });
     this.belongsTo(models.Model, { as: 'model', foreignKey: 'modelId' });
     // this.hasMany(models.Assignment, {

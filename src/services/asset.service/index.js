@@ -294,10 +294,17 @@ class AssetsServices {
           attributes: ['id', 'username'],
         },
         {
-          model: models.Warehouse,
-          as: 'warehouse',
+          model: models.Location,
+          as: 'location',
           required: true,
-          attributes: ['id', 'name', 'state'],
+          attributes: ['id', 'name', 'code', 'typeId'],
+          include: [
+            {
+              model: models.LocationType,
+              as: 'type',
+              attributes: ['id', 'name', 'status']
+            }
+          ],
           where: {
             ...(warehouseId && {
               id: warehouseId,
