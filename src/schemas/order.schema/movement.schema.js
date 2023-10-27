@@ -19,6 +19,7 @@ const getMovementSchema = Joi.object({
 
 const searchMovementSchema = Joi.object({
   paranoid: Joi.boolean(),
+  current: Joi.boolean(),
   all: Joi.boolean(),
   type: toSearch,
   location: toSearch,

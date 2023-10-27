@@ -3,6 +3,9 @@ const passport = require('passport');
 
 const LocationsService = require('../../services/locations.service');
 const LogService = require('../../services/log.service');
+const MovementService = require('../../services/order.service/movement.service');
+
+
 // const AssignmentService = require('../../services/orders.service/assignments.service');
 
 const validatorHandler = require('../../middlewares/validator.handler');
@@ -19,9 +22,11 @@ const {
 const zoneRouter = require('./zones.route');
 const locationType = require('./types.route');
 const { SCOPE, ACTIONS } = require('../../utils/roles');
+const { searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
 // const { searchAssignmentSchema } = require('../../schemas/orders.schema');
 
 const router = express.Router();
+const movementService = new MovementService();
 const locationService = new LocationsService();
 const logService = new LogService()
 // const assignmentsService = new AssignmentService();
@@ -168,39 +173,15 @@ router.get(
   '/:id/assets',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(searchLocationSchema, 'query'),
+  validatorHandler(searchMovementSchema, 'query'),
   checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
       const toSearch = req.query;
       toSearch.locationId = id;
-      toSearch.include = false;
       try {
-        let assets = await assignmentsService.find2(toSearch);
-        res.json(assets);
-      } catch (error) {
-        next(error);
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-router.get(
-  '/:id/assets/last',
-  passport.authenticate('jwt', { session: false }),
-  checkUser(),
-  // validatorHandler(searchAssignmentSchema, 'query'),
-  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.READ }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const toSearch = req.query;
-      toSearch.locationId = id;
-      toSearch.include = false;
-      try {
-        let assets = await assignmentsService.find2(toSearch);
+        let assets = await movementService.find(toSearch);
         res.json(assets);
       } catch (error) {
         next(error);

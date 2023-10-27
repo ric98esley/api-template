@@ -1,7 +1,7 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 
 class OrderRecordService {
   constructor() {}
@@ -116,31 +116,40 @@ class OrderRecordService {
             {
               model: models.LocationType,
               as: 'type',
-              attributes: ['id', 'name']
+              attributes: ['id', 'name'],
             },
             {
               model: models.Zone,
               as: 'zone',
-              attributes: ['id', 'name']
+              attributes: ['id', 'name'],
             },
             {
               model: models.Customer,
-              as: 'manager'
-            }
-          ]
+              as: 'manager',
+            },
+          ],
         },
       ],
+      distinct: true,
       order: [[sort, order]],
       attributes: [
         'id',
         'type',
+        [fn('COUNT', col('OrderRecord.id')), 'count'],
         'description',
         'delivered',
         'closed',
         'createdAt',
       ],
     };
-    const { count, rows } = await models.OrderRecord.findAndCountAll(options);
+    const count = await models.OrderRecord.count(options);
+    options.include.push(        {
+      model: models.Movement,
+      as: 'movements',
+      attributes: [],
+    })
+    options.group = ['OrderRecord.id']
+    const rows = await models.OrderRecord.findAll(options);
     return {
       total: count,
       rows,
@@ -190,7 +199,7 @@ class OrderRecordService {
               model: models.Zone,
               as: 'zone',
               attributes: ['id', 'name'],
-            }
+            },
           ],
           attributes: [
             'id',
@@ -202,12 +211,19 @@ class OrderRecordService {
             'address',
           ],
         },
+        {
+          model: models.Movement,
+          as: 'movements',
+          attributes: []
+        },
       ],
+      group: ['OrderRecord.id'],
       attributes: [
         'id',
         'type',
         'description',
         'content',
+        [fn('COUNT', col('OrderRecord.id')), 'count'],
         'delivered',
         'closed',
         'createdAt',

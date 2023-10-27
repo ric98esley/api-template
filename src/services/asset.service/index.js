@@ -60,13 +60,14 @@ class AssetsServices {
     };
   }
 
-  async createBulk({ assets, user }) {
+  async createBulk({ assets, locationId, user }) {
     console.log('create bulk');
     const createdById = user.sub;
     console.log(assets);
     const data = assets.map((asset) => {
       return {
         ...asset,
+        locationId,
         createdById,
         updatedById: createdById,
         countChecking: 1,

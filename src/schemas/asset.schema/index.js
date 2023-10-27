@@ -6,7 +6,9 @@ const serial = Joi.string();
 const modelId = Joi.number().integer();
 const purchaseCost = Joi.number();
 const deprecationRate = Joi.number();
-const notes = Joi.string().min(10);
+const notes = Joi.string();
+const description = Joi.string();
+const content = Joi.string();
 const limit = Joi.number().integer();
 const offset = Joi.number().integer();
 const toSearch = Joi.string();
@@ -21,7 +23,6 @@ const invoiceDate = Joi.date();
 const createAssetSchema = Joi.object({
   serial: serial.required(),
   modelId: modelId.required(),
-  locationId: id.required(),
   notes,
   purchaseCost,
   deprecationRate,
@@ -30,7 +31,11 @@ const createAssetSchema = Joi.object({
 
 const createBulkAssetSchema = Joi.object({
   assets: Joi.array().items(createAssetSchema.required()).required(),
+  description: description.required(),
+  notes,
+  content,
   invoiceId: id,
+  locationId: id.required(),
   invoice: Joi.object({
     code: code.required().min(2),
     providerId: id.required(),

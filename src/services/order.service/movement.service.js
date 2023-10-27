@@ -7,6 +7,7 @@ class MovementService {
   async find({
     paranoid,
     all,
+    current,
     location,
     group,
     serial,
@@ -25,6 +26,9 @@ class MovementService {
     orderId,
   }) {
     const where = {
+      ...(!all && {
+        current: current === 'true' ? true : false
+      }),
       ...(toId && {
         toId,
       }),
