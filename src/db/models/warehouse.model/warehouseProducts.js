@@ -87,10 +87,6 @@ class WarehouseProducts extends Model {
       as: 'createdBy',
       foreignKey: 'createdById'
     })
-    this.belongsTo(models.Deposit,{
-      as: 'deposit',
-      foreignKey: 'depositId'
-    })
     this.belongsTo(models.Product, {
       as: 'product',
       foreignKey: 'productId'

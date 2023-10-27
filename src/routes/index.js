@@ -9,6 +9,8 @@ const assetsRouter = require('./assets.route');
 const warehouseRouter = require('./warehouse.route');
 const locationRouter = require('./locations.route');
 const groupsRouter = require('./groups.route');
+const orderRouter = require('./orders.route');
+const movementsRouter = require('./orders.route/movements.route');
 
 function routerApi(app) {
   const router = express.Router();
@@ -20,8 +22,10 @@ function routerApi(app) {
   router.use('/brands', brandsRouter);
   router.use('/assets', assetsRouter);
   router.use('/groups', groupsRouter);
-  router.use('/warehouse', warehouseRouter);
+  router.use('/warehouses', warehouseRouter);
   router.use('/locations', locationRouter);
+  router.use('/orders', orderRouter);
+  router.use('/movements', movementsRouter);
 }
 
 module.exports = routerApi;

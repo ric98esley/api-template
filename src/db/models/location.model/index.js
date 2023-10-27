@@ -18,7 +18,6 @@ const { CUSTOMER_TABLE } = require('../user.model/customer.model');
  * @property {boolean} field - rename the field
  */
 
-
 const LocationSchema = {
   id: {
     allowNull: false,
@@ -137,11 +136,6 @@ class Location extends Model {
     this.belongsTo(models.Zone, { as: 'zone', foreignKey: 'zoneId' });
     this.belongsTo(models.Group, { as: 'group', foreignKey: 'groupId' });
     this.belongsTo(models.LocationType, { as: 'type', foreignKey: 'typeId' });
-    this.belongsToMany(models.OrderRecord, {
-      through: models.Movement,
-      as: 'records',
-      foreignKey: 'locationId',
-    });
   }
 
   static config(sequelize) {
@@ -149,8 +143,8 @@ class Location extends Model {
       sequelize,
       tableName: LOCATION_TABLE,
       modelName: 'Location',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

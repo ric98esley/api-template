@@ -38,10 +38,10 @@ const MovementSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  from: {
+  fromId: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    field: 'from',
+    field: 'from_id',
     references: {
       model: LOCATION_TABLE,
       key: 'id',
@@ -49,10 +49,10 @@ const MovementSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  to: {
+  toId: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    field: 'to',
+    field: 'to_id',
     references: {
       model: LOCATION_TABLE,
       key: 'id',
@@ -62,9 +62,9 @@ const MovementSchema = {
   },
   quantity: {
     allowNull: false,
-    type: DataTypes.DECIMAL(9,2),
+    type: DataTypes.DECIMAL(9, 2),
     allowNull: false,
-    defaultValue: 1
+    defaultValue: 1,
   },
   current: {
     allowNull: false,
@@ -116,14 +116,17 @@ class Movement extends Model {
       as: 'asset',
       foreignKey: 'assetId',
     });
-
     this.belongsTo(models.Location, {
-      as: 'location',
-      foreignKey: 'locationId',
+      as: 'from',
+      foreignKey: 'fromId',
+    });
+    this.belongsTo(models.Location, {
+      as: 'to',
+      foreignKey: 'toId',
     });
     this.belongsTo(models.OrderRecord, {
-      as: 'orders',
-      foreignKey: '',
+      as: 'order',
+      foreignKey: 'orderId',
     });
   }
   static config(sequelize) {
@@ -131,8 +134,8 @@ class Movement extends Model {
       sequelize,
       tableName: MOVEMENT_TABLE,
       modelName: 'Movement',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

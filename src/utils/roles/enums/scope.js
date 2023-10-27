@@ -14,7 +14,9 @@ const SCOPE = {
   ZONES: 'zones',
   MODELS: 'models',
   CONSUMABLES: 'consumables',
-  ACCESSORIES: 'accessories'
+  ACCESSORIES: 'accessories',
+  ORDERS: 'orders',
+  MOVEMENTS: 'movements',
 }
 
 module.exports = SCOPE;

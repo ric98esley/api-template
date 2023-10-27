@@ -15,13 +15,7 @@ const { LOCATION_TABLE } = require('../location.model');
  * @property {boolean} field - rename the field
  */
 
-const actionType = [
-  'sale',
-  'warranty',
-  'purchase',
-  'request',
-  'borrowing'
-];
+const actionType = ['sale', 'warranty', 'purchase', 'request', 'borrowing', 'checking'];
 
 const OrderRecordSchema = {
   id: {
@@ -119,10 +113,8 @@ class OrderRecord extends Model {
       foreignKey: 'locationId',
       constraints: false,
     });
-    this.belongsToMany(models.Assignment, {
-      as: 'assignments',
-      through: models.OrdersAssignments,
-      otherKey: 'assignmentId',
+    this.hasMany(models.Movement, {
+      as: 'movements',
       foreignKey: 'orderId',
     });
   }
@@ -132,8 +124,8 @@ class OrderRecord extends Model {
       sequelize,
       tableName: ORDERS_RECORDS_TABLE,
       modelName: 'OrderRecord',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

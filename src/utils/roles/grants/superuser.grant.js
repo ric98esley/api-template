@@ -199,6 +199,40 @@ const grantSuperuser = {
       possession: POSSESSION.ANY
     }
   },
+  [SCOPE.ORDERS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    },
+    [ACTIONS.CHECKING]: {
+      possession: POSSESSION.ANY
+    },
+    [ACTIONS.CHECKOUT]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.MOVEMENTS]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
 }
 
 module.exports = {

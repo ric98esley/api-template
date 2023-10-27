@@ -63,6 +63,9 @@ function setupModels(sequelize) {
   LocationType.associate(sequelize.models);
   Location.associate(sequelize.models);
 
+  OrderRecord.associate(sequelize.models);
+  Movement.associate(sequelize.models);
+
   // HOOKS
 
   User.addHook('beforeUpdate', async (options) => {

@@ -123,10 +123,6 @@ class Asset extends Model {
       foreignKey: 'locationId',
     });
     this.belongsTo(models.Model, { as: 'model', foreignKey: 'modelId' });
-    // this.hasMany(models.Assignment, {
-    //   as: 'assignments',
-    //   foreignKey: 'targetId',
-    // });
     this.hasMany(models.AssetSpec, {
       as: 'specifications',
       foreignKey: 'assetId',

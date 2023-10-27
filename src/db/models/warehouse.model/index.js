@@ -80,8 +80,7 @@ class Warehouse extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
     this.belongsTo(models.Group, { as: 'group' , foreignKey: 'groupId'});
-    // this.belongsToMany(models.Movement, { through: models.WarehouseProducts, foreignKey: 'depositId'});
-    this.hasMany(models.Asset, { as: 'assets', foreignKey: 'depositId'});
+    // this.hasMany(models.Asset, { as: 'assets', foreignKey: 'locationId'});
   }
 
 

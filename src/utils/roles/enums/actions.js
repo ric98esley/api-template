@@ -3,7 +3,9 @@ const ACTIONS = {
   READ: 'read',
   UPDATE: 'update',
   DELETE: 'delete',
-  RECOVERY: 'recovery'
+  RECOVERY: 'recovery',
+  CHECKING: 'checking',
+  CHECKOUT: 'checkout',
 }
 
 module.exports = ACTIONS;
