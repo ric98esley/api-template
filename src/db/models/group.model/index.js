@@ -1,6 +1,6 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const GROUP_TABLE = 'groups';
+const GROUP_TABLE = 'groups_t';
 
 const { USER_TABLE } = require('../user.model');
 /**

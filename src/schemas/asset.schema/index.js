@@ -60,6 +60,7 @@ const searchAsset = Joi.object({
   order: toSearch.valid('ASC', 'DESC'),
   all: Joi.boolean(),
   enabled: Joi.boolean(),
+  type: toSearch,
   // status, model, brand, category will be to string to search matches
   status: toSearch,
   deposit: toSearch,

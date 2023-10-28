@@ -19,6 +19,7 @@ const { Movement, MovementSchema } = require('./orders.model/movement.model');
 const { Location, LocationSchema } = require('./location.model');
 const { Zone, ZoneSchema } = require('./location.model/zone.model');
 const { LocationType, LocationTypeSchema } = require('./location.model/type.model');
+const { VAsset, VAssetSchema } = require('./asset.model/v_asset.model');
 
 function setupModels(sequelize) {
 
@@ -43,6 +44,8 @@ function setupModels(sequelize) {
 
   OrderRecord.init(OrderRecordSchema, OrderRecord.config(sequelize));
   Movement.init(MovementSchema, Movement.config(sequelize));
+
+  VAsset.init(VAssetSchema, VAsset.config(sequelize))
 
   // INICIALIZA ASOCIACIONES
 

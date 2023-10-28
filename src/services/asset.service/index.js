@@ -95,36 +95,6 @@ class AssetsServices {
     };
   }
 
-  async findAssigments({ id, limit = 10, offset = 0 }) {
-    const target = await this.findOne({ id });
-    const assignments = await assignmentsService.findAssignmentTo({
-      targetId: id,
-      limit: Number(limit),
-      offset: Number(offset),
-      all: true,
-    });
-    const res = {
-      target,
-      assignments,
-    };
-    return res;
-  }
-
-  async findAssigned({ id, limit = 10, offset = 0, isCurrent }) {
-    const target = await this.findOne({ id });
-    const assigned = await assignmentsService.findAssignmentTo({
-      assetId: id,
-      limit: Number(limit),
-      offset: Number(offset),
-      isCurrent,
-    });
-    const res = {
-      target,
-      assigned,
-    };
-    return res;
-  }
-
   async findOne({ id, enabled, status, groupId }) {
     const options = {
       where: {
@@ -142,7 +112,6 @@ class AssetsServices {
         {
           model: models.Location,
           as: 'location',
-          required: true,
           attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
           include: [
             {
@@ -156,7 +125,7 @@ class AssetsServices {
               },
             },
             {
-              model: models.group,
+              model: models.Group,
               as: 'group',
               attributes: ['id', 'name'],
             },
@@ -175,13 +144,11 @@ class AssetsServices {
             {
               model: models.Category,
               as: 'category',
-              required: true,
               attributes: ['id', 'name'],
             },
             {
               model: models.Brand,
               as: 'brand',
-              required: true,
               attributes: ['id', 'name'],
             },
           ],
@@ -223,16 +190,15 @@ class AssetsServices {
     offset = 0,
     sort = 'createdAt',
     order = 'DESC',
+    type,
     enabled,
     groupId,
     invoiceId,
-    warehouse,
     status,
     all,
     model,
     brand,
     category,
-    warehouseId,
     modelId,
     categoryId,
     brandId,
@@ -285,7 +251,7 @@ class AssetsServices {
               attributes: ['id', 'name', 'status'],
               ...(status && {
                 where: {
-                  state: status,
+                  status,
                 },
               }),
             },
@@ -323,17 +289,17 @@ class AssetsServices {
               required: true,
               attributes: ['id', 'name'],
               where: {
-                ...(!modelId &&
-                  categoryId && {
-                    id: categoryId,
-                  }),
-                ...(!modelId &&
-                  categoryId &&
-                  category && {
-                    name: {
-                      [Op.like]: `%${category}%`,
-                    },
-                  }),
+                ...(categoryId && {
+                  id: categoryId,
+                }),
+                ...(type && {
+                  type,
+                }),
+                ...(category && {
+                  name: {
+                    [Op.like]: `%${category}%`,
+                  },
+                }),
               },
             },
             {
@@ -393,18 +359,20 @@ class AssetsServices {
   }
   async vFind({
     serial,
-    limit = 10,
-    offset = 0,
-    sort = 'createdAt',
-    order = 'DESC',
-    groupId,
-    warehouse,
+    location,
+    type,
+    group,
     status,
     model,
     brand,
     category,
     startDate,
     endDate,
+    groupId,
+    limit = 10,
+    offset = 0,
+    sort = 'createdAt',
+    order = 'DESC',
   }) {
     const options = {
       limit: Number(limit),
@@ -415,6 +383,12 @@ class AssetsServices {
             [Op.like]: `%${serial}%`,
           },
         }),
+        ...(type && {
+          type,
+        }),
+        ...(status && {
+          status,
+        }),
         ...(startDate &&
           endDate && {
             createdAt: {
@@ -424,13 +398,33 @@ class AssetsServices {
               ],
             },
           }),
-        ...(status && {
-          state: status,
+        ...(location && {
+          [Op.or]: [
+            {
+              locationCode: {
+                [Op.like]: `%${location}%`,
+              },
+            },
+            {
+              location: {
+                [Op.like]: `%${location}%`,
+              },
+            },
+          ],
         }),
-        ...(warehouse && {
-          warehouse: {
-            [Op.like]: `%${warehouse}%`,
-          },
+        ...(group && {
+          [Op.or]: [
+            {
+              groupCode: {
+                [Op.like]: `%${group}%`,
+              },
+            },
+            {
+              group: {
+                [Op.like]: `%${group}%`,
+              },
+            },
+          ],
         }),
         ...(groupId && {
           groupId,
@@ -459,8 +453,10 @@ class AssetsServices {
         'category',
         'model',
         'brand',
-        'code',
+        'locationCode',
         'location',
+        'groupCode',
+        'status',
         'createdAt',
       ],
     };

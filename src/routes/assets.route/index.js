@@ -8,8 +8,6 @@ const LogService = require('../../services/log.service');
 const MovementService = require('../../services/order.service/movement.service');
 const OrderRecordService = require('../../services/order.service');
 
-
-
 const validatorHandler = require('../../middlewares/validator.handler');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 
@@ -25,14 +23,15 @@ const {
 } = require('../../schemas/asset.schema');
 const { generateExcel } = require('../../helpers/toExcel.helper');
 const { ACTIONS } = require('../../utils/roles');
-const { searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
+const {
+  searchMovementSchema,
+} = require('../../schemas/order.schema/movement.schema');
 
 const router = express.Router();
 const service = new AssetsService();
 const logService = new LogService();
 const orderService = new OrderRecordService();
 const movementService = new MovementService();
-
 
 router.use('/models', modelRoute);
 
@@ -62,14 +61,26 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
+      query.type = 'asset'
 
       const assets = await service.vFind(query);
 
       const workbook = await generateExcel({
         name: 'Activos',
-        headingColumnNames: ['id', 'Serial', 'Categoría', 'modelo', 'marca', 'Código de agencia', 'fecha'],
+        headingColumnNames: [
+          'id',
+          'Serial',
+          'Categoría',
+          'modelo',
+          'marca',
+          'Código de agencia',
+          'Nombre agencia',
+          'Grupo',
+          'Status',
+          'fecha',
+        ],
         data: assets.rows,
-        res
+        res,
       });
 
       return workbook.xlsx.write(res).then(function () {
@@ -112,19 +123,19 @@ router.post(
 
       const user = req.user;
 
-      const targets = []
+      const targets = [];
 
-      const newAssets = await service.createBulk({ assets, locationId ,user });
+      const newAssets = await service.createBulk({ assets, locationId, user });
 
-      for(const asset of newAssets.created ) {
+      for (const asset of newAssets.created) {
         const details = {
           message: `Se ha creado el activo ${asset.dataValues.serial}`,
         };
 
         targets.push({
-          quantity: "1",
-          assetId: asset.dataValues.id
-        })
+          quantity: '1',
+          assetId: asset.dataValues.id,
+        });
 
         await logService.create({
           type: ACTIONS.CREATE,
@@ -132,7 +143,7 @@ router.post(
           targetId: asset.dataValues.id,
           details,
           ip: req.ip,
-          createdById: user.sub
+          createdById: user.sub,
         });
       }
       const data = {
@@ -142,8 +153,8 @@ router.post(
         description,
         notes,
         content,
-        createdById: user.sub
-      }
+        createdById: user.sub,
+      };
 
       const order = await orderService.createAssignments(data);
 
@@ -179,7 +190,7 @@ router.patch(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.json(asset);
     } catch (error) {
@@ -210,12 +221,12 @@ router.delete(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
 
       res.status(202).json({
         message: 'Has ocultado ' + asset.serial,
-        target: asset
+        target: asset,
       });
     } catch (error) {
       next(error);
@@ -227,7 +238,7 @@ router.get(
   '/:id/movements',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(searchMovementSchema, 'query'),  
+  validatorHandler(searchMovementSchema, 'query'),
   validatorHandler(getAssetSchema, 'params'),
   checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
@@ -245,6 +256,5 @@ router.get(
     }
   }
 );
-
 
 module.exports = router;
