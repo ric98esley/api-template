@@ -95,7 +95,7 @@ class AssetsServices {
     };
   }
 
-  async findOne({ id, enabled, status, groupId }) {
+  async findOne({ id, enabled, status, groupId, type }) {
     const options = {
       where: {
         id,
@@ -139,12 +139,19 @@ class AssetsServices {
         {
           model: models.Model,
           as: 'model',
+          required: true,
           attributes: ['id', 'name'],
           include: [
             {
               model: models.Category,
               as: 'category',
-              attributes: ['id', 'name'],
+              required: true,
+              attributes: ['id', 'name', 'type'],
+              where: {
+                ...(type && {
+                  type
+                })
+              }
             },
             {
               model: models.Brand,

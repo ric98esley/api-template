@@ -43,6 +43,8 @@ router.get(
   checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
     const toSearch = req.query;
+    toSearch.type = 'asset'
+
     try {
       const assets = await service.find(toSearch);
       res.json(assets);
@@ -103,6 +105,7 @@ router.get(
       const { id } = req.params;
       const asset = await service.findOne({
         id,
+        type: 'asset'
       });
       res.json(asset);
     } catch (error) {
