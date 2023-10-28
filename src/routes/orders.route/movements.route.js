@@ -9,9 +9,11 @@ const LogService = require('../../services/log.service');
 const MovementService = require('../../services/order.service/movement.service');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
+const {
+  searchMovementSchema,
+} = require('../../schemas/order.schema/movement.schema');
 const logService = new LogService();
-const movementService = new MovementService()
+const movementService = new MovementService();
 
 router.get(
   '/',
@@ -21,14 +23,15 @@ router.get(
   checkAuth({ route: SCOPE.MOVEMENTS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const query = req.query
+      const query = req.query;
+      query.all = true;
       const movements = await movementService.find(query);
 
-      res.json(movements)
+      res.json(movements);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 );
 
-module.exports = router
+module.exports = router;

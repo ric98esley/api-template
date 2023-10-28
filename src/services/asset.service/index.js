@@ -125,7 +125,7 @@ class AssetsServices {
     return res;
   }
 
-  async findOne({ id, enabled, warehouseId, status, warehouse, groupId }) {
+  async findOne({ id, enabled, status, groupId }) {
     const options = {
       where: {
         id,
@@ -143,7 +143,7 @@ class AssetsServices {
           model: models.Location,
           as: 'location',
           required: true,
-          attributes: ['id', 'name', 'code', 'typeId'],
+          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
           include: [
             {
               model: models.LocationType,
@@ -153,18 +153,15 @@ class AssetsServices {
                 ...(status && {
                   status,
                 }),
-              }
+              },
+            },
+            {
+              model: models.group,
+              as: 'group',
+              attributes: ['id', 'name'],
             },
           ],
           where: {
-            ...(warehouseId && {
-              id: warehouseId,
-            }),
-            ...(warehouse && {
-              name: {
-                [Op.like]: `%${warehouse}%`,
-              },
-            }),
             ...(groupId && {
               groupId,
             }),
@@ -189,52 +186,6 @@ class AssetsServices {
             },
           ],
         },
-        // {
-        //   model: models.Assignment,
-        //   as: 'assignment',
-        //   where: {
-        //     isCurrent: true,
-        //   },
-        //   required: false,
-        //   include: [
-        //     {
-        //       model: models.User,
-        //       as: 'checkoutBy',
-        //       attributes: ['id', 'name', 'lastName', 'username'],
-        //     },
-        //     {
-        //       model: models.Location,
-        //       as: 'location',
-        //       include: [
-        //         {
-        //           model: models.Group,
-        //           as: 'group',
-        //           attributes: ['id', 'name', 'code'],
-        //         },
-        //         {
-        //           model: models.User,
-        //           as: 'manager',
-        //           attributes: ['id', 'name', 'lastName', 'username', 'phone'],
-        //         },
-        //         {
-        //           model: models.LocationType,
-        //           as: 'type',
-        //           attributes: ['id', 'name'],
-        //         },
-        //       ],
-        //       attributes: [
-        //         'id',
-        //         'code',
-        //         'name',
-        //         'isActive',
-        //         'phone',
-        //         'rif',
-        //         'address',
-        //       ],
-        //     },
-        //   ],
-        //   attributes: ['id', 'checkingAt', 'checkoutAt', 'isCurrent'],
-        // },
         {
           model: models.AssetSpec,
           as: 'specifications',
@@ -326,26 +277,25 @@ class AssetsServices {
           model: models.Location,
           as: 'location',
           required: true,
-          attributes: ['id', 'name', 'code', 'typeId'],
+          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
           include: [
             {
               model: models.LocationType,
               as: 'type',
               attributes: ['id', 'name', 'status'],
+              ...(status && {
+                where: {
+                  state: status,
+                },
+              }),
+            },
+            {
+              model: models.Group,
+              as: 'group',
+              attributes: ['id', 'code', 'name'],
             },
           ],
           where: {
-            ...(warehouseId && {
-              id: warehouseId,
-            }),
-            ...(status && {
-              state: status,
-            }),
-            ...(warehouse && {
-              name: {
-                [Op.like]: `%${warehouse}%`,
-              },
-            }),
             ...(groupId && {
               groupId,
             }),
@@ -409,47 +359,6 @@ class AssetsServices {
           ],
           attributes: ['id', 'name'],
         },
-        // {
-        //   model: models.Assignment,
-        //   as: 'assignment',
-        //   required: false,
-        //   where: {
-        //     isCurrent: {
-        //       [Op.is]: true,
-        //     },
-        //   },
-        //   include: [
-        //     {
-        //       model: models.User,
-        //       as: 'checkoutBy',
-        //       attributes: ['id', 'name', 'lastName', 'username'],
-        //     },
-        //     {
-        //       model: models.Asset,
-        //       as: 'asset',
-        //       include: [
-        //         {
-        //           model: models.Model,
-        //           as: 'model',
-        //           attributes: {
-        //             exclude: ['createdById', 'createdAt', 'categoryId'],
-        //           },
-        //           include: ['category', 'brand'],
-        //         },
-        //       ],
-        //     },
-        //     {
-        //       model: models.Location,
-        //       as: 'location',
-        //     },
-        //     {
-        //       model: models.User,
-        //       as: 'user',
-        //       attributes: ['id', 'name', 'lastName', 'username', 'phone'],
-        //     },
-        //   ],
-        //   attributes: ['id', 'assignmentType', 'checkingAt', 'checkoutAt'],
-        // },
         {
           model: models.AssetSpec,
           as: 'specifications',

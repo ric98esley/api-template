@@ -21,19 +21,24 @@ class MovementService {
     startDate,
     endDate,
     groupId,
+    assetId,
     fromId,
     toId,
     orderId,
   }) {
+    console.log(all)
     const where = {
       ...(!all && {
-        current: current === 'true' ? true : false
+        current: current === 'true' ? true : false,
       }),
       ...(toId && {
         toId,
       }),
       ...(fromId && {
         fromId,
+      }),
+      ...(assetId && {
+        assetId,
       }),
       ...(orderId && {
         orderId,
@@ -53,59 +58,61 @@ class MovementService {
       ...(paranoid && {
         paranoid: false,
       }),
-      limit,
-      offset,
+      limit: Number(limit),
+      offset: Number(offset),
       where,
       include: [
         {
           model: models.Asset,
           as: 'asset',
-          where: {
-            ...(serial && {
-              [Op.like]: `%${serial}`
-            })
-          },
+          ...(serial && {
+            where: {
+              serial: {
+                [Op.like]: `%${serial}%`,
+              },
+            },
+          }),
           attributes: ['id', 'serial'],
           include: [
             {
               model: models.Model,
               as: 'model',
-              attributes: ['id','name'],
+              attributes: ['id', 'name'],
               ...(model && {
                 where: {
                   name: {
-                    [Op.like]: `%${model}%`
-                  }
-                }
+                    [Op.like]: `%${model}%`,
+                  },
+                },
               }),
               include: [
                 {
                   model: models.Category,
                   as: 'category',
-                  attributes: ['id','name'],
+                  attributes: ['id', 'name'],
                   ...(category && {
                     where: {
                       name: {
-                        [Op.like]: `%${category}%`
-                      }
-                    }
+                        [Op.like]: `%${category}%`,
+                      },
+                    },
                   }),
                 },
                 {
                   model: models.Brand,
                   as: 'brand',
-                  attributes: ['id','name'],
+                  attributes: ['id', 'name'],
                   ...(brand && {
                     where: {
                       name: {
-                        [Op.like]: `%${brand}%`
-                      }
-                    }
+                        [Op.like]: `%${brand}%`,
+                      },
+                    },
                   }),
-                }
-              ]
+                },
+              ],
             },
-          ]
+          ],
         },
         {
           model: models.OrderRecord,
@@ -115,12 +122,13 @@ class MovementService {
         {
           model: models.Location,
           as: 'from',
+          required: false,
           attributes: ['id', 'code', 'name', 'phone'],
           where: {
             ...(group && {
               group: {
-                [Op.like]: `%${group}%`
-              }
+                [Op.like]: `%${group}%`,
+              },
             }),
             ...(groupId && {
               groupId,
@@ -129,31 +137,32 @@ class MovementService {
               [Op.or]: [
                 {
                   code: {
-                    [Op.like]: `%${location}%`
-                  }
+                    [Op.like]: `%${location}%`,
+                  },
                 },
                 {
                   name: {
-                    [Op.like]: `%${location}%`
-                  }
+                    [Op.like]: `%${location}%`,
+                  },
                 },
                 {
                   rif: {
-                    [Op.like]: `%${location}%`
-                  }
+                    [Op.like]: `%${location}%`,
+                  },
                 },
                 {
                   phone: {
-                    [Op.like]: `%${location}%`
-                  }
+                    [Op.like]: `%${location}%`,
+                  },
                 },
-              ]
-            })
+              ],
+            }),
           },
         },
         {
           model: models.Location,
           as: 'to',
+          required: false,
           attributes: ['id', 'code', 'name', 'phone'],
         },
       ],

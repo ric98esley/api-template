@@ -5,6 +5,7 @@ const passport = require('passport');
 
 const AssetsService = require('../../services/asset.service');
 const LogService = require('../../services/log.service');
+const MovementService = require('../../services/order.service/movement.service');
 const OrderRecordService = require('../../services/order.service');
 
 
@@ -24,11 +25,14 @@ const {
 } = require('../../schemas/asset.schema');
 const { generateExcel } = require('../../helpers/toExcel.helper');
 const { ACTIONS } = require('../../utils/roles');
+const { searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
 
 const router = express.Router();
 const service = new AssetsService();
 const logService = new LogService();
 const orderService = new OrderRecordService();
+const movementService = new MovementService();
+
 
 router.use('/models', modelRoute);
 
@@ -187,7 +191,9 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
   validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: 'assets', crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -218,43 +224,22 @@ router.delete(
 );
 
 router.get(
-  '/:id/assets',
+  '/:id/movements',
   passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(searchMovementSchema, 'query'),  
   validatorHandler(getAssetSchema, 'params'),
-  validatorHandler(searchAsset, 'query'),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-
-      const { limit, offset } = req.query;
-
-      const assigned = await service.findAssigned({ id, limit: Number(limit), offset: Number(offset) });
-      res.json(assigned);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.get(
-  '/:id/assignments',
-  passport.authenticate('jwt', { session: false }),
-
-  validatorHandler(getAssetSchema, 'params'),
-  validatorHandler(searchAsset, 'query'),
+  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
       const toSearch = req.query;
-      toSearch.targetId = id;
-      toSearch.include = true;
+      toSearch.assetId = id;
       toSearch.all = true;
 
-      let assignments = await assignmentsService.find2(toSearch);
+      let movements = await movementService.find(toSearch);
 
-
-      // const assignments = await service.findAssigments({ id, limit: Number(limit), offset: Number(offset) });
-      res.json(assignments);
+      res.json(movements);
     } catch (error) {
       next(error);
     }

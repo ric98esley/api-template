@@ -24,8 +24,8 @@ class OrderRecordService {
       movements.push({
         assetId: target.assetId,
         quantity: 1,
-        to: locationId,
-        from: asset.dataValues.locationId,
+        toId: locationId,
+        fromId: asset.dataValues.locationId,
         createdById,
       });
     }
@@ -49,6 +49,8 @@ class OrderRecordService {
       createdById,
       movements,
     };
+
+    console.log(toCreate)
 
     const newRecord = await models.OrderRecord.create(toCreate, {
       include: ['movements'],
@@ -74,12 +76,12 @@ class OrderRecordService {
     locationId,
     sort = 'createdAt',
     order = 'DESC',
-    limit,
-    offset,
     startDate,
     endDate,
     type,
     description,
+    limit = 10,
+    offset = 0
   }) {
     const where = {
       ...(locationId && {
@@ -141,6 +143,8 @@ class OrderRecordService {
         'closed',
         'createdAt',
       ],
+      limit: Number(limit),
+      offset: Number(offset)
     };
     const count = await models.OrderRecord.count(options);
     options.include.push(        {
