@@ -61,7 +61,8 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const movements = await movementService.find({orderId: id});
+
+      const movements = await movementService.find({orderId: id, all: true});
 
       res.json(movements);
     } catch (error) {

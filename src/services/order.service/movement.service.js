@@ -29,7 +29,7 @@ class MovementService {
     console.log(all)
     const where = {
       ...(!all && {
-        current: current === 'true' ? true : false,
+        current: current ? true : false,
       }),
       ...(toId && {
         toId,

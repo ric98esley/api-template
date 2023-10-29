@@ -10,7 +10,7 @@ const MovementService = require('../../services/order.service/movement.service')
 const OrderRecordService = require('../../services/order.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const { searchAsset, getAssetSchema } = require('../../schemas/asset.schema');
+const { searchAsset, getAssetSchema, createBulkAssetSchema } = require('../../schemas/asset.schema');
 
 const router = express.Router();
 const service = new AssetsService();
@@ -92,6 +92,61 @@ router.get(
     }
   }
 );
+
+router.post(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(createBulkAssetSchema, 'body'),
+  checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.CREATE }),
+  async (req, res, next) => {
+    try {
+      const { assets, locationId, description, notes, content } = req.body;
+
+      const user = req.user;
+
+      const targets = [];
+
+      const newAssets = await service.createBulk({ assets, locationId, user });
+
+      for (const asset of newAssets.created) {
+        const details = {
+          message: `Se ha creado el activo ${asset.dataValues.serial}`,
+        };
+
+        targets.push({
+          quantity: '1',
+          assetId: asset.dataValues.id,
+        });
+
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'assets',
+          targetId: asset.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: user.sub,
+        });
+      }
+      const data = {
+        targets,
+        locationId,
+        type: 'checking',
+        description,
+        notes,
+        content,
+        createdById: user.sub,
+      };
+
+      const order = await orderService.createAssignments(data);
+
+      res.status(201).json(newAssets);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 
 router.post('/')
 

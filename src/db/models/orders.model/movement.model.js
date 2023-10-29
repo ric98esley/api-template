@@ -2,7 +2,6 @@ const { Model, DataTypes } = require('sequelize');
 
 const MOVEMENT_TABLE = 'movements';
 
-const { ASSET_TABLE } = require('../asset.model');
 const { USER_TABLE } = require('../user.model');
 const { LOCATION_TABLE } = require('../location.model');
 const { ORDERS_RECORDS_TABLE } = require('.');
@@ -26,17 +25,15 @@ const MovementSchema = {
     unique: true,
     primaryKey: true,
   },
+  type: {
+    allowNull: false,
+    type: DataTypes.STRING(12),
+    defaultValue: 'asset'
+  },
   assetId: {
     allowNull: false,
-    primaryKey: true,
     type: DataTypes.INTEGER,
     field: 'target_id',
-    references: {
-      model: ASSET_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
   },
   fromId: {
     allowNull: true,

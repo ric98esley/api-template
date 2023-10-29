@@ -2,8 +2,8 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const LOCATION_PRODUCTS_TABLE = 'location_has_products';
 const { USER_TABLE } = require('../user.model');
-const { ASSET_TABLE } = require('../asset.model');
 const { LOCATION_TABLE } = require('../location.model');
+const { PRODUCT_TABLE } = require('../consumable.model');
 
 /**
  * @description description of each field in the table
@@ -23,12 +23,12 @@ const LocationProductsSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  assetId: {
+  productId: {
     allowNull: false,
     type: DataTypes.INTEGER,
     field: 'product_id',
     references: {
-      model: ASSET_TABLE,
+      model: PRODUCT_TABLE,
       key: 'id',
     },
     onUpdate: 'RESTRICT',
@@ -49,6 +49,11 @@ const LocationProductsSchema = {
     allowNull: false,
     type: DataTypes.DECIMAL(9,2),
     allowNull: false,
+    defaultValue: 0
+  },
+  min: {
+    allowNull: false,
+    type: DataTypes.INTEGER,
     defaultValue: 0
   },
   createdById: {
@@ -79,9 +84,9 @@ class LocationProducts extends Model {
       as: 'location',
       foreignKey: 'locationId'
     })
-    this.belongsTo(models.Asset, {
-      as: 'asset',
-      foreignKey: 'assetId'
+    this.belongsTo(models.Consumable, {
+      as: 'product',
+      foreignKey: 'productId'
     })
   }
 

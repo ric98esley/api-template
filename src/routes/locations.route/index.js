@@ -179,7 +179,8 @@ router.get(
     try {
       const { id } = req.params;
       const toSearch = req.query;
-      toSearch.locationId = id;
+      toSearch.toId = id;
+      toSearch.current = true
       try {
         let assets = await movementService.find(toSearch);
         res.json(assets);

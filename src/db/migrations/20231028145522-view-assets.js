@@ -44,6 +44,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    queryInterface.sequelize.query(`DROP VIEW [IF EXISTS] v_assets;`);
+    queryInterface.sequelize.query(`DROP VIEW v_assets;`);
   }
 };

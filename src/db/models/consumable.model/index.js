@@ -1,10 +1,9 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const WAREHOUSE_PRODUCTS_TABLE = 'warehouse_has_products';
-const { WAREHOUSE_TABLE } = require('.');
 const { USER_TABLE } = require('../user.model');
-const { ASSET_TABLE } = require('../asset.model');
+const { CATEGORY_TABLE } = require('../category.model');
 
+const PRODUCT_TABLE = 'products';
 /**
  * @description description of each field in the table
  * @typedef {Object} field definition
@@ -16,41 +15,50 @@ const { ASSET_TABLE } = require('../asset.model');
  * @property {boolean} field - rename the field
  */
 
-const WarehouseProductsSchema = {
+const ProductSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  assetId: {
+  code: {
+    allowNull: false,
+    type: DataTypes.STRING(25),
+    unique: true,
+    set(value) {
+      this.setDataValue('code', value.trim().toUpperCase());
+    }
+  },
+  name: {
+    allowNull: false,
+    type: DataTypes.STRING(45),
+    unique: true,
+    set(value) {
+      this.setDataValue('name', value.trim().toUpperCase());
+    }
+  },
+  price: {
+    allowNull: true,
+    type: DataTypes.STRING(45),
+  },
+  unit: {
+    allowNull: false,
+    type: DataTypes.STRING(10),
+  },
+  description: {
+    allowNull: true,
+    type: DataTypes.TEXT,
+    set(value) {
+      if(value) this.setDataValue('description', value.trim());
+    }
+  },
+  categoryId: {
     allowNull: false,
     type: DataTypes.INTEGER,
-    field: 'product_id',
+    field: 'category_id',
     references: {
-      model: ASSET_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
-  },
-  quantity: {
-    allowNull: false,
-    type: DataTypes.DECIMAL(9,2),
-    allowNull: false,
-    defaultValue: 0
-  },
-  min: {
-    allowNull: false,
-    type: DataTypes.INTEGER,
-    defaultValue: 0
-  },
-  warehouseId: {
-    allowNull: false,
-    field: 'warehouse_id',
-    type: DataTypes.INTEGER,
-    references: {
-      model: WAREHOUSE_TABLE,
+      model: CATEGORY_TABLE,
       key: 'id',
     },
     onUpdate: 'RESTRICT',
@@ -81,14 +89,16 @@ const WarehouseProductsSchema = {
   },
 };
 
-class WarehouseProducts extends Model {
+class Product extends Model {
   static associate(models) {
-    this.belongsTo(models.User, {
-      as: 'createdBy',
-      foreignKey: 'createdById'
-    })
-    this.belongsTo(models.Product, {
-      as: 'product',
+    this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
+    this.belongsTo(models.Category, {
+      as: 'category',
+      foreignKey: 'categoryId',
+    });
+    this.belongsToMany(models.Movement, {
+      as: 'movements',
+      through: models.WarehouseProducts,
       foreignKey: 'productId'
     })
   }
@@ -96,12 +106,12 @@ class WarehouseProducts extends Model {
   static config(sequelize) {
     return {
       sequelize,
-      tableName: WAREHOUSE_PRODUCTS_TABLE,
-      modelName: 'WarehouseProducts',
-      timestamps: true, 
-paranoid: true
+      tableName: PRODUCT_TABLE,
+      modelName: 'Product',
+      timestamps: true,
+      paranoid: true,
     };
   }
 }
 
-module.exports = { WAREHOUSE_PRODUCTS_TABLE, WarehouseProductsSchema, WarehouseProducts };
+module.exports = { PRODUCT_TABLE, ProductSchema, Product };
