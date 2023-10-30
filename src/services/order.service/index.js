@@ -7,6 +7,7 @@ class OrderRecordService {
   constructor() {}
 
   async createAssignments({
+    movementType = 'asset',
     type,
     description,
     notes,
@@ -24,6 +25,7 @@ class OrderRecordService {
       movements.push({
         assetId: target.assetId,
         quantity: 1,
+        type: movementType,
         toId: locationId,
         fromId: asset.dataValues.locationId,
         createdById,

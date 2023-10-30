@@ -113,7 +113,7 @@ class CategoryServices {
       ],
       distinct: true,
       order: [[sort, order]],
-      attributes: ['id', 'name', 'description', 'createdAt'],
+      attributes: ['id', 'name', 'description','type', 'createdAt'],
     };
 
     const { rows, count } = await models.Category.findAndCountAll(options);

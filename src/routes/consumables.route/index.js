@@ -12,7 +12,7 @@ const OrderRecordService = require('../../services/order.service');
 const { SCOPE, ACTIONS } = require('../../utils/roles');
 const { searchAsset, getAssetSchema, createBulkAssetSchema } = require('../../schemas/asset.schema');
 const WarehouseService = require('../../services/consumable.service');
-const { createMovementConsumable, findConsumable } = require('../../schemas/consumable.schema');
+const { findConsumable, createWarehouseProduct } = require('../../schemas/consumable.schema');
 
 const router = express.Router();
 const service = new AssetsService();
@@ -99,37 +99,40 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(createMovementConsumable, 'body'),
+  validatorHandler(createWarehouseProduct, 'body'),
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
-      const { assets, locationId, description, notes, content } = req.body;
+      const body = req.body;
+      const { locationId, description , content , notes, ...product } = body;
 
       const user = req.user;
+      const createdById = user.sub
 
       const targets = [];
 
-      const newAssets = await warehouseService.create({ assets, locationId, user });
 
-      for (const asset of newAssets.created) {
+
+      const newAsset = await warehouseService.create({ ...product, locationId, createdById });
+
         const details = {
-          message: `Se ha creado el activo ${asset.dataValues.serial}`,
+          message: `Se ha agregado el consumible`,
         };
 
-        targets.push({
-          quantity: '1',
-          assetId: asset.dataValues.id,
-        });
+      targets.push({
+        quantity: product.quantity,
+        assetId: newAsset.dataValues.productId,
+      });
 
-        await logService.create({
-          type: ACTIONS.CREATE,
-          table: 'assets',
-          targetId: asset.dataValues.id,
-          details,
-          ip: req.ip,
-          createdById: user.sub,
-        });
-      }
+      await logService.create({
+        type: ACTIONS.CREATE,
+        table: 'consumables',
+        targetId: newAsset.dataValues.id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
       const data = {
         targets,
         locationId,
@@ -142,7 +145,7 @@ router.post(
 
       const order = await orderService.createAssignments(data);
 
-      res.status(201).json(newAssets);
+      res.status(201).json(newAsset);
     } catch (error) {
       next(error);
     }

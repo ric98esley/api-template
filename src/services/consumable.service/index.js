@@ -3,15 +3,15 @@ const { Op } = require('sequelize');
 
 class WarehouseService {
   constructor() {}
-  async create({ productId, quantity, depositId, min, createdById, product }) {
-    const newWarehouse = await models.WarehouseProducts.create(
+  async create({ productId, quantity, locationId, min, createdById, product }) {
+    const newProductsOnWarehouse = await models.LocationProducts.create(
       {
         ...(productId && {
           productId,
         }),
         quantity,
         min,
-        depositId,
+        locationId,
         createdById,
         ...(!productId &&
           product && {
@@ -21,11 +21,9 @@ class WarehouseService {
             },
           }),
       },
-      {
-        ...(!productId && product && { include: ['product'] }),
-      }
+      { include: ['product'] }
     );
-    return newWarehouse;
+    return newProductsOnWarehouse;
   }
 
   async finOne({ id }) {
@@ -140,9 +138,9 @@ class WarehouseService {
                 },
                 {
                   code: {
-                    [Op.like]: `%${location}`
-                  }
-                }
+                    [Op.like]: `%${location}`,
+                  },
+                },
               ],
             }),
           },
