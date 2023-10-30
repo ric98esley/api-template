@@ -11,7 +11,8 @@ const locationRouter = require('./locations.route');
 const groupsRouter = require('./groups.route');
 const orderRouter = require('./orders.route');
 const movementsRouter = require('./orders.route/movements.route');
-const consumableRouter = require('./consumables.route');
+const consumablesRouter = require('./consumables.route');
+const productsRouter = require('./consumables.route/products.route');
 
 function routerApi(app) {
   const router = express.Router();
@@ -27,7 +28,8 @@ function routerApi(app) {
   router.use('/locations', locationRouter);
   router.use('/orders', orderRouter);
   router.use('/movements', movementsRouter);
-  router.use('/consumables', consumableRouter);
+  router.use('/consumables', consumablesRouter);
+  router.use('/products', productsRouter);
 }
 
 module.exports = routerApi;

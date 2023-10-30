@@ -136,6 +136,11 @@ class Location extends Model {
     this.belongsTo(models.Zone, { as: 'zone', foreignKey: 'zoneId' });
     this.belongsTo(models.Group, { as: 'group', foreignKey: 'groupId' });
     this.belongsTo(models.LocationType, { as: 'type', foreignKey: 'typeId' });
+    this.belongsToMany(models.Product, {
+      as: 'products',
+      through: models.LocationProducts,
+      foreignKey: 'locationId'
+    })
   }
 
   static config(sequelize) {

@@ -180,7 +180,8 @@ router.get(
       const { id } = req.params;
       const toSearch = req.query;
       toSearch.toId = id;
-      toSearch.current = true
+      toSearch.current = true;
+      toSearch.movementType = 'asset';
       try {
         let assets = await movementService.find(toSearch);
         res.json(assets);

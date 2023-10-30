@@ -126,14 +126,10 @@ class Asset extends Model {
       as: 'specifications',
       foreignKey: 'assetId',
     });
-    // this.hasOne(models.Assignment, {
-    //   as: 'assignment',
-    //   foreignKey: 'targetId',
-    // });
-    // this.belongsTo(models.Invoice, {
-    //   as: 'invoice',
-    //   foreignKey: 'invoiceId',
-    // });
+    this.hasMany(models.Movement, {
+      as: 'movements',
+      foreignKey: 'assetId'
+    })
   }
 
   // Hook que se ejecutará antes de guardar o actualizar un registro

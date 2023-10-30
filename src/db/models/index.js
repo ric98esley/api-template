@@ -18,6 +18,8 @@ const { Location, LocationSchema } = require('./location.model');
 const { Zone, ZoneSchema } = require('./location.model/zone.model');
 const { LocationType, LocationTypeSchema } = require('./location.model/type.model');
 const { VAsset, VAssetSchema } = require('./asset.model/v_asset.model');
+const { Product, ProductSchema } = require('./consumable.model');
+const { LocationProducts, LocationProductsSchema } = require('./warehouse.model/locationProducts.model');
 
 function setupModels(sequelize) {
 
@@ -41,6 +43,9 @@ function setupModels(sequelize) {
   OrderRecord.init(OrderRecordSchema, OrderRecord.config(sequelize));
   Movement.init(MovementSchema, Movement.config(sequelize));
 
+  Product.init(ProductSchema, Product.config(sequelize));
+  LocationProducts.init(LocationProductsSchema, LocationProducts.config(sequelize));
+
   VAsset.init(VAssetSchema, VAsset.config(sequelize))
 
   // INICIALIZA ASOCIACIONES
@@ -63,6 +68,9 @@ function setupModels(sequelize) {
 
   OrderRecord.associate(sequelize.models);
   Movement.associate(sequelize.models);
+
+  Product.associate(sequelize.models);
+  LocationProducts.associate(sequelize.models);
 
   // HOOKS
 

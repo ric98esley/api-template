@@ -92,15 +92,19 @@ const ProductSchema = {
 class Product extends Model {
   static associate(models) {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
+    this.belongsToMany(models.Location, {
+      as: 'location',
+      through: models.LocationProducts,
+      foreignKey: 'productId',
+    });
+    this.hasMany(models.Movement, {
+      as: 'movements',
+      foreignKey: 'assetId'
+    })
     this.belongsTo(models.Category, {
       as: 'category',
       foreignKey: 'categoryId',
     });
-    this.belongsToMany(models.Movement, {
-      as: 'movements',
-      through: models.WarehouseProducts,
-      foreignKey: 'productId'
-    })
   }
 
   static config(sequelize) {

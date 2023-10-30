@@ -11,24 +11,26 @@ const OrderRecordService = require('../../services/order.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
 const { searchAsset, getAssetSchema, createBulkAssetSchema } = require('../../schemas/asset.schema');
+const WarehouseService = require('../../services/consumable.service');
+const { createMovementConsumable, findConsumable } = require('../../schemas/consumable.schema');
 
 const router = express.Router();
 const service = new AssetsService();
 const logService = new LogService();
 const orderService = new OrderRecordService();
 const movementService = new MovementService();
+const warehouseService = new WarehouseService();
 
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(searchAsset, 'query'),
+  validatorHandler(findConsumable, 'query'),
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const toSearch = req.query;
-      toSearch.type = 'consumable';
-      const assets = await service.find(toSearch);
+      const assets = await warehouseService.find(toSearch);
       res.json(assets);
     } catch (error) {
       next(error);
@@ -97,7 +99,7 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(createBulkAssetSchema, 'body'),
+  validatorHandler(createMovementConsumable, 'body'),
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
@@ -107,7 +109,7 @@ router.post(
 
       const targets = [];
 
-      const newAssets = await service.createBulk({ assets, locationId, user });
+      const newAssets = await warehouseService.create({ assets, locationId, user });
 
       for (const asset of newAssets.created) {
         const details = {
@@ -146,8 +148,5 @@ router.post(
     }
   }
 );
-
-
-router.post('/')
 
 module.exports = router;

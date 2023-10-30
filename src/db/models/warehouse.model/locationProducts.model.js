@@ -84,7 +84,7 @@ class LocationProducts extends Model {
       as: 'location',
       foreignKey: 'locationId'
     })
-    this.belongsTo(models.Consumable, {
+    this.belongsTo(models.Product, {
       as: 'product',
       foreignKey: 'productId'
     })
@@ -93,7 +93,7 @@ class LocationProducts extends Model {
   static config(sequelize) {
     return {
       sequelize,
-      tableName: WAREHOUSE_PRODUCTS_TABLE,
+      tableName: LOCATION_PRODUCTS_TABLE,
       modelName: 'LocationProducts',
       timestamps: false,
     };

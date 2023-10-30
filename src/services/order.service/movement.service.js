@@ -7,6 +7,8 @@ class MovementService {
   async find({
     paranoid,
     all,
+    orderType,
+    movementType,
     current,
     location,
     group,
@@ -28,6 +30,9 @@ class MovementService {
   }) {
     console.log(all)
     const where = {
+      ...(movementType && {
+        type: movementType,
+      }),
       ...(!all && {
         current: current ? true : false,
       }),
@@ -118,6 +123,11 @@ class MovementService {
           model: models.OrderRecord,
           as: 'order',
           attributes: ['id', 'type', 'description'],
+          where :{
+            ...(orderType && {
+              type: orderType
+            })
+          }
         },
         {
           model: models.Location,
@@ -166,7 +176,7 @@ class MovementService {
           attributes: ['id', 'code', 'name', 'phone'],
         },
       ],
-      attributes: ['id', 'quantity', 'current', 'createdAt'],
+      attributes: ['id', 'quantity', 'type' ,'current', 'createdAt'],
     };
 
     const { rows, count } = await models.Movement.findAndCountAll(options);

@@ -1,56 +1,178 @@
-const Joi = require('joi');
+const { models } = require('../../libs/sequelize');
+const { Op } = require('sequelize');
 
-const id = Joi.number().integer();
-const name = Joi.string();
-const search = Joi.string();
-const code = Joi.string();
-const price = Joi.string();
-const unit = Joi.string();
-const min = Joi.number().integer();
-const description = Joi.string();
-const limit = Joi.number().integer();
-const offset = Joi.number().integer();
+class WarehouseService {
+  constructor() {}
+  async create({ productId, quantity, depositId, min, createdById, product }) {
+    const newWarehouse = await models.WarehouseProducts.create(
+      {
+        ...(productId && {
+          productId,
+        }),
+        quantity,
+        min,
+        depositId,
+        createdById,
+        ...(!productId &&
+          product && {
+            product: {
+              ...product,
+              createdById,
+            },
+          }),
+      },
+      {
+        ...(!productId && product && { include: ['product'] }),
+      }
+    );
+    return newWarehouse;
+  }
 
-const createProduct = Joi.object({
-  serial: code.required().min(2),
-  modelId: id,
-  model: Joi.object({
-    name: name.required().min(3),
-    price: price.allow(null),
-    min: min.allow(null),
-    unit: unit.required(),
-    categoryId: id,
-    category: Joi.object({
-      name: name.required()
-    })
-  }).oxor('categoryId', 'category'),
-}).oxor('modelId', 'model');
-const updateProduct = Joi.object({
-  code,
-  name,
-  price,
-  min,
-  unit,
-  description,
-  categoryId: id,
-});
+  async finOne({ id }) {
+    const warehouse = await models.WarehouseProducts.findByPk(id, {
+      include: [
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username'],
+        },
+      ],
+    });
+    return warehouse;
+  }
+  async find({
+    id,
+    search,
+    location,
+    groupId,
+    category,
+    limit = 10,
+    offset = 0,
+    sort = 'createdAt',
+    order = 'DESC',
+  }) {
+    const where = {
+      ...(id && {
+        id,
+      }),
+    };
+    const options = {
+      limit: Number(limit),
+      offset: Number(offset),
+      where,
+      include: [
+        // createdBy
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username', 'email'],
+        },
+        {
+          model: models.Product,
+          as: 'product',
+          include: [
+            {
+              model: models.Category,
+              as: 'category',
+              where: {
+                ...(category && {
+                  [Op.or]: [
+                    {
+                      name: {
+                        [Op.like]: `%${category}%`,
+                      },
+                    },
+                    {
+                      description: {
+                        [Op.like]: `%${category}%`,
+                      },
+                    },
+                  ],
+                }),
+              },
+              attributes: ['id', 'name', 'description'],
+            },
+          ],
+          where: {
+            ...(search && {
+              [Op.or]: [
+                {
+                  description: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  name: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+                {
+                  code: {
+                    [Op.like]: `%${search}%`,
+                  },
+                },
+              ],
+            }),
+          },
+          attributes: [
+            'id',
+            'code',
+            'name',
+            'price',
+            'unit',
+            'description',
+            'createdAt',
+          ],
+        },
+        {
+          model: models.Location,
+          as: 'location',
+          where: {
+            ...(groupId && {
+              groupId: groupId,
+            }),
+            ...(location && {
+              [Op.or]: [
+                {
+                  name: {
+                    [Op.like]: `%${location}%`,
+                  },
+                },
+                {
+                  code: {
+                    [Op.like]: `%${location}`
+                  }
+                }
+              ],
+            }),
+          },
+          attributes: ['id', 'name'],
+        },
+      ],
+      order: [[sort, order]],
+      attributes: ['id', 'quantity', 'min', 'createdAt'],
+    };
 
-const getProduct = Joi.object({
-  id: id.required(),
-});
+    const { rows, count } = await models.LocationProducts.findAndCountAll(
+      options
+    );
+    return {
+      total: count,
+      rows,
+    };
+  }
+  async update({ changes, id }) {
+    const warehouse = await this.finOne({ id });
+    const rta = await warehouse.update(changes);
 
-const findProduct = Joi.object({
-  search,
-  category: search,
-  code,
-  name,
-  price,
-  min,
-  unit,
-  description,
-  categoryId: id,
-  limit,
-  offset,
-});
+    return rta;
+  }
+  async delete({ id }) {
+    const warehouse = await this.finOne({ id });
+    const rta = await warehouse.destroy();
 
-module.exports = { createProduct, getProduct, updateProduct, findProduct };
+    return rta;
+  }
+}
+
+module.exports = WarehouseService;
