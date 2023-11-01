@@ -215,7 +215,7 @@ class CategoryServices {
   }
 
   async removeFields({ categoryId, typeId }) {
-    const specification = await models.CategorySpecification.destroy({
+    const specification = await models.CategorySpec.destroy({
       where: {
         categoryId,
         typeId,

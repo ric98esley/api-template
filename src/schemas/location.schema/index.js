@@ -50,6 +50,7 @@ const searchLocationSchema = Joi.object({
   manager: toSearch,
   type: toSearch,
   rif,
+  status : toSearch,
   address,
   limit,
   offset,

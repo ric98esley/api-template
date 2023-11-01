@@ -13,8 +13,8 @@ const { CUSTOMER_TABLE } = require('../user.model/customer.model');
  * @property {boolean} allowNull - false=NOT NULL
  * @property {boolean} autoIncrement - each insert, increase the counter
  * @property {boolean} primaryKey - define is primary key
- * @property {boolean} type - expresion to match SQL type
- * @property {boolean} unique - difne as unique the field
+ * @property {boolean} type - expression to match SQL type
+ * @property {boolean} unique - define as unique the field
  * @property {boolean} field - rename the field
  */
 

@@ -62,6 +62,7 @@ class LocationsServices {
     search,
     code,
     name,
+    status,
     rif,
     address,
     group,
@@ -175,7 +176,12 @@ class LocationsServices {
         {
           model: models.LocationType,
           as: 'type',
-          attributes: ['id', 'name', 'status']
+          attributes: ['id', 'name', 'status'],
+          ...(status && {
+            where: {
+              status: status.split(',')
+            }
+          })
         },
       ],
       attributes: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdAt'],
