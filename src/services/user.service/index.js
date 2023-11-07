@@ -53,6 +53,7 @@ class UsersServices {
     order = 'DESC',
     profile,
     username,
+    search,
     role,
     isActive,
     all,
@@ -63,9 +64,7 @@ class UsersServices {
   }) {
     let where = {
       ...(role && {
-        role: {
-          [Op.like]: `%${role}%`,
-        },
+        role: role.split(','),
       }),
       ...(username && {
         [Op.or]: [
@@ -77,6 +76,40 @@ class UsersServices {
           {
             username: {
               [Op.like]: `%${username}%`,
+            },
+          },
+        ],
+      }),
+      ...(search && {
+        [Op.or]: [
+          {
+            email: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            username: {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$profile.name$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$profile.last_name$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$profile.card_id$': {
+              [Op.like]: `%${search}%`,
+            },
+          },
+          {
+            '$profile.phone$': {
+              [Op.like]: `%${search}%`,
             },
           },
         ],

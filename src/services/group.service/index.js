@@ -1,3 +1,4 @@
+const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
 
@@ -14,7 +15,7 @@ class GroupsService {
     return newGroup;
   }
 
-  async finOne({ id }) {
+  async findOne({ id }) {
     const group = await models.Group.findByPk(id, {
       include: [
         {
@@ -38,23 +39,20 @@ class GroupsService {
         {
           model: models.Group,
           as: 'parent',
-          include: [
-            // manager
-            {
-              model: models.User,
-              as: 'manager',
-              attributes: ['id', 'username', 'email'],
-            },
-            // createdBy
-            {
-              model: models.User,
-              as: 'createdBy',
-              attributes: ['id', 'username', 'email'],
-            },
+          attributes: [
+            'id',
+            'code',
+            'name',
+            'enabled',
+            'createdAt',
+            'updatedAt',
           ],
         },
       ],
+      attributes: ['id', 'code', 'name', 'enabled', 'createdAt', 'updatedAt'],
     });
+
+    if (!group) boom.notFound('Group not found');
     return group;
   }
   async find({

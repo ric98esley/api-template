@@ -26,10 +26,12 @@ class OrderRecordService {
         assetId: target.assetId,
         quantity: 1,
         type: movementType,
-        toId: locationId,
+        toId: target.locationId,
         fromId: asset.dataValues.locationId,
         createdById,
       });
+
+      asset.update({ locationId: target.locationId });
     }
 
     const updateOldMovements = await models.Movement.update(
@@ -52,20 +54,9 @@ class OrderRecordService {
       movements,
     };
 
-    console.log(toCreate)
-
     const newRecord = await models.OrderRecord.create(toCreate, {
       include: ['movements'],
     });
-
-    const updateAssets = await models.Asset.update(
-      { locationId },
-      {
-        where: {
-          id: assets,
-        },
-      }
-    );
 
     return newRecord;
   }
@@ -83,7 +74,7 @@ class OrderRecordService {
     type,
     description,
     limit = 10,
-    offset = 0
+    offset = 0,
   }) {
     const where = {
       ...(locationId && {
@@ -146,15 +137,15 @@ class OrderRecordService {
         'createdAt',
       ],
       limit: Number(limit),
-      offset: Number(offset)
+      offset: Number(offset),
     };
     const count = await models.OrderRecord.count(options);
-    options.include.push(        {
+    options.include.push({
       model: models.Movement,
       as: 'movements',
       attributes: [],
-    })
-    options.group = ['OrderRecord.id']
+    });
+    options.group = ['OrderRecord.id'];
     const rows = await models.OrderRecord.findAll(options);
     return {
       total: count,
@@ -220,7 +211,7 @@ class OrderRecordService {
         {
           model: models.Movement,
           as: 'movements',
-          attributes: []
+          attributes: [],
         },
       ],
       group: ['OrderRecord.id'],

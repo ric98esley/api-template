@@ -5,7 +5,6 @@ const LocationsService = require('../../services/locations.service');
 const LogService = require('../../services/log.service');
 const MovementService = require('../../services/order.service/movement.service');
 
-
 // const AssignmentService = require('../../services/orders.service/assignments.service');
 
 const validatorHandler = require('../../middlewares/validator.handler');
@@ -15,20 +14,21 @@ const {
   updateLocationSchema,
   createLocationSchema,
   getLocationSchema,
-  searchLocationSchema
+  searchLocationSchema,
 } = require('../../schemas/location.schema');
-
 
 const zoneRouter = require('./zones.route');
 const locationType = require('./types.route');
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const { searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
+const {
+  searchMovementSchema,
+} = require('../../schemas/order.schema/movement.schema');
 // const { searchAssignmentSchema } = require('../../schemas/orders.schema');
 
 const router = express.Router();
 const movementService = new MovementService();
 const locationService = new LocationsService();
-const logService = new LogService()
+const logService = new LogService();
 // const assignmentsService = new AssignmentService();
 
 router.use('/zones', zoneRouter);
@@ -42,7 +42,7 @@ router.get(
   checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const query = req.query
+      const query = req.query;
       let locations = await locationService.find(query);
       res.json(locations);
     } catch (error) {
@@ -60,7 +60,7 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const location = await locationService.findOne({id});
+      const location = await locationService.findOne({ id });
       res.json(location);
     } catch (error) {
       next(error);
@@ -77,7 +77,7 @@ router.post(
   async (req, res, next) => {
     try {
       // TODo: request for user id
-      const user = req.user
+      const user = req.user;
       const createdById = user.sub;
       const body = req.body;
       body.createdById = createdById;
@@ -93,7 +93,7 @@ router.post(
         targetId: newLocation.dataValues.id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.status(201).json(newLocation);
     } catch (error) {
@@ -115,11 +115,15 @@ router.patch(
       const { groupId } = req.query;
       const { id } = req.params;
       const body = req.body;
-      const location = await locationService.update({id, changes: body, groupId});
+      const location = await locationService.update({
+        id,
+        changes: body,
+        groupId,
+      });
 
       const details = {
         message: `Se ha modificado el lugar ${location.dataValues.name}`,
-        query: body
+        query: body,
       };
       await logService.create({
         type: ACTIONS.UPDATE,
@@ -127,7 +131,7 @@ router.patch(
         targetId: location.dataValues.id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.json(location);
     } catch (error) {
@@ -156,12 +160,12 @@ router.delete(
         targetId: location.dataValues.id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
 
       res.status(202).json({
         message: details.message,
-        target: location
+        target: location,
       });
     } catch (error) {
       next(error);

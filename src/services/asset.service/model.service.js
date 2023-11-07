@@ -17,12 +17,20 @@ class ModelServices {
     name,
     brand,
     category,
-    limit = 10,
-    offset = 0,
+    categoryId,
+    brandId,
+    limit,
+    offset,
     sort = 'createdAt',
     order = 'DESC',
   }) {
     const where = {
+      ...(categoryId && {
+        categoryId
+      }),
+      ...(brandId && {
+        brandId
+      }),
       ...(id && {
         id,
       }),
@@ -33,8 +41,12 @@ class ModelServices {
       }),
     };
     const options = {
-      limit: Number(limit),
-      offset: Number(offset),
+      ...(limit && {
+        limit: Number(limit),
+      }),
+      ...(offset && {
+        offset: Number(offset),
+      }),
       where,
       include: [
         {

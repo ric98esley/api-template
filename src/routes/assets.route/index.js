@@ -122,13 +122,13 @@ router.post(
   checkAuth({ route: 'assets', crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
-      const { assets, locationId, description, notes, content } = req.body;
+      const { assets, description, notes, content } = req.body;
 
       const user = req.user;
 
       const targets = [];
 
-      const newAssets = await service.createBulk({ assets, locationId, user });
+      const newAssets = await service.createBulk({ assets, user });
 
       for (const asset of newAssets.created) {
         const details = {
@@ -137,6 +137,7 @@ router.post(
 
         targets.push({
           quantity: '1',
+          locationId: asset.dataValues.locationId,
           assetId: asset.dataValues.id,
         });
 
@@ -151,7 +152,7 @@ router.post(
       }
       const data = {
         targets,
-        locationId,
+        locationId: null,
         type: 'checking',
         description,
         notes,

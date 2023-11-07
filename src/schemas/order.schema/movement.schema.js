@@ -8,6 +8,7 @@ const createdAt = Joi.date();
 const toSearch = Joi.string();
 
 const createMovementSchema = Joi.object({
+  locationId: id.required(),
   quantity: quantity.pattern(/^\d+(\.[0-9][0-9]?)?(\/\d+?)?$/, { name: 'numbers'}),
   assetId: assetId.required(),
 });
@@ -15,7 +16,6 @@ const createMovementSchema = Joi.object({
 const getMovementSchema = Joi.object({
   id: id.required(),
 });
-
 
 const searchMovementSchema = Joi.object({
   paranoid: Joi.boolean(),

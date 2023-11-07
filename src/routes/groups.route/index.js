@@ -42,6 +42,42 @@ router.get(
   }
 );
 
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getGroup, 'params'),
+  checkAuth({ route: 'groups', crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const groups = await groupService.findOne({ id });
+
+      res.status(201).json(groups);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
+  '/:id/locations',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getGroup, 'params'),
+  checkAuth({ route: 'groups', crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const groups = await groupService.find({ groupId: id });
+
+      res.status(201).json(groups);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),

@@ -46,6 +46,7 @@ const updateUserSchema = Joi.object({
 });
 const searchUserSchema = Joi.object({
   username,
+  search: toSearch,
   sort: toSearch,
   order: toSearch.valid('ASC', 'DESC'),
   cardId,

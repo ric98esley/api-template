@@ -1,20 +1,19 @@
 const Joi = require("joi");
 
 const id = Joi.number().integer();
-const name = Joi.string().min(2);
-const categoryId = Joi.number().integer();
+const name = Joi.string();
 const limit = Joi.number().integer()
 const offset = Joi.number().integer()
 
 const createAssetModel = Joi.object({
-    name: name.required(),
-    categoryId: categoryId.required(),
+    name: name.required().min(2)    ,
+    categoryId: id.required(),
     brandId: id.required()
 })
 
 const updateAssetModel = Joi.object({
     name,
-    categoryId,
+    categoryId: id,
     brandId: id
 })
 
@@ -27,6 +26,8 @@ const searchModel = Joi.object({
     name,
     category: name,
     brand: name,
+    categoryId: id,
+    brandId: id,
     limit,
     offset
 })

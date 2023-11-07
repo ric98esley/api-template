@@ -60,13 +60,12 @@ class AssetsServices {
     };
   }
 
-  async createBulk({ assets, locationId, user }) {
+  async createBulk({ assets, user }) {
     const createdById = user.sub;
     console.log(assets);
     const data = assets.map((asset) => {
       return {
         ...asset,
-        locationId,
         createdById,
         updatedById: createdById,
         countChecking: 1,
@@ -148,9 +147,9 @@ class AssetsServices {
               attributes: ['id', 'name', 'type'],
               where: {
                 ...(type && {
-                  type
-                })
-              }
+                  type,
+                }),
+              },
             },
             {
               model: models.Brand,
