@@ -22,6 +22,9 @@ class OrderRecordService {
 
     for (const target of targets) {
       const asset = await models.Asset.findByPk(target.assetId);
+      if(!asset){
+        throw boom.notFound('El activo no existe ' + target.assetId)
+      }
       movements.push({
         assetId: target.assetId,
         quantity: 1,

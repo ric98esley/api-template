@@ -51,6 +51,7 @@ const searchLocationSchema = Joi.object({
   type: toSearch,
   rif,
   status : toSearch,
+  groupId: id,
   address,
   limit,
   offset,

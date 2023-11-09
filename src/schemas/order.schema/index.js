@@ -19,6 +19,13 @@ const createOrderRecordSchema = Joi.object({
   content,
   targets: Joi.array().items(createMovementSchema.required()),
 });
+const createCheckingRecordSchema = Joi.object({
+  description: description.required(),
+  locationId: id,
+  notes,
+  content,
+  targets: Joi.array().items(createMovementSchema.required()),
+});
 
 const updateOrderRecordSchema = Joi.object({
   description,
