@@ -14,7 +14,7 @@ const { USER_TABLE } = require('../user.model');
  * @property {boolean} field - rename the field
  */
 
-const category_types = ['asset', 'accessory', 'consumable']
+const category_types = ['asset', 'accessory', 'consumable'];
 
 const CategorySchema = {
   id: {
@@ -30,13 +30,13 @@ const CategorySchema = {
     unique: true,
     set(value) {
       this.setDataValue('name', value.trim().toUpperCase());
-    }
+    },
   },
-  type:{
+  type: {
     type: DataTypes.STRING(20),
     allowNull: false,
     validate: {
-      isIn: [category_types]
+      isIn: [category_types],
     },
     set(value) {
       this.setDataValue('type', value.trim());
@@ -47,8 +47,8 @@ const CategorySchema = {
     allowNull: true,
     type: DataTypes.TEXT,
     set(value) {
-      if(value) this.setDataValue('description', value.trim());
-    }
+      if (value) this.setDataValue('description', value.trim());
+    },
   },
   createdById: {
     allowNull: false,
@@ -84,12 +84,16 @@ class Category extends Model {
     this.belongsToMany(models.HardwareSpec, {
       through: models.CategorySpec,
       as: 'customFields',
-      foreignKey: 'categoryId'
+      foreignKey: 'categoryId',
     });
     this.belongsToMany(models.Brand, {
       through: models.Model,
       as: 'brands',
-      foreignKey: 'category_id'
+      foreignKey: 'category_id',
+    });
+    this.hasMany(models.Model, {
+      as: 'children',
+      foreignKey: 'categoryId'
     })
   }
 
@@ -98,8 +102,8 @@ class Category extends Model {
       sequelize,
       tableName: CATEGORY_TABLE,
       modelName: 'Category',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

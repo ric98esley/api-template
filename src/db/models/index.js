@@ -20,6 +20,7 @@ const { LocationType, LocationTypeSchema } = require('./location.model/type.mode
 const { VAsset, VAssetSchema } = require('./asset.model/v_asset.model');
 const { Product, ProductSchema } = require('./consumable.model');
 const { LocationProducts, LocationProductsSchema } = require('./warehouse.model/locationProducts.model');
+const { Settings, SettingSchema } = require('./settings.model');
 
 function setupModels(sequelize) {
 
@@ -45,6 +46,8 @@ function setupModels(sequelize) {
 
   Product.init(ProductSchema, Product.config(sequelize));
   LocationProducts.init(LocationProductsSchema, LocationProducts.config(sequelize));
+
+  Settings.init(SettingSchema, Settings.config(sequelize));
 
   VAsset.init(VAssetSchema, VAsset.config(sequelize))
 

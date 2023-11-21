@@ -32,12 +32,12 @@ const ModelSchema = {
   unit: {
     allowNull: true,
     type: DataTypes.STRING(20),
-    defaultValue: 'unit'
+    defaultValue: 'unit',
   },
   min: {
     allowNull: true,
     type: DataTypes.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   },
   categoryId: {
     allowNull: false,
@@ -63,7 +63,7 @@ const ModelSchema = {
   },
   purchaseCost: {
     allowNull: true,
-    type: DataTypes.DECIMAL(9,2),
+    type: DataTypes.DECIMAL(9, 2),
     field: 'purchase_cost',
   },
   currency: {
@@ -72,7 +72,7 @@ const ModelSchema = {
   },
   depreciationRate: {
     allowNull: true,
-    type: DataTypes.DECIMAL(9,2),
+    type: DataTypes.DECIMAL(9, 2),
     field: 'depreciation_rate',
   },
   createdById: {
@@ -116,8 +116,8 @@ class AssetModel extends Model {
       sequelize,
       tableName: MODEL_TABLE,
       modelName: 'Model',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

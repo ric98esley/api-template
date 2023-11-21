@@ -43,7 +43,7 @@ router.get(
   checkAuth({ route: 'assets', crud: ACTIONS.READ }),
   async (req, res, next) => {
     const toSearch = req.query;
-    toSearch.type = 'asset'
+    toSearch.type = 'asset';
 
     try {
       const assets = await service.find(toSearch);
@@ -63,7 +63,7 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
-      query.type = 'asset'
+      query.type = 'asset';
 
       const assets = await service.vFind(query);
 
@@ -95,6 +95,21 @@ router.get(
 );
 
 router.get(
+  '/tag',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  checkAuth({ route: 'assets', crud: 'read' }),
+  async (req, res, next) => {
+    try {
+      const tag = await service.getTag('gana');
+      res.json(tag);
+    } catch (error) {
+      next(error)
+    }
+  }
+);
+
+router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
@@ -105,7 +120,7 @@ router.get(
       const { id } = req.params;
       const asset = await service.findOne({
         id,
-        type: 'asset'
+        type: 'asset',
       });
       res.json(asset);
     } catch (error) {

@@ -99,6 +99,18 @@ class CategoryServices {
           },
           attributes: ['id', 'name', 'createdAt'],
         },
+        {
+          model: models.Model,
+          as: 'children',
+          attributes: ['id', 'name', 'unit'],
+          include: [
+            {
+              model: models.Brand,
+              as: 'brand',
+              attributes: ['id', 'name']
+            }
+          ]
+        }
         // {
         //   model: models.Brand,
         //   as: 'brands',

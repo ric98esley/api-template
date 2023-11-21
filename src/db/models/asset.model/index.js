@@ -23,8 +23,13 @@ const AssetSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  serial: {
+  tag: {
     allowNull: false,
+    unique: true,
+    type: DataTypes.STRING
+  },
+  serial: {
+    allowNull: true,
     type: DataTypes.STRING(45),
     unique: true,
     set(value) {
