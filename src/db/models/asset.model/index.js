@@ -134,7 +134,7 @@ class Asset extends Model {
     this.hasMany(models.Movement, {
       as: 'movements',
       foreignKey: 'assetId'
-    })
+    });
   }
 
   // Hook que se ejecutará antes de guardar o actualizar un registro

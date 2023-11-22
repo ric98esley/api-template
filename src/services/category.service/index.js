@@ -1,7 +1,7 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op, Sequelize } = require('sequelize');
+const { Op, Sequelize, fn, literal } = require('sequelize');
 
 class CategoryServices {
   constructor() {}
@@ -94,56 +94,40 @@ class CategoryServices {
         {
           model: models.HardwareSpec,
           as: 'customFields',
+          required: false,
           through: {
             attributes: [],
           },
           attributes: ['id', 'name', 'createdAt'],
         },
-        {
-          model: models.Model,
-          as: 'children',
-          attributes: ['id', 'name', 'unit'],
-          include: [
-            {
-              model: models.Brand,
-              as: 'brand',
-              attributes: ['id', 'name']
-            }
-          ]
-        }
-        // {
-        //   model: models.Brand,
-        //   as: 'brands',
-        //   include: {
-        //     model: models.Model,
-        //     as: 'models',
-        //   },
-        //   through: {
-        //     attributes: [],
-        //   },
-        // },
       ],
-      distinct: true,
       order: [[sort, order]],
-      attributes: ['id', 'name', 'description','type', 'createdAt'],
+      attributes: [
+        'id',
+        'name',
+        [
+          literal(
+            `(SELECT count(*) 
+              FROM assets as assets
+                left join models on assets.model_id = models.id
+                  where
+                    category_id = Category.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
+        'description',
+        'type',
+        'createdAt',
+      ],
     };
 
-    const { rows, count } = await models.Category.findAndCountAll(options);
+    const rows = await models.Category.findAll(options);
 
-    // const rowsCopy = JSON.parse(JSON.stringify(rows));
-
-    // const filteredRows = rowsCopy.map((row) => {
-    //   const brands = row.brands.map((brand) => {
-    //     const models = brand.models.filter(
-    //       (model) => model.categoryId === row.id
-    //     );
-    //     return { ...brand, models };
-    //   });
-    //   return { ...row, brands };
-    // });
+    const total = await models.Category.count({ where });
 
     return {
-      total: count,
+      total,
       rows,
     };
   }

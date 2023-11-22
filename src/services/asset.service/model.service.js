@@ -1,7 +1,7 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op } = require('sequelize');
+const { Op, literal } = require('sequelize');
 
 class ModelServices {
   constructor() {}
@@ -80,7 +80,22 @@ class ModelServices {
         },
       ],
       order: [[sort, order]],
-      attributes: ['id', 'name', 'unit', 'min', 'createdAt'],
+      attributes: [
+        'id',
+        'name',
+        'unit',
+        'min',
+        [
+          literal(
+            `(SELECT count(*)
+              FROM assets as assets
+                  where
+                    model_id = Model.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
+        'createdAt'],
     };
 
     const { count, rows } = await models.Model.findAndCountAll(options);

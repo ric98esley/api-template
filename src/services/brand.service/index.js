@@ -15,6 +15,7 @@ class BrandsServices {
   async find({
     id,
     name,
+    type,
     limit = 10,
     offset = 0,
     sort = 'createdAt',
@@ -29,6 +30,11 @@ class BrandsServices {
           [Op.like]: `%${name}%`,
         },
       }),
+      ...(type && {
+        type: {
+          [Op.like]: `%${type}%`,
+        },
+      }),
     };
 
     const options = {
@@ -39,38 +45,30 @@ class BrandsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id','username'],
-        },
-        {
-          model: models.Model,
-          as: 'models',
-          attributes: [],
-          include: [
-            {
-              as: 'assets',
-              model: models.Asset,
-              attributes: [],
-            },
-          ],
+          attributes: ['id', 'username'],
         },
       ],
       attributes: [
         'id',
         'name',
-        [fn('COUNT', 'assets'), 'assetCount'],
+        [
+          literal(
+            `(SELECT count(*)
+              FROM assets as assets
+                left join models on assets.model_id = models.id
+                  where
+                    brand_id = Brand.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
         'createdAt',
       ],
       order: [[sort, order]],
-      group: ['Brand.id', 'Brand.name'],
     };
     const { count, rows } = await models.Brand.findAndCountAll(options);
-    const total = await models.Brand.count({ where });
-    for (const row of rows) {
-      const t = count.find((c) => c.id === row.id);
-      row.dataValues.assetCount = t.count;
-    }
 
-    return { total, rows };
+    return { total: count, rows };
   }
 
   async findOne(id) {
@@ -79,7 +77,7 @@ class BrandsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'username']
+          attributes: ['id', 'username'],
         },
       ],
       attributes: {

@@ -92,9 +92,9 @@ class Category extends Model {
       foreignKey: 'category_id',
     });
     this.hasMany(models.Model, {
-      as: 'children',
-      foreignKey: 'categoryId'
-    })
+      as: 'models',
+      foreignKey: 'categoryId',
+    });
   }
 
   static config(sequelize) {
