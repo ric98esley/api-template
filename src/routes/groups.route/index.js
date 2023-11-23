@@ -35,7 +35,7 @@ router.get(
       const query = req.query;
       const groups = await groupService.find(query);
 
-      res.status(201).json(groups);
+      res.status(200).json(groups);
     } catch (error) {
       next(error);
     }

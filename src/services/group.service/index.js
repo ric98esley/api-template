@@ -27,7 +27,13 @@ class GroupsService {
         {
           model: models.User,
           as: 'manager',
-          attributes: ['id', 'username'],
+          attributes: ['id', 'username', 'email'],
+          include: [
+            {
+              model: models.Customer,
+              as: 'profile',
+            },
+          ],
         },
         // createdBy
         {
@@ -128,6 +134,13 @@ class GroupsService {
             }),
           },
           attributes: ['id', 'username'],
+          include: [
+            {
+              model: models.Customer,
+              as: 'profile',
+              attributes: ['id', 'name', 'lastName', 'phone', 'cardId', 'createdAt']
+            }
+          ]
         },
         // createdBy
         {
@@ -169,13 +182,13 @@ class GroupsService {
     };
   }
   async update({ changes, id }) {
-    const group = await this.finOne({ id });
+    const group = await this.findOne({ id });
     const rta = await group.update(changes);
 
     return rta;
   }
   async delete({ id }) {
-    const group = await this.finOne({ id });
+    const group = await this.findOne({ id });
     const rta = await group.destroy();
 
     return rta;

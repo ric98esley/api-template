@@ -7,7 +7,7 @@ const LogService = require('../../services/log.service');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
 
-const specificationsRoute = require('./specification.route')
+const specificationsRoute = require('./specification.route');
 
 const {
   createCategory,
@@ -18,12 +18,11 @@ const {
 const { ACTIONS } = require('../../utils/roles');
 
 const service = new CategoriesServices();
-const logService = new LogService()
-
+const logService = new LogService();
 
 const router = express.Router();
 
-router.use('/specifications', specificationsRoute)
+router.use('/specifications', specificationsRoute);
 
 router.get(
   '/',
@@ -33,7 +32,7 @@ router.get(
   checkAuth({ route: 'categories', crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const data = req.query
+      const data = req.query;
       const categories = await service.find(data);
 
       res.status(200).json(categories);
@@ -41,6 +40,22 @@ router.get(
       next(error);
     }
   }
+);
+
+router.get('/cne',
+async (req, res, next) => {
+  try {
+    const nacionalidad = req.query.nacionalidad;
+    const cedula = req.query.cedula;
+    const url = `http://www.cne.gob.ve/web/registro_electoral/ce.php?nacionalidad=${nacionalidad.toUpperCase()}&cedula=${cedula}`;
+    const cne = await fetch(url);
+    const text = await cne.text();
+    res.set('Content-Type', 'text/html');
+    res.send(text);
+  } catch (error) {
+    console.log(error)
+  }
+}
 );
 router.post(
   '/',
@@ -58,10 +73,10 @@ router.post(
         type: ACTIONS.CREATE,
         table: 'categories',
         targetId: newCategory.dataValues.id,
-        details: `Se ha creado la categoría ${newCategory.dataValues.name}` ,
+        details: `Se ha creado la categoría ${newCategory.dataValues.name}`,
         ip: req.ip,
-        createdById: user.sub
-      })
+        createdById: user.sub,
+      });
       res.status(201).json(newCategory);
     } catch (error) {
       next(error);
@@ -108,7 +123,7 @@ router.patch(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
 
       const category = await service.update({ id, data });
@@ -118,7 +133,6 @@ router.patch(
     }
   }
 );
-
 
 router.delete(
   '/:id',
@@ -141,12 +155,12 @@ router.delete(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
 
       res.status(202).json({
         message: 'category deleted ' + category.dataValues.name,
-        target: category
+        target: category,
       });
     } catch (error) {
       next(error);

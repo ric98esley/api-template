@@ -149,7 +149,7 @@ class LocationsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'username']
+          attributes: ['id', 'username', 'email']
         },
         {
           model: models.Group,
