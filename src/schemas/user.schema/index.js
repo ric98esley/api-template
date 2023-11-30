@@ -25,6 +25,7 @@ const createUserSchema = Joi.object({
     address,
   }),
   username: username.min(5).required(),
+  groupId: id,
   email: email.required(),
   password: password.required(),
   role,
@@ -32,18 +33,13 @@ const createUserSchema = Joi.object({
 });
 
 const updateUserSchema = Joi.object({
+  username,
+  isActive,
   email,
   role,
-  isActive,
-  username,
-  name,
-  lastName,
-  phone,
-  cardId,
   groupId: id,
-  managerId: id,
-  address
 });
+
 const searchUserSchema = Joi.object({
   username,
   search: toSearch,

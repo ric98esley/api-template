@@ -90,7 +90,7 @@ class User extends Model {
     this.belongsTo(models.Group, {
       as: 'group',
       foreignKey: 'groupId'
-    })
+    });
   }
 
   static config(sequelize) {

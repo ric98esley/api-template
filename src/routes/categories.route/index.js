@@ -154,7 +154,7 @@ router.delete(
         table: 'categories',
         targetId: id,
         details,
-        ip: req.ip,
+        ip: req. ip,
         createdById: user.sub,
       });
 

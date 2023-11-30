@@ -94,7 +94,7 @@ router.post(
         type: ACTIONS.CREATE,
         table: 'users',
         targetId: newUser.dataValues.id,
-        details: 'Se registrado un nuevo usuario',
+        details: `El usuario ${user.sub} a registrado un nuevo usuario`,
         ip: req.ip,
         createdById: user.sub
       })

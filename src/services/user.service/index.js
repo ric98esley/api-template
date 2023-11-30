@@ -21,7 +21,15 @@ class UsersServices {
         {
           as: 'profile',
           model: models.Customer,
-          attributes: ['id', 'name', 'lastName', 'phone', 'cardId', 'createdAt', 'updatedAt'],
+          attributes: [
+            'id',
+            'name',
+            'lastName',
+            'phone',
+            'cardId',
+            'createdAt',
+            'updatedAt',
+          ],
         },
         {
           as: 'group',
@@ -40,7 +48,15 @@ class UsersServices {
           username,
         }),
       },
-      attributes: ['id', 'username', 'email', 'role', 'createdAt', 'updatedAt', 'deletedAt'],
+      attributes: [
+        'id',
+        'username',
+        'email',
+        'role',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
     };
     const user = await models.User.findOne(options);
     if (!user) {
@@ -57,6 +73,7 @@ class UsersServices {
     role,
     isActive,
     all,
+    group,
     limit = 10,
     offset = 0,
     startDate,
@@ -163,6 +180,11 @@ class UsersServices {
               ],
             },
           }),
+        },
+        {
+          model: models.Group,
+          as: 'group',
+          attributes: ['id', 'name', 'code'],
         },
       ],
       order: [[sort, order]],
