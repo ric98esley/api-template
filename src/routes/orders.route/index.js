@@ -10,7 +10,7 @@ const OrderRecordService = require('../../services/order.service');
 const MovementService = require('../../services/order.service/movement.service');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { createOrderRecordSchema, searchOrderRecordSchema, getOrderRecordSchema } = require('../../schemas/order.schema');
+const { createOrderRecordSchema, searchOrderRecordSchema, getOrderRecordSchema, createCheckingRecordSchema } = require('../../schemas/order.schema');
 
 const logService = new LogService();
 const orderService = new OrderRecordService();
@@ -111,7 +111,7 @@ router.post(
   '/checking',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(createOrderRecordSchema, 'body'),
+  validatorHandler(createCheckingRecordSchema, 'body'),
   checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.CHECKING }),
   async (req, res, next) => {
     try {

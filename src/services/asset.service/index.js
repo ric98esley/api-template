@@ -77,7 +77,7 @@ class AssetsServices {
 
   async createBulk({ assets, user }) {
     const createdById = user.sub;
-    console.log(assets);
+
     const data = assets.map((asset) => {
       return {
         ...asset,
@@ -94,9 +94,10 @@ class AssetsServices {
       };
     });
 
+    console.log(data);
+
     const newAssets = await models.Asset.bulkCreate(data, {
       include: ['specifications'],
-      ignoreDuplicates: true,
     });
 
     const createdAssets = newAssets.filter((asset) => asset.id !== null);

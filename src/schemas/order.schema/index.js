@@ -61,5 +61,6 @@ module.exports = {
   createOrderRecordSchema,
   updateOrderRecordSchema,
   searchOrderRecordSchema,
-  getOrderRecordSchema
+  getOrderRecordSchema,
+  createCheckingRecordSchema
 };
