@@ -21,6 +21,7 @@ const { VAsset, VAssetSchema } = require('./asset.model/v_asset.model');
 const { Product, ProductSchema } = require('./consumable.model');
 const { LocationProducts, LocationProductsSchema } = require('./warehouse.model/locationProducts.model');
 const { Settings, SettingSchema } = require('./settings.model');
+const { VMovement, VMovementSchema } = require('./orders.model/v-movements.model');
 
 function setupModels(sequelize) {
 
@@ -50,6 +51,7 @@ function setupModels(sequelize) {
   Settings.init(SettingSchema, Settings.config(sequelize));
 
   VAsset.init(VAssetSchema, VAsset.config(sequelize))
+  VMovement.init(VMovementSchema, VMovement.config(sequelize));
 
   // INICIALIZA ASOCIACIONES
 
@@ -74,6 +76,8 @@ function setupModels(sequelize) {
 
   Product.associate(sequelize.models);
   LocationProducts.associate(sequelize.models);
+
+  VMovement.associate(sequelize.models);
 
   // HOOKS
 

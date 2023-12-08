@@ -11,6 +11,7 @@ const MovementService = require('../../services/order.service/movement.service')
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
 const { createOrderRecordSchema, searchOrderRecordSchema, getOrderRecordSchema, createCheckingRecordSchema } = require('../../schemas/order.schema');
+const { getMovementSchema, searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
 
 const logService = new LogService();
 const orderService = new OrderRecordService();
@@ -57,12 +58,14 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getOrderRecordSchema, 'params'),
+  validatorHandler(searchMovementSchema, 'query'),
   checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.CHECKOUT }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
+      const queries = req.query;
 
-      const movements = await movementService.find({orderId: id, all: true});
+      const movements = await movementService.find({...queries, orderId: id, all: true, paranoid: true});
 
       res.json(movements);
     } catch (error) {

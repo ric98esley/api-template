@@ -28,7 +28,7 @@ class MovementService {
     toId,
     orderId,
   }) {
-    console.log(all)
+    console.log(all);
     const where = {
       ...(movementType && {
         type: movementType,
@@ -57,11 +57,64 @@ class MovementService {
             ],
           },
         }),
+      ...(category && {
+        '$asset.model.category.name$': {
+          [Op.like]: `%${category}%`,
+        },
+      }),
+      ...(brand && {
+        '$asset.model.brand.name$': {
+          [Op.like]: `%${brand}%`,
+        },
+      }),
+      ...(model && {
+        '$asset.model.name$': {
+          [Op.like]: `%${model}%`,
+        },
+      }),
+      ...(location && {
+        [Op.or]: [
+          {
+            '$to.code$': {
+              [Op.like]: `%${location}%`,
+            },
+          },
+          {
+            '$to.name$': {
+              [Op.like]: `%${location}%`,
+            },
+          },
+          {
+            '$to.rif$': {
+              [Op.like]: `%${location}%`,
+            },
+          },
+          {
+            '$to.phone$': {
+              [Op.like]: `%${location}%`,
+            },
+          },
+        ],
+      }),
+      ...(group && {
+        [Op.or]: [
+          {
+            '$to.group.name$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+          {
+            '$to.group.code$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+        ],
+      }),
     };
     const options = {
       order: [[sort, order]],
-      ...(paranoid && {
-        paranoid: false,
+      ...(paranoid != undefined && {
+        paranoid: paranoid == 'true' ? true : false,
       }),
       limit: Number(limit),
       offset: Number(offset),
@@ -70,6 +123,7 @@ class MovementService {
         {
           model: models.Asset,
           as: 'asset',
+          paranoid: false,
           ...(serial && {
             where: {
               serial: {
@@ -83,37 +137,16 @@ class MovementService {
               model: models.Model,
               as: 'model',
               attributes: ['id', 'name'],
-              ...(model && {
-                where: {
-                  name: {
-                    [Op.like]: `%${model}%`,
-                  },
-                },
-              }),
               include: [
                 {
                   model: models.Category,
                   as: 'category',
                   attributes: ['id', 'name'],
-                  ...(category && {
-                    where: {
-                      name: {
-                        [Op.like]: `%${category}%`,
-                      },
-                    },
-                  }),
                 },
                 {
                   model: models.Brand,
                   as: 'brand',
                   attributes: ['id', 'name'],
-                  ...(brand && {
-                    where: {
-                      name: {
-                        [Op.like]: `%${brand}%`,
-                      },
-                    },
-                  }),
                 },
               ],
             },
@@ -123,63 +156,178 @@ class MovementService {
           model: models.OrderRecord,
           as: 'order',
           attributes: ['id', 'type', 'description'],
-          where :{
+          where: {
             ...(orderType && {
-              type: orderType
-            })
-          }
+              type: orderType,
+            }),
+          },
         },
         {
           model: models.Location,
           as: 'from',
           required: false,
           attributes: ['id', 'code', 'name', 'phone'],
-          where: {
-            ...(group && {
-              group: {
-                [Op.like]: `%${group}%`,
-              },
-            }),
-            ...(groupId && {
-              groupId,
-            }),
-            ...(location && {
-              [Op.or]: [
-                {
-                  code: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-                {
-                  name: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-                {
-                  rif: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-                {
-                  phone: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-              ],
-            }),
-          },
+          include: [
+            {
+              model: models.Group,
+              as: 'group',
+              attributes: ['id', 'name', 'code'],
+            },
+          ],
         },
         {
           model: models.Location,
           as: 'to',
           required: false,
           attributes: ['id', 'code', 'name', 'phone'],
+          include: [
+            {
+              model: models.Group,
+              as: 'group',
+              attributes: ['id', 'name', 'code'],
+            },
+          ],
         },
       ],
-      attributes: ['id', 'quantity', 'type' ,'current', 'createdAt'],
+      attributes: ['id', 'quantity', 'type', 'current', 'createdAt'],
     };
 
     const { rows, count } = await models.Movement.findAndCountAll(options);
+
+    return {
+      total: count,
+      rows,
+    };
+  }
+  async vFind({
+    all,
+    orderType,
+    movementType,
+    current,
+    location,
+    group,
+    serial,
+    category,
+    model,
+    brand,
+    limit = 10,
+    offset = 0,
+    sort = 'createdAt',
+    order = 'DESC',
+    startDate,
+    endDate,
+    assetId,
+    fromId,
+    toId,
+    orderId,
+  }) {
+    console.log(all);
+    const where = {
+      ...(movementType && {
+        type: movementType,
+      }),
+      ...(!all && {
+        current: current ? true : false,
+      }),
+      ...(toId && {
+        toId,
+      }),
+      ...(fromId && {
+        fromId,
+      }),
+      ...(assetId && {
+        assetId,
+      }),
+      ...(orderId && {
+        orderId,
+      }),
+      ...(serial && {
+        serial: {
+          [Op.like]: `%${serial}%`,
+        },
+      }),
+      ...(startDate &&
+        endDate && {
+          createdAt: {
+            [Op.between]: [
+              new Date(startDate).toISOString(),
+              new Date(endDate).toISOString(),
+            ],
+          },
+        }),
+      ...(orderType && {
+        type: orderType,
+      }),
+      ...(category && {
+        category: {
+          [Op.like]: `%${category}%`,
+        },
+      }),
+      ...(brand && {
+        brand: {
+          [Op.like]: `%${brand}%`,
+        },
+      }),
+      ...(model && {
+        model: {
+          [Op.like]: `%${model}%`,
+        },
+      }),
+      ...(location && {
+        [Op.or]: [
+          {
+            toCode: {
+              [Op.like]: `%${location}%`,
+            },
+          },
+          {
+            toName: {
+              [Op.like]: `%${location}%`,
+            },
+          },
+        ],
+      }),
+      ...(group && {
+        [Op.or]: [
+          {
+            toGroupCode: {
+              [Op.like]: `%${group}%`,
+            },
+          },
+          {
+            toGroupName: {
+              [Op.like]: `%${group}%`,
+            },
+          },
+        ],
+      })
+    };
+    const options = {
+      order: [[sort, order]],
+      limit: Number(limit),
+      offset: Number(offset),
+      where,
+      attributes: [
+          'id',
+          'orderId',
+          'serial',
+          'model',
+          'category',
+          'brand',
+          'fromCode',
+          'fromName',
+          'toCode',
+          'toName',
+          'toGroupCode',
+          'toGroupName',
+          'type',
+          'description',
+          'current',
+          'createdBy',
+      ]
+    };
+
+    const { rows, count } = await models.VMovement.findAndCountAll(options);
 
     return {
       total: count,
