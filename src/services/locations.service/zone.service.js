@@ -33,7 +33,12 @@ class ZonesServices {
   }
 
   async findOne(id) {
-    const zone = await models.Zone.findByPk(id);
+    const zone = await models.Zone.findByPk(id,{
+      attributes: [
+        'id', 'name', 'createdAt'
+      ]
+    });
+
     if (!zone) {
       throw boom.notFound("Zone not found");
     }

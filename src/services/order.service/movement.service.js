@@ -188,6 +188,11 @@ class MovementService {
             },
           ],
         },
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username']
+        }
       ],
       attributes: ['id', 'quantity', 'type', 'current', 'createdAt'],
     };

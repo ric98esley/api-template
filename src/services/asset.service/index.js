@@ -211,6 +211,7 @@ class AssetsServices {
     offset = 0,
     sort = 'createdAt',
     order = 'DESC',
+    location,
     type,
     enabled,
     groupId,
@@ -226,34 +227,56 @@ class AssetsServices {
     startDate,
     endDate,
   }) {
+
+    const where = {
+      ...(enabled !== undefined && {
+        enabled: enabled == 'true' ? true : false,
+      }),
+      ...(serial && {
+        serial: {
+          [Op.like]: `%${serial}%`,
+        },
+      }),
+      ...(invoiceId && {
+        invoiceId,
+      }),
+      ...(startDate &&
+        endDate && {
+          createdAt: {
+            [Op.between]: [
+              new Date(startDate).toISOString(),
+              new Date(endDate).toISOString(),
+            ],
+          },
+        }),
+      ...(location && {
+        [Op.or]: [
+          {
+            '$location.name$': {
+              [Op.like]: `%${location}%`
+            }
+          },
+          {
+            '$location.code$': {
+              [Op.like]: `%${location}%`
+            }
+          },
+          {
+            '$location.address$': {
+              [Op.like]: `%${location}%`
+            }
+          },
+
+        ]
+      })
+    }
     const options = {
       limit: Number(limit),
       offset: Number(offset),
       ...(all && {
         paranoid: false,
       }),
-      where: {
-        ...(enabled !== undefined && {
-          enabled: enabled == 'true' ? true : false,
-        }),
-        ...(serial && {
-          serial: {
-            [Op.like]: `%${serial}%`,
-          },
-        }),
-        ...(invoiceId && {
-          invoiceId,
-        }),
-        ...(startDate &&
-          endDate && {
-            createdAt: {
-              [Op.between]: [
-                new Date(startDate).toISOString(),
-                new Date(endDate).toISOString(),
-              ],
-            },
-          }),
-      },
+      where,
       include: [
         {
           model: models.User,

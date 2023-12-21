@@ -104,6 +104,34 @@ class GroupsService {
           },
         ],
       }),
+      ...(manager && {
+        [Op.or]: [
+          {
+            '$manager.username$': {
+              [Op.like]: `%${manager}%`,
+            },
+          },
+          {
+            '$manager.email$': {
+              [Op.like]: `%${manager}%`,
+            },
+          },
+        ],
+      }),
+      ...(parent && {
+        [Op.or]: [
+          {
+            '$parent.name$': {
+              [Op.like]: `%${parent}%`,
+            },
+          },
+          {
+            '$parent.code$': {
+              [Op.like]: `%${parent}%`,
+            },
+          },
+        ],
+      })
     };
     const options = {
       limit: Number(limit),
@@ -117,22 +145,6 @@ class GroupsService {
           ...(!manager && {
             required: false,
           }),
-          where: {
-            ...(manager && {
-              [Op.or]: [
-                {
-                  username: {
-                    [Op.like]: `%${manager}%`,
-                  },
-                },
-                {
-                  email: {
-                    [Op.like]: `%${manager}%`,
-                  },
-                },
-              ],
-            }),
-          },
           attributes: ['id', 'username'],
           include: [
             {
@@ -152,22 +164,6 @@ class GroupsService {
         {
           model: models.Group,
           as: 'parent',
-          ...(parent && {
-            where: {
-              [Op.or]: [
-                {
-                  name: {
-                    [Op.like]: `%${parent}%`,
-                  },
-                },
-                {
-                  code: {
-                    [Op.like]: `%${parent}%`,
-                  },
-                },
-              ],
-            },
-          }),
           attributes: ['id', 'code', 'name'],
         },
       ],

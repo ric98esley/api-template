@@ -13,7 +13,6 @@ class ModelServices {
   }
 
   async find({
-    id,
     name,
     brand,
     category,
@@ -26,13 +25,10 @@ class ModelServices {
   }) {
     const where = {
       ...(categoryId && {
-        categoryId
+        categoryId: Number(categoryId)
       }),
       ...(brandId && {
-        brandId
-      }),
-      ...(id && {
-        id,
+        brandId: Number(brandId)
       }),
       ...(name && {
         name: {

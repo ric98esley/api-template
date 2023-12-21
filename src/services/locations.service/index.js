@@ -35,21 +35,30 @@ class LocationsServices {
         {
           model: models.Customer,
           as: 'manager',
-          attributes: ['id', 'name', 'lastName'],
+          attributes: ['id', 'name', 'lastName', 'phone'],
         },
         {
           model: models.Zone,
           as: 'zone',
           attributes: ['id', 'name'],
-
         },
         {
           model: models.LocationType,
-          as:'type',
-          attributes: ['id', 'name']
+          as: 'type',
+          attributes: ['id', 'name'],
         },
       ],
-      attributes: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdAt', 'updatedAt', 'deletedAt'],
+      attributes: [
+        'id',
+        'code',
+        'name',
+        'phone',
+        'rif',
+        'address',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
     };
     const location = await models.Location.findOne(options);
     if (!location) {
@@ -140,6 +149,23 @@ class LocationsServices {
             [Op.between]: [startDate, endDate],
           },
         }),
+      ...(group && {
+        [Op.or]: [
+          {
+            '$group.name$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+          {
+            '$group.code$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+        ],
+      }),
+      ...(status && {
+        '$type.status$': status.split(','),
+      }),
     };
     const options = {
       where,
@@ -149,42 +175,39 @@ class LocationsServices {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'username', 'email']
+          attributes: ['id', 'username', 'email'],
         },
         {
           model: models.Group,
           as: 'group',
-          ...(group && {
-            where: {
-              name: {
-                [Op.like]: `%${group}%`,
-              },
-            },
-          }),
-          attributes: ['id', 'name', 'code']
+          attributes: ['id', 'name', 'code'],
         },
         {
           model: models.Customer,
           as: 'manager',
-          attributes: ['id', 'name', 'lastName']
+          attributes: ['id', 'name', 'lastName'],
         },
         {
           model: models.Zone,
           as: 'zone',
-          attributes: ['id', 'name']
+          attributes: ['id', 'name'],
         },
         {
           model: models.LocationType,
           as: 'type',
           attributes: ['id', 'name', 'status'],
-          ...(status && {
-            where: {
-              status: status.split(',')
-            }
-          })
         },
       ],
-      attributes: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdAt'],
+      attributes: [
+        'id',
+        'code',
+        'isActive',
+        'name',
+        'phone',
+        'rif',
+        'address',
+        'createdAt',
+      ],
       order: [[sort, order]],
     };
     const { count, rows } = await models.Location.findAndCountAll(options);
