@@ -1,4 +1,4 @@
-const { Model, DataTypes, Sequelize } = require('sequelize');
+const { Model, DataTypes, Sequelize, STRING } = require('sequelize');
 
 const GROUP_TABLE = 'groups_t';
 
@@ -27,14 +27,14 @@ const GroupSchema = {
     unique: true,
     type: DataTypes.STRING(45),
     set(value) {
-      this.setDataValue('code', value.trim().toUpperCase());
+      this.setDataValue('code', String(value).trim().toUpperCase());
     }
   },
   name: {
     allowNull: false,
     type: DataTypes.STRING(45),
     set(value) {
-      this.setDataValue('name', value.trim().toUpperCase());
+      this.setDataValue('name', String(value).trim().toUpperCase());
     }
   },
   enabled: {

@@ -4,6 +4,7 @@ const passport = require('passport');
 // Middlewares
 const { checkAuth, checkUser } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
+const { upload } = require('../../middlewares/upload.handler');
 
 // Schemas
 const {
@@ -17,6 +18,7 @@ const GroupsService = require('../../services/group.service');
 const LogService = require('../../services/log.service');
 const logService = new LogService();
 const { ACTIONS } = require('../../utils/roles');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
 
 const router = express.Router();
 
@@ -105,6 +107,30 @@ router.post(
 
       res.status(200).json(newGroup);
     } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post(
+  '/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  upload.single('uploaded_file'),
+  async (req, res, next) => {
+    try {
+
+      console.log(req.file)
+
+      const filePath = req.file.path;
+      const csvData = await parseCSV(filePath, ',', req.user.sub);
+
+      const importedGroups = await groupService.createMany(csvData);
+      console.log(importedGroups.length);
+
+      res.json(importedGroups);
+    } catch (error) {
+      console.log(error);
       next(error);
     }
   }

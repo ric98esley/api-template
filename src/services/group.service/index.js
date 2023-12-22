@@ -15,6 +15,14 @@ class GroupsService {
     return newGroup;
   }
 
+  async createMany(groups) {
+    const newGroups = await models.Group.bulkCreate(groups, {
+      fields: ['code', 'name', 'managerId','createdById','parentId'],
+      updateOnDuplicate: ['code', 'name', 'managerId', 'parentId'],
+    });
+    return newGroups;
+  }
+
   async findOne({ id }) {
     const group = await models.Group.findByPk(id, {
       include: [
@@ -62,7 +70,6 @@ class GroupsService {
     return group;
   }
   async find({
-    id,
     code,
     name,
     managerId,
@@ -75,16 +82,12 @@ class GroupsService {
     order = 'DESC',
   }) {
     const where = {
-      ...(id && {
-        id,
-      }),
       ...(groupId && {
         id: groupId,
       }),
-      ...(!id &&
-        managerId && {
-          managerId,
-        }),
+      ...(managerId && {
+        managerId,
+      }),
       ...(code && {
         code: {
           [Op.like]: `%${code}%`,
@@ -131,7 +134,7 @@ class GroupsService {
             },
           },
         ],
-      })
+      }),
     };
     const options = {
       limit: Number(limit),
@@ -150,9 +153,16 @@ class GroupsService {
             {
               model: models.Customer,
               as: 'profile',
-              attributes: ['id', 'name', 'lastName', 'phone', 'cardId', 'createdAt']
-            }
-          ]
+              attributes: [
+                'id',
+                'name',
+                'lastName',
+                'phone',
+                'cardId',
+                'createdAt',
+              ],
+            },
+          ],
         },
         // createdBy
         {
