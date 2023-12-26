@@ -37,6 +37,14 @@ class CategoryServices {
     return newCategory;
   }
 
+  async createMany(items) {
+    const newCategories = await models.Category.bulkCreate(items, {
+      fields: ['id', 'name', 'createdById'],
+      updateOnDuplicate: ['id', 'name', 'createdById'],
+    });
+    return newCategories;
+  }
+
   async find({
     id,
     search,

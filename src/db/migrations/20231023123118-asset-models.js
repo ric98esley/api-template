@@ -6,6 +6,7 @@ const { MODEL_TABLE, ModelSchema } = require('../models/asset.model/model.model'
 const { HARDWARE_SPEC_TABLE, HardwareSpecSchema } = require('../models/asset.model/specification.model');
 const { BRAND_TABLE, BrandSchema } = require('../models/brand.model');
 const { CATEGORY_TABLE, CategorySchema } = require('../models/category.model');
+const { CategoryClassSchema, CATEGORY_CLASS_TABLE } = require('../models/category.model/categoryClass.model');
 const { CATEGORY_SPEC_TABLE, CategorySpecSchema } = require('../models/category.model/categorySpec.model');
 const { LOCATION_PRODUCTS_TABLE, LocationProductsSchema } = require('../models/warehouse.model/locationProducts.model');
 const { WAREHOUSE_PRODUCTS_TABLE, WarehouseProductsSchema } = require('../models/warehouse.model/warehouseProducts');
@@ -13,6 +14,7 @@ const { WAREHOUSE_PRODUCTS_TABLE, WarehouseProductsSchema } = require('../models
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
+    await queryInterface.createTable(CATEGORY_CLASS_TABLE, CategoryClassSchema);
     await queryInterface.createTable(CATEGORY_TABLE, CategorySchema);
     await queryInterface.createTable(BRAND_TABLE, BrandSchema);
     await queryInterface.createTable(MODEL_TABLE, ModelSchema);

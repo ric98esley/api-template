@@ -17,8 +17,7 @@ class GroupsService {
 
   async createMany(groups) {
     const newGroups = await models.Group.bulkCreate(groups, {
-      fields: ['code', 'name', 'managerId','createdById','parentId'],
-      updateOnDuplicate: ['code', 'name', 'managerId', 'parentId'],
+      ignoreDuplicates: true
     });
     return newGroups;
   }

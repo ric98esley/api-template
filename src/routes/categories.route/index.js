@@ -6,6 +6,8 @@ const LogService = require('../../services/log.service');
 
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
+const { upload } = require('../../middlewares/upload.handler');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
 
 const specificationsRoute = require('./specification.route');
 
@@ -15,7 +17,7 @@ const {
   updateCategory,
   searchCategory,
 } = require('../../schemas/category.schema');
-const { ACTIONS } = require('../../utils/roles');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
 
 const service = new CategoriesServices();
 const logService = new LogService();
@@ -42,21 +44,6 @@ router.get(
   }
 );
 
-router.get('/cne',
-async (req, res, next) => {
-  try {
-    const nacionalidad = req.query.nacionalidad;
-    const cedula = req.query.cedula;
-    const url = `http://www.cne.gob.ve/web/registro_electoral/ce.php?nacionalidad=${nacionalidad.toUpperCase()}&cedula=${cedula}`;
-    const cne = await fetch(url);
-    const text = await cne.text();
-    res.set('Content-Type', 'text/html');
-    res.send(text);
-  } catch (error) {
-    console.log(error)
-  }
-}
-);
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -83,6 +70,29 @@ router.post(
     }
   }
 );
+
+router.post(
+  '/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  checkAuth({ route: SCOPE.GROUPS, crud: ACTIONS.CREATE }),
+  upload.single('categories'),
+  async (req, res, next) => {
+    try {
+      const filePath = req.file.path;
+      const csvData = await parseCSV(filePath, ',', req.user.sub);
+
+      const imported = await service.createMany(csvData);
+      const total = imported.filter((item) => item.isNewRecord);
+      res.status(201).json({
+        message: 'Se han importado ' + total.length + ' categorías',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -154,7 +164,7 @@ router.delete(
         table: 'categories',
         targetId: id,
         details,
-        ip: req. ip,
+        ip: req.ip,
         createdById: user.sub,
       });
 

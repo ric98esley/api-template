@@ -116,21 +116,22 @@ router.post(
   '/import',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
+  checkAuth({ route: 'groups', crud: ACTIONS.CREATE }),
   upload.single('uploaded_file'),
   async (req, res, next) => {
     try {
-
-      console.log(req.file)
-
       const filePath = req.file.path;
       const csvData = await parseCSV(filePath, ',', req.user.sub);
 
       const importedGroups = await groupService.createMany(csvData);
-      console.log(importedGroups.length);
+      const total = importedGroups.filter((group) => group.isNewRecord);
 
-      res.json(importedGroups);
+      res.status(201).json(
+        {
+          message: 'Se han importado ' + total.length + ' grupos',
+        }
+      );
     } catch (error) {
-      console.log(error);
       next(error);
     }
   }
