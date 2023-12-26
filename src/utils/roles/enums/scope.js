@@ -17,6 +17,7 @@ const SCOPE = {
   ACCESSORIES: 'accessories',
   ORDERS: 'orders',
   MOVEMENTS: 'movements',
+  CATEGORY_CLASSES: 'category_classes',
 }
 
 module.exports = SCOPE;

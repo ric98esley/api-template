@@ -35,6 +35,9 @@ const grantSuperuser = {
     [ACTIONS.CREATE]: {
       possession: POSSESSION.ANY,
     },
+    [ACTIONS.IMPORT]: {
+      possession: POSSESSION.ANY,
+    },
     [ACTIONS.READ]: {
       possession: POSSESSION.ANY,
     },
@@ -230,6 +233,24 @@ const grantSuperuser = {
       possession: POSSESSION.ANY,
     },
     [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
+  [SCOPE.CATEGORY_CLASSES]:
+  {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    },
+    [ACTIONS.IMPORT]: {
       possession: POSSESSION.ANY
     }
   },

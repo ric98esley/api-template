@@ -1,7 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 
-const CategoriesServices = require('../../services/category.service');
+const CategoriesServices = require('../../services/category.service/classes.service');
 const LogService = require('../../services/log.service');
 
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
@@ -9,31 +9,22 @@ const validatorHandler = require('../../middlewares/validator.handler');
 const { upload } = require('../../middlewares/upload.handler');
 const { parseCSV } = require('../../helpers/parseCSV.helper');
 
-const specificationsRoute = require('./specification.route');
-const classRoute = require('./class.route');
 
-const {
-  createCategory,
-  getCategory,
-  updateCategory,
-  searchCategory,
-} = require('../../schemas/category.schema');
 const { ACTIONS, SCOPE } = require('../../utils/roles');
+const { searchCategoryClass, createCategoryClass, getCategoryClass, updateCategoryClass } = require('../../schemas/category.schema/class.schema');
 
 const service = new CategoriesServices();
 const logService = new LogService();
 
 const router = express.Router();
 
-router.use('/specifications', specificationsRoute);
-router.use('/classes', classRoute);
 
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(searchCategory, 'query'),
-  checkAuth({ route: 'categories', crud: ACTIONS.READ }),
+  validatorHandler(searchCategoryClass, 'query'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const data = req.query;
@@ -50,8 +41,8 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(createCategory, 'body'),
-  checkAuth({ route: 'categories', crud: ACTIONS.CREATE }),
+  validatorHandler(createCategoryClass, 'body'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const data = req.body;
@@ -77,17 +68,17 @@ router.post(
   '/import',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  checkAuth({ route: SCOPE.CATEGORIES, crud: ACTIONS.IMPORT }),
-  upload.single('categories'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.IMPORT }),
+  upload.single('classes'),
   async (req, res, next) => {
     try {
       const filePath = req.file.path;
       const csvData = await parseCSV(filePath, ',', req.user.sub);
 
       const imported = await service.createMany(csvData);
-      const total = imported.filter((item) => item.isNewRecord);
+
       res.status(201).json({
-        message: 'Se han importado ' + total.length + ' categorías',
+        message: 'Se han importado ' + imported.length + ' clases',
       });
     } catch (error) {
       next(error);
@@ -99,8 +90,8 @@ router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(getCategory, 'params'),
-  checkAuth({ route: 'categories', crud: ACTIONS.READ }),
+  validatorHandler(getCategoryClass, 'params'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -116,9 +107,9 @@ router.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(getCategory, 'params'),
-  validatorHandler(updateCategory, 'body'),
-  checkAuth({ route: 'categories', crud: ACTIONS.UPDATE }),
+  validatorHandler(getCategoryClass, 'params'),
+  validatorHandler(updateCategoryClass, 'body'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
       const user = req.user;
@@ -150,8 +141,8 @@ router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(getCategory, 'params'),
-  checkAuth({ route: 'categories', crud: ACTIONS.DELETE }),
+  validatorHandler(getCategoryClass, 'params'),
+  checkAuth({ route: SCOPE.CATEGORY_CLASSES, crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
