@@ -22,6 +22,7 @@ const { Product, ProductSchema } = require('./consumable.model');
 const { LocationProducts, LocationProductsSchema } = require('./warehouse.model/locationProducts.model');
 const { Settings, SettingSchema } = require('./settings.model');
 const { VMovement, VMovementSchema } = require('./orders.model/v-movements.model');
+const { CategoryClass, CategoryClassSchema } = require('./category.model/categoryClass.model');
 
 function setupModels(sequelize) {
 
@@ -30,6 +31,7 @@ function setupModels(sequelize) {
   User.init(UserSchema, User.config(sequelize));
   Log.init(LogSchema, Log.config(sequelize));
   Group.init(GroupSchema, Group.config(sequelize));
+  CategoryClass.init(CategoryClassSchema, CategoryClass.config(sequelize));
   Category.init(CategorySchema, Category.config(sequelize));
   Brand.init(BrandSchema, Brand.config(sequelize));
   AssetModel.init(ModelSchema, AssetModel.config(sequelize));
@@ -59,6 +61,7 @@ function setupModels(sequelize) {
   User.associate(sequelize.models);
   Log.associate(sequelize.models);
   Group.associate(sequelize.models);
+  CategoryClass.associate(sequelize.models);
   Category.associate(sequelize.models);
   Brand.associate(sequelize.models);
   AssetModel.associate(sequelize.models);

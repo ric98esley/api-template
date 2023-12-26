@@ -1,8 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 
-const CATEGORY_TABLE = 'categories';
+const CATEGORY_CLASS_TABLE = 'classes';
 const { USER_TABLE } = require('../user.model');
-const { CATEGORY_CLASS_TABLE } = require('./categoryClass.model');
 
 /**
  * @description description of each field in the table
@@ -15,9 +14,7 @@ const { CATEGORY_CLASS_TABLE } = require('./categoryClass.model');
  * @property {boolean} field - rename the field
  */
 
-const category_types = ['asset', 'accessory', 'consumable'];
-
-const CategorySchema = {
+const CategoryClassSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
@@ -32,28 +29,6 @@ const CategorySchema = {
     set(value) {
       this.setDataValue('name', String(value).trim().toUpperCase());
     },
-  },
-  type: {
-    type: DataTypes.STRING(20),
-    allowNull: false,
-    validate: {
-      isIn: [category_types],
-    },
-    set(value) {
-      this.setDataValue('type', String(value).trim());
-    },
-    defaultValue: 'asset',
-  },
-  classId: {
-    allowNull: true,
-    type: DataTypes.INTEGER,
-    field: 'class_id',
-    references: {
-      model: CATEGORY_CLASS_TABLE,
-      key: 'id',
-    },
-    onUpdate: 'RESTRICT',
-    onDelete: 'RESTRICT',
   },
   description: {
     allowNull: true,
@@ -87,37 +62,27 @@ const CategorySchema = {
   },
 };
 
-class Category extends Model {
+class CategoryClass extends Model {
   static associate(models) {
     this.belongsTo(models.User, {
       as: 'createdBy',
       foreignKey: 'createdById',
     });
-    this.belongsToMany(models.HardwareSpec, {
-      through: models.CategorySpec,
-      as: 'customFields',
-      foreignKey: 'categoryId',
-    });
-    this.belongsToMany(models.Brand, {
-      through: models.Model,
-      as: 'brands',
-      foreignKey: 'category_id',
-    });
-    this.hasMany(models.Model, {
-      as: 'models',
-      foreignKey: 'categoryId',
+    this.hasMany(models.Category, {
+      as: 'categories',
+      foreignKey: 'classId',
     });
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: CATEGORY_TABLE,
-      modelName: 'Category',
+      tableName: CATEGORY_CLASS_TABLE,
+      modelName: 'CategoryClass',
       timestamps: true,
       paranoid: true,
     };
   }
 }
 
-module.exports = { CATEGORY_TABLE, CategorySchema, Category };
+module.exports = { CategoryClassSchema, CATEGORY_CLASS_TABLE, CategoryClass };
