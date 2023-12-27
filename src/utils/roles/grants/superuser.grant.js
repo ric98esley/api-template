@@ -66,6 +66,9 @@ const grantSuperuser = {
     [ACTIONS.CREATE]: {
       possession: POSSESSION.ANY,
     },
+    [ACTIONS.IMPORT]: {
+      possession: POSSESSION.ANY,
+    },
     [ACTIONS.READ]: {
       possession: POSSESSION.ANY,
     },

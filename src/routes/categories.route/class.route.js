@@ -77,6 +77,20 @@ router.post(
 
       const imported = await service.createMany(csvData);
 
+      for (const item of imported) {
+        const details = {
+          message: `Se ha importado la marca ${item.dataValues.name}`,
+        };
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'categories',
+          targetId: item.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: req.user.sub,
+        });
+      }
+
       res.status(201).json({
         message: 'Se han importado ' + imported.length + ' clases',
       });

@@ -85,9 +85,8 @@ router.post(
       const csvData = await parseCSV(filePath, ',', req.user.sub);
 
       const imported = await service.createMany(csvData);
-      const total = imported.filter((item) => item.isNewRecord);
       res.status(201).json({
-        message: 'Se han importado ' + total.length + ' categorías',
+        message: 'Se han importado ' + imported.length + ' categorías',
       });
     } catch (error) {
       next(error);

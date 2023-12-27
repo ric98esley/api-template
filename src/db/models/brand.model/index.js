@@ -25,7 +25,7 @@ const BrandSchema = {
     type: DataTypes.STRING(45),
     unique: true,
     set(value) {
-      this.setDataValue('name', value.trim().toUpperCase());
+      this.setDataValue('name', String(value).trim().toUpperCase());
     },
   },
   createdById: {

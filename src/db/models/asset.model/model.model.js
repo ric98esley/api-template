@@ -47,7 +47,7 @@ const ModelSchema = {
       model: CATEGORY_TABLE,
       key: 'id',
     },
-    onUpdate: 'RESTRICT',
+    onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
   },
   brandId: {
@@ -58,7 +58,7 @@ const ModelSchema = {
       model: BRAND_TABLE,
       key: 'id',
     },
-    onUpdate: 'RESTRICT',
+    onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
   },
   purchaseCost: {

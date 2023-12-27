@@ -9,7 +9,9 @@ const {
   getBrand,
 } = require('../../schemas/brand.schema');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
-const { ACTIONS } = require('../../utils/roles');
+const { upload } = require('../../middlewares/upload.handler');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
 
 const LogService = require('../../services/log.service');
 const logService = new LogService();
@@ -68,6 +70,42 @@ router.post(
     }
   }
 );
+
+router.post('/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  checkAuth({ route: SCOPE.BRANDS, crud: ACTIONS.IMPORT }),
+  upload.single('brands'),
+  async (req, res, next) => {
+    try {
+      const user = req.user;
+      const filePath = req.file.path;
+
+      const csvData = await parseCSV(filePath, ',', user.sub);
+
+      const brands = await service.createMany(csvData);
+
+      for (const brand of brands) {
+        const details = {
+          message: `Se ha importado la marca ${brand.dataValues.name}`,
+        };
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'brands',
+          targetId: brand.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: user.sub,
+        });
+      }
+
+      res.status(201).json({
+        message: `se han creado ${brands.length} marcas`
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
 
 router.patch(
   '/:id',
@@ -128,7 +166,9 @@ router.delete(
         createdById: user.sub,
       });
 
-      res.status(201).json({message: 'Se ha ocultado la marca', target: brand});
+      res
+        .status(201)
+        .json({ message: 'Se ha ocultado la marca', target: brand });
     } catch (error) {
       next(error);
     }

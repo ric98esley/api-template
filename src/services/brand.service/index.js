@@ -12,6 +12,14 @@ class BrandsServices {
     return newBrand;
   }
 
+  async createMany(items) {
+    const newBrands = await models.Brand.bulkCreate(items, {
+      fields: ['id', 'name', 'createdById'],
+      updateOnDuplicate: ['id', 'name'],
+    });
+    return newBrands;
+  }
+
   async find({
     id,
     name,

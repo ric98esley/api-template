@@ -12,6 +12,14 @@ class ModelServices {
     return model;
   }
 
+  async createMany(items) {
+    const newModels = await models.Model.bulkCreate(items, {
+      fields: ['id', 'name', 'unit', 'min', 'categoryId', 'brandId'],
+      updateOnDuplicate: ['id', 'name'],
+    });
+    return newModels;
+  }
+
   async find({
     name,
     brand,

@@ -5,6 +5,8 @@ const ModelServices = require('../../services/asset.service/model.service');
 const LogService = require('../../services/log.service');
 
 const validatorHandler = require('../../middlewares/validator.handler');
+const { upload } = require('../../middlewares/upload.handler');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 
 const {
@@ -13,10 +15,10 @@ const {
   getAssetModel,
   searchModel,
 } = require('../../schemas/asset.schema/model.schema');
-const { ACTIONS } = require('../../utils/roles');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
 
 const service = new ModelServices();
-const logService = new LogService()
+const logService = new LogService();
 
 const router = express.Router();
 
@@ -60,9 +62,43 @@ router.post(
         targetId: newModel.dataValues.id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.status(201).json(newModel);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post(
+  '/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  upload.single('models'),
+  checkAuth({ route: SCOPE.MODELS, crud: ACTIONS.CREATE }),
+  async (req, res, next) => {
+    try {
+      const filePath = req.file.path;
+      const csvData = await parseCSV(filePath, ',', req.user.sub);
+
+      const newModels = await service.createMany(csvData);
+      for (const model of newModels) {
+        const details = {
+          message: `Se ha importado el modelo ${model.dataValues.name}`,
+        };
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'models',
+          targetId: model.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: req.user.sub,
+        });
+      }
+      res.status(201).json({
+        message: `Se han importado ${newModels.length} modelos`,
+      });
     } catch (error) {
       next(error);
     }
@@ -110,7 +146,7 @@ router.patch(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.json(model);
     } catch (error) {
@@ -128,7 +164,7 @@ router.delete(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = req.user
+      const user = req.user;
       const model = await service.delete({ id });
 
       const details = {
@@ -140,11 +176,11 @@ router.delete(
         targetId: id,
         details,
         ip: req.ip,
-        createdById: user.sub
+        createdById: user.sub,
       });
       res.status(202).json({
         message: 'Model deleted ' + model.dataValues.name,
-        target: model
+        target: model,
       });
     } catch (error) {
       next(error);
