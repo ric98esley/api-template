@@ -32,16 +32,16 @@ const LocationSchema = {
     type: DataTypes.STRING(50),
     unique: true,
     set(value) {
-      this.setDataValue('code', value.trim().toUpperCase());
+      this.setDataValue('code', String(value).trim().toUpperCase());
     },
   },
   name: {
     allowNull: false,
     field: 'name',
     type: DataTypes.STRING(100),
-    unique: true,
+    unique: false,
     set(value) {
-      this.setDataValue('name', value.trim().toUpperCase());
+      this.setDataValue('name', String(value).trim().toUpperCase());
     },
   },
   typeId: {

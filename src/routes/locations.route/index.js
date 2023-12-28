@@ -23,6 +23,8 @@ const { SCOPE, ACTIONS } = require('../../utils/roles');
 const {
   searchMovementSchema,
 } = require('../../schemas/order.schema/movement.schema');
+const { upload } = require('../../middlewares/upload.handler');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
 // const { searchAssignmentSchema } = require('../../schemas/orders.schema');
 
 const router = express.Router();
@@ -96,6 +98,42 @@ router.post(
         createdById: user.sub,
       });
       res.status(201).json(newLocation);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post(
+  '/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.CREATE }),
+  upload.single('locations'),
+  async (req, res, next) => {
+    try {
+      const user = req.user;
+      const createdById = user.sub;
+      const filePath = req.file.path;
+      const csvData = await parseCSV(filePath, ';', createdById);
+      const newLocations = await locationService.createMany(csvData);
+
+      for (const location of newLocations) {
+        const details = {
+          message: `Se ha importado el lugar ${location.dataValues.name} - ${location.dataValues.code}`,
+        };
+        await logService.create({
+          type: ACTIONS.IMPORT,
+          table: SCOPE.LOCATIONS,
+          targetId: location.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: user.sub,
+        });
+      }
+      res.status(201).json({
+        message: `Se han importado ${newLocations.length} lugares`,
+      });
     } catch (error) {
       next(error);
     }

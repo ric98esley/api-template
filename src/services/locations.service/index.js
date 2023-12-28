@@ -13,6 +13,15 @@ class LocationsServices {
     return newLocation;
   }
 
+  async createMany(data) {
+    const newLocations = await models.Location.bulkCreate(data, {
+      returning: true,
+      updateOnDuplicate: ['id','code', 'name', 'phone', 'rif', 'address', 'typeId', 'zoneId', 'managerId', 'groupId', 'createdById'],
+      fields: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdById', 'typeId', 'zoneId', 'managerId', 'groupId'],
+    });
+    return newLocations;
+  }
+
   async findOne({ id, groupId }) {
     const options = {
       where: {
