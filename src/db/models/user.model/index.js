@@ -91,6 +91,17 @@ class User extends Model {
       as: 'group',
       foreignKey: 'groupId'
     });
+    this.hasMany(models.Log, {
+      as: 'logs',
+      foreignKey: 'userId',
+    });
+    this.belongsToMany(models.Permission, {
+      as: 'permissions',
+      through: models.Role,
+      constraints: false,
+      foreignKey: 'role',
+      otherKey: 'name',
+    })
   }
 
   static config(sequelize) {

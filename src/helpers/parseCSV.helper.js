@@ -8,7 +8,9 @@ function parseCSV(filePath, separator = ',', created_by) {
 
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
-      .pipe(csv({ separator }))
+      .pipe(csv({
+        separator,
+      }))
       .on('data', (row) => {
         const parsedRow = {
           createdById: created_by,
@@ -18,10 +20,7 @@ function parseCSV(filePath, separator = ',', created_by) {
           if (row.hasOwnProperty(key)) {
             const value = row[key];
 
-            if (!isNaN(value)) {
-              // Si el valor es numérico, hacer casting a Number
-              parsedRow[key] = parseFloat(value);
-            } else if (value === 'null' || value === 'NULL') {
+            if (value === 'null' || value === 'NULL') {
               // Si el valor es 'null', establecer como null
               parsedRow[key] = null;
             } else if (

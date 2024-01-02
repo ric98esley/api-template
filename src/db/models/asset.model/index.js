@@ -28,7 +28,7 @@ const AssetSchema = {
     type: DataTypes.STRING(45),
     unique: true,
     set(value) {
-      this.setDataValue('serial', value.trim().toUpperCase());
+      this.setDataValue('serial', String(value).trim().toUpperCase());
     },
   },
   modelId: {
@@ -132,14 +132,12 @@ class Asset extends Model {
     });
   }
 
-  // Hook que se ejecutará antes de guardar o actualizar un registro
-
   static config(sequelize) {
     return {
       sequelize,
       tableName: ASSET_TABLE,
       modelName: 'Asset',
-      timestamps: true, 
+      timestamps: true,
       paranoid: true,
     };
   }

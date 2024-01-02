@@ -33,6 +33,12 @@ const createBulkAssetSchema = Joi.object({
   content,
 });
 
+const importAssetSchema = Joi.object({
+  description: description.required(),
+  notes,
+  content,
+})
+
 const updateAssetSchema = Joi.object({
   locationId: id,
   modelId,
@@ -72,4 +78,5 @@ module.exports = {
   searchAsset,
   getAssetSchema,
   createBulkAssetSchema,
+  importAssetSchema
 };

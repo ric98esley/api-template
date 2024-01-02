@@ -20,12 +20,15 @@ const {
   getAssetSchema,
   searchAsset,
   createBulkAssetSchema,
+  importAssetSchema,
 } = require('../../schemas/asset.schema');
 const { generateExcel } = require('../../helpers/toExcel.helper');
-const { ACTIONS } = require('../../utils/roles');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
 const {
   searchMovementSchema,
 } = require('../../schemas/order.schema/movement.schema');
+const { upload } = require('../../middlewares/upload.handler');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
 
 const router = express.Router();
 const service = new AssetsService();
@@ -104,7 +107,7 @@ router.get(
       const tag = await service.getTag('gana');
       res.json(tag);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 );
@@ -178,6 +181,65 @@ router.post(
       const order = await orderService.createAssignments(data);
 
       res.status(201).json(newAssets);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post(
+  '/import',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  upload.single('assets'),
+  validatorHandler(importAssetSchema, 'body'),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.CREATE }),
+  async (req, res, next) => {
+    try {
+      const { description, notes, content } = req.body;
+
+      const user = req.user;
+      const path = req.file.path;
+      const assets = await parseCSV(path, ',', user.sub);
+      const newAssets = await service.createBulk({ assets, user });
+      const targets = [];
+
+
+      for (const asset of newAssets.created) {
+        const details = {
+          message: `Se ha creado el activo ${asset.dataValues.serial}`,
+        };
+
+        targets.push({
+          quantity: '1',
+          locationId: asset.dataValues.locationId,
+          assetId: asset.dataValues.id,
+        });
+
+        await logService.create({
+          type: ACTIONS.CREATE,
+          table: 'assets',
+          targetId: asset.dataValues.id,
+          details,
+          ip: req.ip,
+          createdById: user.sub,
+        });
+      }
+      const data = {
+        targets,
+        locationId: null,
+        type: 'checking',
+        description,
+        notes,
+        content,
+        createdById: user.sub,
+      };
+
+      const order = await orderService.createAssignments(data);
+
+      res.status(201).json({
+        message: 'Se han importado ' + newAssets.created.length + ' activos',
+      });
     } catch (error) {
       next(error);
     }

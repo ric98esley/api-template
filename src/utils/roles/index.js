@@ -13,4 +13,6 @@ module.exports = {
   grants,
   roles: Object.values(ROLES),
   actions: Object.values(ACTIONS),
+  scopes: Object.values(SCOPE),
+  possessions: Object.values(POSSESSION),
 }

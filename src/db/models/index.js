@@ -1,6 +1,5 @@
 const bcryptjs = require('bcryptjs');
 
-
 const { User, UserSchema } = require("./user.model");
 const { Customer, CustomerSchema } = require("./user.model/customer.model");
 const { Log, LogSchema } = require('./log.model');
@@ -23,12 +22,16 @@ const { LocationProducts, LocationProductsSchema } = require('./warehouse.model/
 const { Settings, SettingSchema } = require('./settings.model');
 const { VMovement, VMovementSchema } = require('./orders.model/v-movements.model');
 const { CategoryClass, CategoryClassSchema } = require('./category.model/categoryClass.model');
+const { Permission, PermissionSchema } = require('./user.model/permissions.model');
+const { Role, RoleSchema } = require('./user.model/role.model');
 
 function setupModels(sequelize) {
 
   // INICIALIZA MODELOS
   Customer.init(CustomerSchema, Customer.config(sequelize));
   User.init(UserSchema, User.config(sequelize));
+  Role.init(RoleSchema, Role.config(sequelize));
+  Permission.init(PermissionSchema, Permission.config(sequelize));
   Log.init(LogSchema, Log.config(sequelize));
   Group.init(GroupSchema, Group.config(sequelize));
   CategoryClass.init(CategoryClassSchema, CategoryClass.config(sequelize));
@@ -59,6 +62,8 @@ function setupModels(sequelize) {
 
   Customer.associate(sequelize.models);
   User.associate(sequelize.models);
+  Role.associate(sequelize.models);
+  Permission.associate(sequelize.models);
   Log.associate(sequelize.models);
   Group.associate(sequelize.models);
   CategoryClass.associate(sequelize.models);

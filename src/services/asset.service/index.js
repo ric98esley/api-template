@@ -94,10 +94,8 @@ class AssetsServices {
       };
     });
 
-    console.log(data);
-
     const newAssets = await models.Asset.bulkCreate(data, {
-      include: ['specifications'],
+      include: ['specifications']
     });
 
     const createdAssets = newAssets.filter((asset) => asset.id !== null);
