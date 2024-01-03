@@ -1,6 +1,5 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-
 const ROLE_TABLE = 'roles';
 
 const RoleSchema = {
@@ -32,10 +31,6 @@ const RoleSchema = {
 
 class Role extends Model {
   static associate(models) {
-    Role.belongsTo(models.User, {
-      foreignKey: 'role',
-      as: 'users',
-    });
     Role.hasMany(models.Permission, {
       foreignKey: 'name',
       as: 'permissions',

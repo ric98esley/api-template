@@ -95,12 +95,10 @@ class User extends Model {
       as: 'logs',
       foreignKey: 'userId',
     });
-    this.belongsToMany(models.Permission, {
+    this.hasMany(models.Permission, {
       as: 'permissions',
-      through: models.Role,
-      constraints: false,
+      sourceKey: 'role',
       foreignKey: 'role',
-      otherKey: 'name',
     })
   }
 

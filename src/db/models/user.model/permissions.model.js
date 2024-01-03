@@ -1,7 +1,6 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const { scopes, actions, possessions } = require('../../../utils/roles');
-const { ROLE_TABLE } = require('./role.model');
 
 const PERMISSIONS_TABLE = 'permissions';
 
@@ -12,10 +11,16 @@ const PermissionSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
+  name: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      return `${this.capability}:${this.scope}`;
+    }
+  },
   role: {
+    primaryKey: true,
     allowNull: false,
     type: DataTypes.STRING(15),
-    field: 'role',
   },
   scope: {
     allowNull: false,
@@ -57,12 +62,11 @@ const PermissionSchema = {
 
 class Permission extends Model {
   static associate(models) {
-    this.belongsToMany(models.User, {
-      through: 'roles',
-      as: 'users',
-      foreignKey: 'role',
-      otherKey: 'name',
-    });
+    // this.belongsTo(models.Role, {
+    //   foreignKey: 'role',
+    //   targetKey: 'name',
+    //   as: 'parent',
+    // });
   }
   static config(sequelize) {
     return {

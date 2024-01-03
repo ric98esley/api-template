@@ -182,6 +182,12 @@ class UsersServices {
           }),
         },
         {
+          model: models.Permission,
+          as: 'permissions',
+          attributes: ['id', 'name', 'role', 'capability', 'createdAt', 'scope'],
+          raw: true,
+        },
+        {
           model: models.Group,
           as: 'group',
           attributes: ['id', 'name', 'code'],
