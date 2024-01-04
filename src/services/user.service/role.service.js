@@ -76,13 +76,17 @@ class RoleService {
       attributes: ['id', 'name', 'createdAt'],
     };
 
-    const roles = await models.Role.findAll(options);
+    const { rows, count } = await models.Role.findAndCountAll(options);
 
-    return roles;
+    return {
+      total: count,
+      rows,
+    };
   }
 
   async update({ id, data }) {
     const role = await this.findOne({ id });
+
     const updatedRole = await role.update(data);
     return updatedRole;
   }

@@ -17,6 +17,23 @@ const grantSuperuser = {
       possession: POSSESSION.ANY
     }
   },
+  [SCOPE.ROLES]: {
+    [ACTIONS.CREATE]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.IMPORT]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.READ]: {
+      possession: POSSESSION.ANY,
+    },
+    [ACTIONS.UPDATE]: {
+      possession: POSSESSION.ANY
+    },
+    [ACTIONS.DELETE]: {
+      possession: POSSESSION.ANY
+    }
+  },
   [SCOPE.CUSTOMER]: {
     [ACTIONS.CREATE]: {
       possession: POSSESSION.ANY,

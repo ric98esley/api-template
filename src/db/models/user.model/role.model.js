@@ -25,15 +25,16 @@ const RoleSchema = {
     allowNull: false,
     field: 'created_at',
     type: DataTypes.DATE,
-    default: Sequelize.NOW,
+    defaultValue: Sequelize.NOW,
   },
 }
 
 class Role extends Model {
   static associate(models) {
-    Role.hasMany(models.Permission, {
-      foreignKey: 'name',
+    this.hasMany(models.Permission, {
       as: 'permissions',
+      sourceKey: 'name',
+      foreignKey: 'role',
     });
   }
 

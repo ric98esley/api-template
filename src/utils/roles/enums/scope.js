@@ -1,6 +1,8 @@
 
 const SCOPE = {
   USERS: 'users',
+  ROLES: 'roles',
+  PERMISSIONS: 'permissions',
   CUSTOMER: 'customers',
   CATEGORIES: 'categories',
   SPECIFICATIONS: 'specifications',

@@ -1,6 +1,7 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const { scopes, actions, possessions } = require('../../../utils/roles');
+const { ROLE_TABLE } = require('./role.model');
 
 const PERMISSIONS_TABLE = 'permissions';
 
@@ -21,6 +22,11 @@ const PermissionSchema = {
     primaryKey: true,
     allowNull: false,
     type: DataTypes.STRING(15),
+    references: {
+      model: ROLE_TABLE,
+      key: 'name',
+      onDelete: 'CASCADE',
+    },
   },
   scope: {
     allowNull: false,
@@ -56,7 +62,7 @@ const PermissionSchema = {
     allowNull: false,
     field: 'created_at',
     type: DataTypes.DATE,
-    default: Sequelize.NOW,
+    defaultValue: Sequelize.NOW,
   },
 };
 

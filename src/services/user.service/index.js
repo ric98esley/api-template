@@ -32,6 +32,11 @@ class UsersServices {
           ],
         },
         {
+          model: models.Permission,
+          as: 'permissions',
+          attributes: ['id', 'name', 'role', 'capability', 'createdAt', 'scope'],
+        },
+        {
           as: 'group',
           model: models.Group,
           attributes: ['id', 'name'],
@@ -180,12 +185,6 @@ class UsersServices {
               ],
             },
           }),
-        },
-        {
-          model: models.Permission,
-          as: 'permissions',
-          attributes: ['id', 'name', 'role', 'capability', 'createdAt', 'scope'],
-          raw: true,
         },
         {
           model: models.Group,
