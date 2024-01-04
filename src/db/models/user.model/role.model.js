@@ -21,6 +21,10 @@ const RoleSchema = {
     allowNull: true,
     type: DataTypes.TEXT,
   },
+  ability: {
+    allowNull: true,
+    type: DataTypes.JSON,
+  },
   createdAt: {
     allowNull: false,
     field: 'created_at',
@@ -31,10 +35,10 @@ const RoleSchema = {
 
 class Role extends Model {
   static associate(models) {
-    this.hasMany(models.Permission, {
-      as: 'permissions',
-      sourceKey: 'name',
+    Role.hasMany(models.User, {
+      as: 'users',
       foreignKey: 'role',
+      sourceKey: 'name',
     });
   }
 

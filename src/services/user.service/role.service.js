@@ -5,28 +5,12 @@ const { models } = require('../../libs/sequelize');
 
 class RoleService {
   async create(data) {
-    const newRole = await models.Role.create(data, {
-      include: ['permissions'],
-    });
+    const newRole = await models.Role.create(data);
     return newRole;
   }
 
   async findOne({ id, name }) {
     const options = {
-      include: [
-        {
-          as: 'permissions',
-          model: models.Permission,
-          attributes: [
-            'id',
-            'name',
-            'scope',
-            'capability',
-            'possession',
-            'createdAt',
-          ],
-        },
-      ],
       where: {
         ...(id && {
           id,
@@ -35,7 +19,7 @@ class RoleService {
           name,
         }),
       },
-      attributes: ['id', 'name', 'createdAt'],
+      attributes: ['id', 'name', 'ability', 'createdAt'],
     };
 
     const role = await models.Role.findOne(options);
@@ -59,20 +43,6 @@ class RoleService {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: [
-        {
-          as: 'permissions',
-          model: models.Permission,
-          attributes: [
-            'id',
-            'name',
-            'scope',
-            'capability',
-            'possession',
-            'createdAt',
-          ],
-        },
-      ],
       attributes: ['id', 'name', 'createdAt'],
     };
 

@@ -12,12 +12,6 @@ const PermissionSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER,
   },
-  name: {
-    type: DataTypes.VIRTUAL,
-    get() {
-      return `${this.capability}:${this.scope}`;
-    }
-  },
   role: {
     primaryKey: true,
     allowNull: false,

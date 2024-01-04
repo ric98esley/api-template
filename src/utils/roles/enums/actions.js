@@ -7,6 +7,7 @@ const ACTIONS = {
   CHECKING: 'checking',
   CHECKOUT: 'checkout',
   IMPORT: 'import',
+  EXPORT: 'export',
 }
 
 module.exports = ACTIONS;

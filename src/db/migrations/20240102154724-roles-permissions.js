@@ -25,7 +25,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeIndex(PERMISSIONS_TABLE, 'unique_permission')
+    // await queryInterface.removeIndex(PERMISSIONS_TABLE, 'unique_permission')
     await queryInterface.dropTable(PERMISSIONS_TABLE);
     await queryInterface.dropTable(ROLE_TABLE);
   },

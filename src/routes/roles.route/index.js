@@ -15,10 +15,8 @@ const {
 
 const LogService = require('../../services/log.service');
 const RoleService = require('../../services/user.service/role.service');
-const PermissionService = require('../../services/user.service/permission.service');
 const logService = new LogService();
 const roleService = new RoleService();
-const permissionService = new PermissionService();
 
 router.get(
   '/',
@@ -83,64 +81,6 @@ router.patch(
       });
 
       res.json(updatedRole);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.post(
-  '/:id/permissions',
-  passport.authenticate('jwt', { session: false }),
-  checkUser(),
-  validatorHandler(getRoleSchema, 'params'),
-  validatorHandler(updateRoleSchema, 'body'),
-  checkAuth({ route: SCOPE.ROLES, crud: ACTIONS.UPDATE }),
-  async (req, res, next) => {
-    const { id } = req.params;
-    try {
-      const { permissions } = req.body;
-      const role = await roleService.findOne({ id });
-
-      for(let permission of permissions) {
-        await permissionService.create({
-          role: role.dataValues.name,
-          scope: permission.scope,
-          capability: permission.capability,
-          possession: permission.possession,
-        });
-      }
-
-      res.status(201).json({ message: 'Permissions added successfully'});
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.delete(
-  '/:id/permissions',
-  passport.authenticate('jwt', { session: false }),
-  checkUser(),
-  validatorHandler(getRoleSchema, 'params'),
-  validatorHandler(updateRoleSchema, 'body'),
-  checkAuth({ route: SCOPE.ROLES, crud: ACTIONS.UPDATE }),
-  async (req, res, next) => {
-    const { id } = req.params;
-    try {
-      const { permissions } = req.body;
-      const role = await roleService.findOne({ id });
-
-      for(let permission of permissions) {
-        await permissionService.create({
-          role: role.dataValues.name,
-          scope: permission.scope,
-          capability: permission.capability,
-          possession: permission.possession,
-        });
-      }
-
-      res.status(201).json({ message: 'Permissions added successfully'});
     } catch (error) {
       next(error);
     }

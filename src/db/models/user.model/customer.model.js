@@ -14,7 +14,6 @@ const CUSTOMER_TABLE = 'customers';
  * @property {boolean} field - rename the field
  */
 
-
 const CustomerSchema = {
   id: {
     allowNull: false,
@@ -90,8 +89,8 @@ class Customer extends Model {
     this.belongsTo(models.User, { as: 'createdBy', foreignKey: 'createdById' });
     this.belongsTo(models.User, {
       as: 'user',
-      foreignKey: 'userId'
-    })
+      foreignKey: 'userId',
+    });
   }
 
   static config(sequelize) {
@@ -99,8 +98,8 @@ class Customer extends Model {
       sequelize,
       tableName: CUSTOMER_TABLE,
       modelName: 'Customer',
-      timestamps: true, 
-paranoid: true
+      timestamps: true,
+      paranoid: true,
     };
   }
 }

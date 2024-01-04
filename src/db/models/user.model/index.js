@@ -95,9 +95,9 @@ class User extends Model {
       as: 'logs',
       foreignKey: 'userId',
     });
-    this.hasMany(models.Permission, {
+    this.belongsTo(models.Role, {
       as: 'permissions',
-      sourceKey: 'role',
+      targetKey: 'name',
       foreignKey: 'role',
     })
   }

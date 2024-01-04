@@ -1,24 +1,23 @@
 
 const SCOPE = {
-  USERS: 'users',
-  ROLES: 'roles',
+  USERS: 'users', //
+  ROLES: 'roles', //
   PERMISSIONS: 'permissions',
-  CUSTOMER: 'customers',
-  CATEGORIES: 'categories',
-  SPECIFICATIONS: 'specifications',
-  BRANDS: 'brands',
-  MODELS: 'models',
-  GROUPS: 'groups',
-  ASSETS: 'assets',
-  WAREHOUSES: 'warehouses',
-  LOCATIONS: 'locations',
-  LOCATIONS_TYPE: 'locations_types',
-  ZONES: 'zones',
-  MODELS: 'models',
-  CONSUMABLES: 'consumables',
+  CUSTOMER: 'customers', //
+  CATEGORIES: 'categories', //
+  SPECIFICATIONS: 'specifications', //
+  BRANDS: 'brands', //
+  MODELS: 'models', //
+  GROUPS: 'groups', //
+  ASSETS: 'assets', //
+  WAREHOUSES: 'warehouses', //
+  LOCATIONS: 'locations', //
+  LOCATIONS_TYPE: 'locations_types', //
+  ZONES: 'zones', //
+  CONSUMABLES: 'consumables', //
   ACCESSORIES: 'accessories',
-  ORDERS: 'orders',
-  MOVEMENTS: 'movements',
+  ORDERS: 'orders', //
+  MOVEMENTS: 'movements', //
   CATEGORY_CLASSES: 'category_classes',
 }
 
