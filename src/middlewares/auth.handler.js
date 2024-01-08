@@ -1,7 +1,9 @@
 const boom = require('@hapi/boom');
 
 const sequelize = require('../libs/sequelize');
-const { permissions, grants, POSSESSION } = require('../utils/roles');
+const { models } = require('../libs/sequelize');
+
+const { grants, POSSESSION } = require('../utils/roles');
 const authHandlers = require('../utils/roles/handlers');
 
 function checkUser() {
@@ -63,10 +65,21 @@ function checkAuth({ route, crud }) {
   return async (req, res, next) => {
     try {
       const user = req.user;
-      if(!grants[user.role]) throw boom.forbidden();
-      if(!grants[user.role][route]) throw boom.forbidden();
-      const { possession, callback } = grants[user.role][route][crud];
+      // if (user.role == 'superuser') return next();
 
+      const role = await models.Role.findOne({
+        where: { name: user.role },
+      });
+
+      if(!role) throw boom.forbidden(
+        'No tienes permisos para acceder a esta ruta'
+      );
+
+      console.log(role.ability[route][crud]);
+
+      if (!grants[user.role]) throw boom.forbidden();
+      if (!grants[user.role][route]) throw boom.forbidden();
+      const { possession, callback } = grants[user.role][route][crud];
 
       if (possession === POSSESSION.ANY) {
         if (callback) {
@@ -75,8 +88,8 @@ function checkAuth({ route, crud }) {
       }
 
       if (possession === POSSESSION.STORE) {
-        const resolver = authHandlers[possession][crud]
-        if(resolver) resolver()
+        const resolver = authHandlers[possession][crud];
+        if (resolver) resolver();
       }
 
       if (possession === POSSESSION.OWN) {

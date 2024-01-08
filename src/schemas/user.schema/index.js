@@ -44,6 +44,7 @@ const searchUserSchema = Joi.object({
   username,
   search: toSearch,
   sort: toSearch,
+  group: toSearch,
   order: toSearch.valid('ASC', 'DESC'),
   cardId,
   name,

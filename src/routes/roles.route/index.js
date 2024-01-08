@@ -39,6 +39,22 @@ router.get(
   }
 );
 
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  validatorHandler(getRoleSchema, 'params'),
+  checkUser(),
+  checkAuth({ route: SCOPE.ROLES, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const role = await roleService.findOne({ id });
+      res.json(role);
+    } catch (error) {
+      next(error);
+    }
+  });
+
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -81,6 +97,31 @@ router.patch(
       });
 
       res.json(updatedRole);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getRoleSchema, 'params'),
+  checkAuth({ route: SCOPE.ROLES, crud: ACTIONS.DELETE }),
+  async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const role = await roleService.delete({ id });
+      await logService.create({
+        type: ACTIONS.DELETE,
+        table: SCOPE.ROLES,
+        targetId: role.dataValues.id,
+        details: `${req.user.username} elimino el rol: ${role.name}`,
+        ip: req.ip,
+        createdById: req.user.id,
+      });
+      res.json(role);
     } catch (error) {
       next(error);
     }

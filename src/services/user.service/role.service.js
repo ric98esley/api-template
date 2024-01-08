@@ -19,7 +19,7 @@ class RoleService {
           name,
         }),
       },
-      attributes: ['id', 'name', 'ability', 'createdAt'],
+      attributes: ['id', 'name', 'createdAt', 'ability'],
     };
 
     const role = await models.Role.findOne(options);
@@ -64,7 +64,7 @@ class RoleService {
   async delete({ id }) {
     const role = await this.findOne({ id });
     await role.destroy();
-    return { message: 'Role deleted' };
+    return role;
   }
 }
 

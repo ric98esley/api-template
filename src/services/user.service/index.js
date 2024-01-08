@@ -15,7 +15,7 @@ class UsersServices {
     return newUser;
   }
 
-  async findOne({ id, email, username }) {
+  async findOne({ id, email, username, groupId }) {
     const options = {
       include: [
         {
@@ -34,7 +34,14 @@ class UsersServices {
         {
           model: models.Permission,
           as: 'permissions',
-          attributes: ['id', 'name', 'role', 'capability', 'createdAt', 'scope'],
+          attributes: [
+            'id',
+            'name',
+            'role',
+            'capability',
+            'createdAt',
+            'scope',
+          ],
         },
         {
           as: 'group',
@@ -51,6 +58,9 @@ class UsersServices {
         }),
         ...(username && {
           username,
+        }),
+        ...(groupId && {
+          groupId,
         }),
       },
       attributes: [
@@ -73,6 +83,7 @@ class UsersServices {
     sort = 'createdAt',
     order = 'DESC',
     profile,
+    groupId,
     username,
     search,
     role,
@@ -86,7 +97,14 @@ class UsersServices {
   }) {
     let where = {
       ...(role && {
-        role: role.split(','),
+        role: {
+          [Op.or]: role.split(',').map((r) => ({
+            [Op.like]: `%${r}%`,
+          })),
+        },
+      }),
+      ...(groupId && {
+        groupId,
       }),
       ...(username && {
         [Op.or]: [
@@ -148,6 +166,11 @@ class UsersServices {
             [Op.between]: [new Date(startDate), new Date(endDate)],
           },
         }),
+      ...(group && {
+        '$group.name$': {
+          [Op.like]: `%${group}%`,
+        },
+      }),
       [Op.not]: [{ role: 'superuser' }],
     };
     const options = {
@@ -211,14 +234,14 @@ class UsersServices {
     };
   }
 
-  async update({ id, changes }) {
-    const user = await this.findOne({ id });
+  async update({ id, changes, groupId }) {
+    const user = await this.findOne({ id, groupId });
     const rta = await user.update(changes);
     return rta;
   }
 
-  async delete(id) {
-    const user = await this.findOne({ id });
+  async delete({ id, groupId }) {
+    const user = await this.findOne({ id, groupId });
     const rta = await user.destroy();
     return rta;
   }

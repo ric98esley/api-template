@@ -15,15 +15,24 @@ const RoleSchema = {
     type: DataTypes.STRING(15),
     set(value) {
       this.setDataValue('name', String(value).trim().toLowerCase());
-    }
+    },
   },
   description: {
     allowNull: true,
     type: DataTypes.TEXT,
+    set(value) {
+      this.setDataValue('description', String(value).trim());
+    },
   },
   ability: {
     allowNull: true,
     type: DataTypes.JSON,
+    get: function () {
+      if(typeof this.getDataValue('ability') === 'string') {
+      return JSON.parse(this.getDataValue('ability'));
+      }
+      return this.getDataValue('ability');
+    },
   },
   createdAt: {
     allowNull: false,
@@ -31,7 +40,7 @@ const RoleSchema = {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
   },
-}
+};
 
 class Role extends Model {
   static associate(models) {
@@ -48,9 +57,8 @@ class Role extends Model {
       tableName: ROLE_TABLE,
       modelName: 'Role',
       timestamps: false,
-    }
+    };
   }
 }
 
 module.exports = { ROLE_TABLE, RoleSchema, Role };
-

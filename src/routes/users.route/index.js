@@ -18,7 +18,6 @@ const {
   updateUserSchema,
   createUserSchema,
   getUserSchema,
-  getSearch,
   searchUserSchema,
 } = require('../../schemas/user.schema/index.js');
 const { SCOPE, ACTIONS } = require('../../utils/roles');
@@ -31,7 +30,7 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(searchUserSchema, 'query'),
-  checkAuth({ route: 'users', crud: 'read' }),
+  checkAuth({ route: SCOPE.USERS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const toSearch = req.query;
@@ -63,11 +62,12 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getUserSchema, 'params'),
-  checkAuth({ route: 'users', crud: 'create' }),
+  checkAuth({ route: SCOPE.USERS, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const User = await service.findOne({ id });
+      const { groupId } = req.query;
+      const User = await service.findOne({ id, groupId });
       res.json(User);
     } catch (error) {
       next(error);
@@ -153,11 +153,14 @@ router.patch(
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  checkAuth({route: SCOPE.USERS, crud: ACTIONS.DELETE}),
   validatorHandler(getUserSchema, 'params'),
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const user = await service.delete(id);
+      const { groupId } = req.query;
+
+      const user = await service.delete({id, groupId});
 
       await logService.create({
         type: ACTIONS.CREATE,
