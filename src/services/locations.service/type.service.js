@@ -19,9 +19,7 @@ class TypesServices {
         },
       }),
       ...(status && {
-        status: {
-          [Op.like]: `%${status}%`,
-        },
+        status: status.split(','),
       }),
     };
     const { rows, count } = await models.LocationType.findAndCountAll({

@@ -1,5 +1,5 @@
 const boom = require('@hapi/boom');
-const { Op } = require('sequelize');
+const { Op, json, STRING } = require('sequelize');
 
 const sequelize = require('../../libs/sequelize');
 const { models } = require('../../libs/sequelize');
@@ -11,17 +11,19 @@ class AssetsServices {
   constructor() {}
 
   async getTag(business) {
-    const settings = await models.Settings.findOne({ where: {
-      business
-    }});
+    const settings = await models.Settings.findOne({
+      where: {
+        business,
+      },
+    });
     const { prefix, next, zeroFill } = settings.dataValues;
-    console.log(next)
+    console.log(next);
     const filled = `${next}`.padStart(zeroFill, '0');
     const tag = `${prefix}${filled}`;
     await settings.update({
       next: next + 1,
     });
-    console.log(tag)
+    console.log(tag);
     return { tag };
   }
 
@@ -78,7 +80,25 @@ class AssetsServices {
   async createBulk({ assets, user }) {
     const createdById = user.sub;
 
-    const data = assets.map((asset) => {
+    const assetSerial = assets.map((asset) => String(asset.serial).trim());
+
+    const assetsFound = await models.Asset.findAll({
+      where: {
+        serial: assetSerial,
+      },
+    });
+
+    const assetToCreate = assets.map((asset) => {
+      const found = assetsFound.find(
+        (assetFound) => assetFound.dataValues.serial == String(asset.serial).toUpperCase().trim()
+      );
+
+      if (!found) {
+        return asset;
+      }
+    }).filter((asset) => asset !== undefined) || [];
+
+    const data = assetToCreate.map((asset) => {
       return {
         ...asset,
         createdById,
@@ -95,15 +115,13 @@ class AssetsServices {
     });
 
     const newAssets = await models.Asset.bulkCreate(data, {
-      include: ['specifications']
+      include: ['specifications'],
+      ignoreDuplicates: true,
     });
 
-    const createdAssets = newAssets.filter((asset) => asset.id !== null);
-    const errorAssets = newAssets.filter((asset) => asset.id === null);
-
     return {
-      created: createdAssets,
-      errors: errorAssets,
+      created: newAssets,
+      errors: assetsFound,
     };
   }
 
@@ -225,7 +243,6 @@ class AssetsServices {
     startDate,
     endDate,
   }) {
-
     const where = {
       ...(enabled !== undefined && {
         enabled: enabled == 'true' ? true : false,
@@ -251,23 +268,22 @@ class AssetsServices {
         [Op.or]: [
           {
             '$location.name$': {
-              [Op.like]: `%${location}%`
-            }
+              [Op.like]: `%${location}%`,
+            },
           },
           {
             '$location.code$': {
-              [Op.like]: `%${location}%`
-            }
+              [Op.like]: `%${location}%`,
+            },
           },
           {
             '$location.address$': {
-              [Op.like]: `%${location}%`
-            }
+              [Op.like]: `%${location}%`,
+            },
           },
-
-        ]
-      })
-    }
+        ],
+      }),
+    };
     const options = {
       limit: Number(limit),
       offset: Number(offset),

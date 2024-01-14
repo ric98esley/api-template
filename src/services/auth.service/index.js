@@ -42,6 +42,29 @@ class AuthService {
     return user;
   }
 
+  async getPermissions(roleName) {
+    const role = await models.Role.findOne({
+      where: {
+        name: roleName,
+      },
+      attributes: ['id', 'name', 'ability'],
+    });
+
+    if(!role) return [];
+
+    const ability = JSON.parse(role.dataValues.ability);
+
+    let result = [];
+
+    for (let category in ability) {
+      for (let action in ability[category]) {
+        if(ability[category][action] !== 'none') result.push(`${category}:${action}`);
+      }
+    }
+
+    return result;
+  }
+
   signToken(user) {
     const payload = {
       sub: user.id,
@@ -50,10 +73,20 @@ class AuthService {
 
     const token = jwt.sign(payload, authConfig.jwtSecret, { expiresIn: '12h' });
 
-    return {
+    return token;
+  }
+
+  async singIn(user) {
+    const token = this.signToken(user);
+
+    const ability = await this.getPermissions(user.role);
+
+    const data = {
       user,
       token,
+      ability,
     };
+    return data;
   }
 
   async attempt({ user, ip }) {

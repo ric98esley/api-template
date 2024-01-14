@@ -10,9 +10,15 @@ function checkUser() {
   return async (req, res, next) => {
     try {
       const user = req.user;
+
       const checkedUser = await getUser(user.sub);
-      if (!checkedUser.isActive) return next(boom.unauthorized());
-      if (checkedUser.role !== user.role) return next(boom.unauthorized());
+
+      if (!checkedUser.isActive)
+        return next(boom.unauthorized('Usuario inactivo'));
+      if (checkedUser.role !== user.role)
+        return next(boom.unauthorized('Usuario cambio de rol'));
+
+      req.user.groupId = checkedUser.groupId;
       next();
     } catch (error) {
       next(boom.serverUnavailable());
@@ -21,7 +27,7 @@ function checkUser() {
   };
 }
 
-async function getGroups(userId, next) {
+async function getGroups(groupAllowed, next) {
   try {
     const recursiveQuery = `
           WITH RECURSIVE GroupHierarchy AS
@@ -30,10 +36,10 @@ async function getGroups(userId, next) {
                 name,
                 manager_id,
                 parent_id
-                  FROM groups
-                    WHERE manager_id = ${userId} UNION ALL
+                  FROM groups_t
+                    WHERE id = ${groupAllowed} UNION ALL
                     SELECT g.id, g.name, g.manager_id, g.parent_id
-                    FROM groups AS g
+                    FROM groups_t AS g
                   INNER JOIN GroupHierarchy AS gh ON g.parent_id = gh.id )
                     SELECT id FROM GroupHierarchy;
       `;
@@ -51,9 +57,7 @@ async function getGroups(userId, next) {
 
 async function getUser(userId) {
   try {
-    const rta = await sequelize.models.User.findOne({
-      id: userId,
-    });
+    const rta = await sequelize.models.User.findByPk(userId);
 
     return rta.dataValues;
   } catch (error) {
@@ -71,32 +75,43 @@ function checkAuth({ route, crud }) {
         where: { name: user.role },
       });
 
-      if(!role) throw boom.forbidden(
-        'No tienes permisos para acceder a esta ruta'
-      );
+      if (!role)
+        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
 
-      console.log(role.ability[route][crud]);
+      const ability = role.ability[route][crud];
 
-      if (!grants[user.role]) throw boom.forbidden();
-      if (!grants[user.role][route]) throw boom.forbidden();
-      const { possession, callback } = grants[user.role][route][crud];
-
-      if (possession === POSSESSION.ANY) {
-        if (callback) {
-          callback(req);
+      if (ability == 'any') {
+        // TODO: Mejorar este any
+        const groupId = await getGroups(1, next);
+        if (req.query.groupId) {
+          const isIn = groupId.includes(Number(req.query.groupId));
+          if (!isIn) {
+            throw boom.badRequest('No tienes permisos para acceder este grupo');
+          }
+        } else {
+          req.query.groupId = groupId;
         }
       }
-
-      if (possession === POSSESSION.STORE) {
-        const resolver = authHandlers[possession][crud];
-        if (resolver) resolver();
-      }
-
-      if (possession === POSSESSION.OWN) {
-        if (callback) {
-          callback(req);
+      if (ability == 'group') {
+        const groupId = await getGroups(user.groupId, next);
+        if (req.query.groupId) {
+          const isIn = groupId.includes(Number(req.query.groupId));
+          if (!isIn) {
+            throw boom.badRequest('No tienes permisos para acceder este grupo');
+          }
+        } else {
+          req.query.groupId = groupId;
         }
       }
+      if (ability == 'own') {
+        const groupId = [user.groupId];
+        req.query.groupId = groupId;
+      }
+
+      if (ability == 'none') {
+        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+      }
+
       next();
     } catch (error) {
       return next(error);

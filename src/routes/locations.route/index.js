@@ -1,5 +1,6 @@
 const express = require('express');
 const passport = require('passport');
+const boom = require('@hapi/boom');
 
 const LocationsService = require('../../services/locations.service');
 const LogService = require('../../services/log.service');
@@ -62,7 +63,8 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const location = await locationService.findOne({ id });
+      const { groupId } = req.query;
+      const location = await locationService.findOne({ id, groupId });
       res.json(location);
     } catch (error) {
       next(error);
@@ -80,9 +82,14 @@ router.post(
     try {
       // TODo: request for user id
       const user = req.user;
+      const { groupId } = req.query;
       const createdById = user.sub;
       const body = req.body;
       body.createdById = createdById;
+
+      if(!groupId.includes(body.groupId)) {
+        boom.forbidden('No tienes permisos para crear un lugar en este grupo');
+      }
 
       const newLocation = await locationService.create(body);
 
@@ -222,7 +229,6 @@ router.get(
       const { id } = req.params;
       const toSearch = req.query;
       toSearch.toId = id;
-      toSearch.current = true;
       toSearch.movementType = 'asset';
       try {
         let assets = await movementService.find(toSearch);

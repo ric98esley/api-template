@@ -43,7 +43,7 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(searchAsset, 'query'),
-  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     const toSearch = req.query;
     toSearch.type = 'asset';
@@ -62,7 +62,7 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(searchAsset, 'query'),
-  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const query = req.query;
@@ -101,7 +101,7 @@ router.get(
   '/tag',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  checkAuth({ route: 'assets', crud: 'read' }),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
   async (req, res, next) => {
     try {
       const tag = await service.getTag('gana');
@@ -117,13 +117,15 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getAssetSchema, 'params'),
-  checkAuth({ route: 'assets', crud: 'read' }),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
   async (req, res, next) => {
     try {
+      const { groupId } = req.query;
       const { id } = req.params;
       const asset = await service.findOne({
         id,
         type: 'asset',
+        groupId,
       });
       res.json(asset);
     } catch (error) {
@@ -137,7 +139,7 @@ router.post(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(createBulkAssetSchema, 'body'),
-  checkAuth({ route: 'assets', crud: ACTIONS.CREATE }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const { assets, description, notes, content } = req.body;
@@ -150,19 +152,19 @@ router.post(
 
       for (const asset of newAssets.created) {
         const details = {
-          message: `Se ha creado el activo ${asset.dataValues.serial}`,
+          message: `Se ha creado el activo ${asset.serial}`,
         };
 
         targets.push({
           quantity: '1',
-          locationId: asset.dataValues.locationId,
-          assetId: asset.dataValues.id,
+          locationId: asset.locationId,
+          assetId: asset.id,
         });
 
         await logService.create({
           type: ACTIONS.CREATE,
           table: 'assets',
-          targetId: asset.dataValues.id,
+          targetId: asset.id,
           details,
           ip: req.ip,
           createdById: user.sub,
@@ -252,7 +254,7 @@ router.patch(
   checkUser(),
   validatorHandler(getAssetSchema, 'params'),
   validatorHandler(updateAssetSchema, 'body'),
-  checkAuth({ route: 'assets', crud: ACTIONS.UPDATE }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.UPDATE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -285,7 +287,7 @@ router.delete(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getAssetSchema, 'params'),
-  checkAuth({ route: 'assets', crud: ACTIONS.DELETE }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -321,7 +323,7 @@ router.get(
   checkUser(),
   validatorHandler(searchMovementSchema, 'query'),
   validatorHandler(getAssetSchema, 'params'),
-  checkAuth({ route: 'assets', crud: ACTIONS.READ }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;

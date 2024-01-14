@@ -28,7 +28,9 @@ router.post(
         createdById: user.id,
       });
 
-      res.json(authService.signToken(user));
+      const singIn = await authService.singIn(user);
+
+      res.json(singIn);
     } catch (error) {
       next(error);
     }

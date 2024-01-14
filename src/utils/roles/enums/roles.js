@@ -3,7 +3,7 @@ const ROLES = {
   SELLER: 'seller',
   RECEPTOR: 'receptor',
   ADMIN: 'admin',
-  AUDIT: 'audit',
+  AUDIT: 'auditor',
   SUPERUSER: 'superuser',
 };
 

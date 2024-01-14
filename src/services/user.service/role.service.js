@@ -43,7 +43,7 @@ class RoleService {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      attributes: ['id', 'name', 'createdAt'],
+      attributes: ['id', 'name', 'ability' ,'createdAt'],
     };
 
     const { rows, count } = await models.Role.findAndCountAll(options);

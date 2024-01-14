@@ -28,13 +28,16 @@ class MovementService {
     toId,
     orderId,
   }) {
-    console.log(all);
+    if(!isNaN(startDate)){
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
     const where = {
       ...(movementType && {
         type: movementType,
       }),
       ...(!all && {
-        current: current ? true : false,
+        current: current == 'true' ? true : false,
       }),
       ...(toId && {
         toId,
@@ -71,6 +74,20 @@ class MovementService {
         '$asset.model.name$': {
           [Op.like]: `%${model}%`,
         },
+      }),
+      ...(groupId && {
+        [Op.or]: [
+          {
+            '$to.group.id$': {
+              [Op.in]: groupId,
+            },
+          },
+          {
+            '$from.group.id$': {
+              [Op.in]: groupId,
+            },
+          },
+        ],
       }),
       ...(location && {
         [Op.or]: [
