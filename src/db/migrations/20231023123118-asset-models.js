@@ -8,8 +8,8 @@ const { BRAND_TABLE, BrandSchema } = require('../models/brand.model');
 const { CATEGORY_TABLE, CategorySchema } = require('../models/category.model');
 const { CategoryClassSchema, CATEGORY_CLASS_TABLE } = require('../models/category.model/categoryClass.model');
 const { CATEGORY_SPEC_TABLE, CategorySpecSchema } = require('../models/category.model/categorySpec.model');
+const { PRODUCT_TABLE, ProductSchema } = require('../models/consumable.model');
 const { LOCATION_PRODUCTS_TABLE, LocationProductsSchema } = require('../models/warehouse.model/locationProducts.model');
-const { WAREHOUSE_PRODUCTS_TABLE, WarehouseProductsSchema } = require('../models/warehouse.model/warehouseProducts');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -22,11 +22,13 @@ module.exports = {
     await queryInterface.createTable(HARDWARE_SPEC_TABLE, HardwareSpecSchema);
     await queryInterface.createTable(CATEGORY_SPEC_TABLE, CategorySpecSchema);
     await queryInterface.createTable(ASSET_SPEC_TABLE, AssetSpecSchema);
+    await queryInterface.createTable(PRODUCT_TABLE, ProductSchema);
     await queryInterface.createTable(LOCATION_PRODUCTS_TABLE, LocationProductsSchema)
   },
 
   async down (queryInterface, Sequelize) {
     await queryInterface.dropTable(LOCATION_PRODUCTS_TABLE);
+    await queryInterface.dropTable(PRODUCT_TABLE);
     await queryInterface.dropTable(ASSET_SPEC_TABLE);
     await queryInterface.dropTable(CATEGORY_SPEC_TABLE);
     await queryInterface.dropTable(HARDWARE_SPEC_TABLE);

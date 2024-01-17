@@ -82,7 +82,10 @@ function checkAuth({ route, crud }) {
 
       if (ability == 'any') {
         // TODO: Mejorar este any
-        const groupId = await getGroups(1, next);
+        const parentGroup = await sequelize.models.Group.findOne({
+          where: { parentId: null },
+        });
+        const groupId = await getGroups(parentGroup.id, next);
         if (req.query.groupId) {
           const isIn = groupId.includes(Number(req.query.groupId));
           if (!isIn) {

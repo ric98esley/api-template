@@ -111,8 +111,6 @@ router.post(
 
       const targets = [];
 
-
-
       const newAsset = await warehouseService.create({ ...product, locationId, createdById });
 
         const details = {

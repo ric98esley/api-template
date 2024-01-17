@@ -12,7 +12,7 @@ const createdAt = Joi.date();
 const description = Joi.string();
 
 const createWarehouseProduct = Joi.object({
-  description: description.required(),
+  // description: description.required,
   notes,
   productId: id,
   min: Joi.number().integer().greater(0),

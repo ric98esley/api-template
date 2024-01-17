@@ -38,6 +38,24 @@ router.get(
   }
 );
 
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getBrand, 'params'),
+  checkAuth({ route: 'brands', crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const brand = await service.findOne(id);
+
+      res.status(200).json(brand);
+    } catch (error) {
+      next(error);
+    }
+  }
+  )
+
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
