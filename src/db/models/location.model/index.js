@@ -140,7 +140,8 @@ class Location extends Model {
       as: 'products',
       through: models.LocationProducts,
       foreignKey: 'locationId'
-    })
+    });
+    this.hasMany(models.Movement, { as: 'to', foreignKey: 'toId' });
   }
 
   static config(sequelize) {

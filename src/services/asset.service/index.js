@@ -229,9 +229,7 @@ class AssetsServices {
     order = 'DESC',
     location,
     type,
-    enabled,
     groupId,
-    invoiceId,
     status,
     all,
     model,
@@ -243,17 +241,15 @@ class AssetsServices {
     startDate,
     endDate,
   }) {
+    if(!isNaN(startDate)){
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
     const where = {
-      ...(enabled !== undefined && {
-        enabled: enabled == 'true' ? true : false,
-      }),
       ...(serial && {
         serial: {
           [Op.like]: `%${serial}%`,
         },
-      }),
-      ...(invoiceId && {
-        invoiceId,
       }),
       ...(startDate &&
         endDate && {
@@ -287,7 +283,7 @@ class AssetsServices {
     const options = {
       limit: Number(limit),
       offset: Number(offset),
-      ...(all && {
+      ...(all == 'true' && {
         paranoid: false,
       }),
       where,

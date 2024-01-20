@@ -17,7 +17,7 @@ class GroupsService {
 
   async createMany(groups) {
     const newGroups = await models.Group.bulkCreate(groups, {
-      ignoreDuplicates: true
+      ignoreDuplicates: true,
     });
     return newGroups;
   }
@@ -75,7 +75,7 @@ class GroupsService {
     parent,
     manager,
     groupId,
-    limit = 10,
+    limit,
     offset = 0,
     sort = 'createdAt',
     order = 'DESC',
@@ -120,7 +120,10 @@ class GroupsService {
           },
         ],
       }),
-      ...(parent && {
+      ...(parent === 'null' && {
+        parentId: null,
+      }),
+      ...(parent && parent !== 'null' && {
         [Op.or]: [
           {
             '$parent.name$': {
@@ -136,7 +139,7 @@ class GroupsService {
       }),
     };
     const options = {
-      limit: Number(limit),
+      ...(limit && { limit: Number(limit) }),
       offset: Number(offset),
       where,
       include: [

@@ -1,7 +1,8 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op } = require('sequelize');
+const { Op, literal } = require('sequelize');
+const sequelize = require('../../libs/sequelize');
 
 class MovementService {
   async find({
@@ -28,7 +29,7 @@ class MovementService {
     toId,
     orderId,
   }) {
-    if(!isNaN(startDate)){
+    if (!isNaN(startDate)) {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
@@ -127,6 +128,11 @@ class MovementService {
           },
         ],
       }),
+      ...(serial && {
+        '$asset.serial$': {
+          [Op.like]: `%${serial}%`,
+        },
+      })
     };
     const options = {
       order: [[sort, order]],
@@ -141,29 +147,25 @@ class MovementService {
           model: models.Asset,
           as: 'asset',
           paranoid: false,
-          ...(serial && {
-            where: {
-              serial: {
-                [Op.like]: `%${serial}%`,
-              },
-            },
-          }),
           attributes: ['id', 'serial'],
           include: [
             {
               model: models.Model,
               as: 'model',
               attributes: ['id', 'name'],
+              paranoid: false,
               include: [
                 {
                   model: models.Category,
                   as: 'category',
                   attributes: ['id', 'name'],
+                  paranoid: false
                 },
                 {
                   model: models.Brand,
                   as: 'brand',
                   attributes: ['id', 'name'],
+                  paranoid: false
                 },
               ],
             },
@@ -208,8 +210,8 @@ class MovementService {
         {
           model: models.User,
           as: 'createdBy',
-          attributes: ['id', 'username']
-        }
+          attributes: ['id', 'username'],
+        },
       ],
       attributes: ['id', 'quantity', 'type', 'current', 'createdAt'],
     };
@@ -322,7 +324,7 @@ class MovementService {
             },
           },
         ],
-      })
+      }),
     };
     const options = {
       order: [[sort, order]],
@@ -330,23 +332,23 @@ class MovementService {
       offset: Number(offset),
       where,
       attributes: [
-          'id',
-          'orderId',
-          'serial',
-          'model',
-          'category',
-          'brand',
-          'fromCode',
-          'fromName',
-          'toCode',
-          'toName',
-          'toGroupCode',
-          'toGroupName',
-          'type',
-          'description',
-          'current',
-          'createdBy',
-      ]
+        'id',
+        'orderId',
+        'serial',
+        'model',
+        'category',
+        'brand',
+        'fromCode',
+        'fromName',
+        'toCode',
+        'toName',
+        'toGroupCode',
+        'toGroupName',
+        'type',
+        'description',
+        'current',
+        'createdBy',
+      ],
     };
 
     const { rows, count } = await models.VMovement.findAndCountAll(options);
@@ -354,6 +356,101 @@ class MovementService {
     return {
       total: count,
       rows,
+    };
+  }
+
+  async getByLocations({
+    limit = 10,
+    offset = 0,
+    startDate = '',
+    endDate = '',
+    search = '',
+    orderType = '',
+  }) {
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
+
+    if (startDate == '' || endDate == '') {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+      endDate = new Date();
+    }
+
+    startDate = new Date(startDate)
+      .toISOString()
+      .replace('T', ' ')
+      .replace('Z', '')
+      .split('.')[0];
+    endDate = new Date(endDate)
+      .toISOString()
+      .replace('T', ' ')
+      .replace('Z', '')
+      .split('.')[0];
+
+    const locations = await sequelize.query(
+      `SELECT
+          locations.id,
+          locations.code,
+          locations.name,
+          locations.phone,
+          groups_t.name as 'group.name',
+          groups_t.code as 'group.code',
+          COUNT(movements.id) as total
+        FROM movements
+          left join locations on movements.to_id = locations.id
+          left join orders on orders.id = movements.order_id
+          left join groups_t on groups_t.id = locations.group_id
+            WHERE locations.deleted_at is null and
+              movements.deleted_at is null and
+              movements.created_at BETWEEN $startDate and $endDate
+              and (locations.code like $search or locations.name like $search)
+              and orders.type like $orderType
+        GROUP BY locations.id
+        ORDER BY locations.name ASC
+        LIMIT $limit OFFSET $offset
+        `,
+      {
+        nest: true,
+        bind: {
+          limit,
+          offset,
+          startDate: `${startDate}`,
+          endDate: `${endDate}`,
+          search: `%${search}%`,
+          orderType: `%${orderType}%`
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const count = await sequelize.query(
+      `SELECT
+          COUNT(locations.id) as total
+        FROM movements
+          left join locations on movements.to_id = locations.id
+          left join orders on orders.id = movements.order_id
+          left join groups_t groups on groups.id = locations.group_id
+            WHERE locations.deleted_at is null and
+              movements.deleted_at is null and
+              movements.created_at BETWEEN $startDate and $endDate
+              and (locations.code like $search or locations.name like $search)
+        `,
+      {
+        nest: true,
+        bind: {
+          startDate: `${startDate}`,
+          endDate: `${endDate}`,
+          search: `%${search}%`,
+        },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    return {
+      total: count[0].total,
+      rows: locations,
     };
   }
 }

@@ -11,6 +11,9 @@ const location = Joi.string();
 const group = Joi.string();
 const toSearch = Joi.string();
 const createdAt = Joi.date();
+const sort = Joi.string();
+const order = Joi.string().valid('ASC', 'DESC');
+
 
 const createOrderRecordSchema = Joi.object({
   description: description.required(),

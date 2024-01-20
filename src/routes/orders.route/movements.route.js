@@ -80,4 +80,17 @@ router.get(
   }
 );
 
+router.get(
+  '/locations',
+  async (req, res, next) => {
+  try {
+    const query = req.query;
+    const locations = await movementService.getByLocations(query);
+
+    res.json(locations);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

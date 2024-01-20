@@ -5,6 +5,8 @@ const name = Joi.string();
 const code = Joi.string();
 const limit = Joi.number().integer();
 const offset = Joi.number().integer();
+const sort = Joi.string();
+const order = Joi.string().valid('ASC', 'DESC');
 
 const createGroup = Joi.object({
   name: name.required().min(3),
@@ -30,6 +32,8 @@ const searchGroup = Joi.object({
   parent: name,
   manager: name,
   managerId: id,
+  sort,
+  order,
   limit,
   offset,
 });
