@@ -14,9 +14,11 @@ const {
   updateGroup,
 } = require('../../schemas/group.schema');
 const GroupsService = require('../../services/group.service');
+const LocationsService = require('../../services/locations.service');
 
 const LogService = require('../../services/log.service');
 const logService = new LogService();
+const locationsService = new LocationsService();
 const { ACTIONS } = require('../../utils/roles');
 const { parseCSV } = require('../../helpers/parseCSV.helper');
 
@@ -71,7 +73,24 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const groups = await groupService.find({ groupId: id });
+      const groups = await locationsService.find({ groupId: id });
+
+      res.status(201).json(groups);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.get(
+  '/:id/children',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getGroup, 'params'),
+  checkAuth({ route: 'groups', crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const groups = await groupService.find({ parentId: id });
 
       res.status(201).json(groups);
     } catch (error) {

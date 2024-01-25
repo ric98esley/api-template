@@ -50,7 +50,7 @@ class AuthService {
       attributes: ['id', 'name', 'ability'],
     });
 
-    if(!role) return [];
+    if (!role) return [];
 
     const ability = JSON.parse(role.dataValues.ability);
 
@@ -58,7 +58,8 @@ class AuthService {
 
     for (let category in ability) {
       for (let action in ability[category]) {
-        if(ability[category][action] !== 'none') result.push(`${category}:${action}`);
+        if (ability[category][action] !== 'none')
+          result.push(`${category}:${action}`);
       }
     }
 
@@ -116,7 +117,8 @@ class AuthService {
       from: emailConfig.smtpEmail,
       to: `${user.email}`,
       subject: 'Email para recuperar contraseña',
-      html: `<b>Ingresa a este link => ${link}</b>`,
+      html: `<b>Hemos recibido una solicitud de cambio de contraseña para el sistema de inventario,
+              por favor ingresa al siguiente link solo si lo solicitaste => ${link}</b>`,
     };
     const rta = await this.sendMail(mail);
     return {
@@ -143,15 +145,18 @@ class AuthService {
   }
 
   async sendMail(infoMail) {
-    const transporter = nodemailer.createTransport({
-      host: emailConfig.smtpHost,
+    const config = {
+      host: 'mail.gana-loterias.com',
       secure: true,
       port: 465,
       auth: {
-        user: emailConfig.smtpEmail,
-        pass: emailConfig.smtpPass,
+        user: 'no-responder@gana-loterias.com',
+        pass: 'y97ttAlhTB6',
       },
-    });
+    };
+
+    const transporter = nodemailer.createTransport(config);
+
     await transporter.sendMail(infoMail);
     return { message: 'mail sent' };
   }

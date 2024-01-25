@@ -73,6 +73,7 @@ class GroupsService {
     name,
     managerId,
     parent,
+    parentId,
     manager,
     groupId,
     limit,
