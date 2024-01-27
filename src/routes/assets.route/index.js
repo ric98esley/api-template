@@ -21,6 +21,7 @@ const {
   searchAsset,
   createBulkAssetSchema,
   importAssetSchema,
+  deleteAssetSchema,
 } = require('../../schemas/asset.schema');
 const { generateExcel } = require('../../helpers/toExcel.helper');
 const { ACTIONS, SCOPE } = require('../../utils/roles');
@@ -126,8 +127,30 @@ router.get(
         id,
         type: 'asset',
         groupId,
+        paranoid: false
       });
       res.json(asset);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
+  '/:id/logs',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const logs = await logService.find({
+        table: 'assets',
+        targetId: id
+      })
+
+      res.json(logs)
     } catch (error) {
       next(error);
     }
@@ -205,7 +228,6 @@ router.post(
       const assets = await parseCSV(path, ',', user.sub);
       const newAssets = await service.createBulk({ assets, user });
       const targets = [];
-
 
       for (const asset of newAssets.created) {
         const details = {
@@ -287,16 +309,18 @@ router.delete(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getAssetSchema, 'params'),
+  validatorHandler(deleteAssetSchema, 'body'),
   checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
+      const { message } = req.body;
       const user = req.user;
 
       const asset = await service.delete({ id, deletedById: user.sub });
 
       const details = {
-        message: `Se ha ocultado el activo ${asset.dataValues.serial}`,
+        message: `Se ha ocultado el activo ${asset.dataValues.serial} motivado a ${message}`,
       };
       await logService.create({
         type: ACTIONS.DELETE,

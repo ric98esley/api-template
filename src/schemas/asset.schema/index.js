@@ -11,12 +11,8 @@ const limit = Joi.number().integer();
 const offset = Joi.number().integer();
 const toSearch = Joi.string();
 const createdAt = Joi.date();
+const message = Joi.string();
 
-// Crear factura
-
-const code = Joi.string();
-const total = Joi.string();
-const invoiceDate = Joi.date();
 
 const createAssetSchema = Joi.object({
   serial: serial.required(),
@@ -72,11 +68,16 @@ const getAssetSchema = Joi.object({
   offset,
 });
 
+const deleteAssetSchema = Joi.object({
+  message: message.required()
+})
+
 module.exports = {
   createAssetSchema,
   updateAssetSchema,
   searchAsset,
   getAssetSchema,
   createBulkAssetSchema,
-  importAssetSchema
+  importAssetSchema,
+  deleteAssetSchema
 };

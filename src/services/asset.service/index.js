@@ -125,7 +125,7 @@ class AssetsServices {
     };
   }
 
-  async findOne({ id, enabled, status, groupId, type }) {
+  async findOne({ id, enabled, status, groupId, type, paranoid = true }) {
     const options = {
       where: {
         id,
@@ -213,6 +213,7 @@ class AssetsServices {
         'updatedAt',
         'deletedAt',
       ],
+      paranoid
     };
     const Asset = await models.Asset.findOne(options);
     if (!Asset) {

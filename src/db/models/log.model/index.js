@@ -38,7 +38,13 @@ const LogSchema = {
   },
   details: {
     allowNull: true,
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
+    get: function () {
+      if(typeof this.getDataValue('details') === 'string') {
+      return JSON.parse(this.getDataValue('details'));
+      }
+      return this.getDataValue('details');
+    },
   },
   ip: {
     allowNull: false,
@@ -67,6 +73,10 @@ class Log extends Model {
       as: 'createdBy',
       foreignKey: 'createdById',
     });
+    this.belongsTo(models.Asset, {
+      as: 'asset',
+      foreignKey: 'targetId'
+    })
   }
 
   static config(sequelize) {
@@ -75,6 +85,7 @@ class Log extends Model {
       tableName: LOG_TABLE,
       modelName: 'Log',
       timestamps: false,
+      paranoid: false
     };
   }
 }
