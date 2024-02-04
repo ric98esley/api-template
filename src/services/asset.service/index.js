@@ -1,5 +1,5 @@
 const boom = require('@hapi/boom');
-const { Op, json, STRING } = require('sequelize');
+const { Op } = require('sequelize');
 
 const sequelize = require('../../libs/sequelize');
 const { models } = require('../../libs/sequelize');
@@ -88,15 +88,20 @@ class AssetsServices {
       },
     });
 
-    const assetToCreate = assets.map((asset) => {
-      const found = assetsFound.find(
-        (assetFound) => assetFound.dataValues.serial == String(asset.serial).toUpperCase().trim()
-      );
+    const assetToCreate =
+      assets
+        .map((asset) => {
+          const found = assetsFound.find(
+            (assetFound) =>
+              assetFound.dataValues.serial ==
+              String(asset.serial).toUpperCase().trim()
+          );
 
-      if (!found) {
-        return asset;
-      }
-    }).filter((asset) => asset !== undefined) || [];
+          if (!found) {
+            return asset;
+          }
+        })
+        .filter((asset) => asset !== undefined) || [];
 
     const data = assetToCreate.map((asset) => {
       return {
@@ -213,7 +218,7 @@ class AssetsServices {
         'updatedAt',
         'deletedAt',
       ],
-      paranoid
+      paranoid,
     };
     const Asset = await models.Asset.findOne(options);
     if (!Asset) {
@@ -229,6 +234,8 @@ class AssetsServices {
     sort = 'createdAt',
     order = 'DESC',
     location,
+    specification,
+    specificationValue,
     type,
     groupId,
     status,
@@ -242,7 +249,7 @@ class AssetsServices {
     startDate,
     endDate,
   }) {
-    if(!isNaN(startDate)){
+    if (!isNaN(startDate)) {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
@@ -273,12 +280,12 @@ class AssetsServices {
               [Op.like]: `%${location}%`,
             },
           },
-          {
-            '$location.address$': {
-              [Op.like]: `%${location}%`,
-            },
-          },
         ],
+      }),
+      ...(status && {
+        '$location.type.status$': {
+          [Op.eq]: status,
+        },
       }),
     };
     const options = {
@@ -287,7 +294,6 @@ class AssetsServices {
       ...(all == 'true' && {
         paranoid: false,
       }),
-      where,
       include: [
         {
           model: models.User,
@@ -303,12 +309,8 @@ class AssetsServices {
             {
               model: models.LocationType,
               as: 'type',
+              required: true,
               attributes: ['id', 'name', 'status'],
-              ...(status && {
-                where: {
-                  status,
-                },
-              }),
             },
             {
               model: models.Group,
@@ -383,16 +385,31 @@ class AssetsServices {
         {
           model: models.AssetSpec,
           as: 'specifications',
+          ...(specificationValue && {
+            where: {
+              value: {
+                [Op.like]: `%${specificationValue}%`,
+              },
+            },
+          }),
           include: [
             {
               model: models.HardwareSpec,
               as: 'type',
+              ...(specification && {
+                where: {
+                  name: {
+                    [Op.like]: `%${specification}%`,
+                  },
+                },
+              }),
               attributes: ['id', 'name'],
             },
           ],
           attributes: ['id', 'value'],
         },
       ],
+      where,
       order: [[sort, order]],
       distinct: true,
       attributes: [

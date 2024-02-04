@@ -26,9 +26,28 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
-      const categories = await productService.find(query);
+      const products = await productService.find(query);
 
-      res.status(201).json(categories);
+      res.status(201).json(products);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getProduct, 'params'),
+  checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const product = await productService.findOne({
+        id
+      });
+
+      res.status(201).json(product);
     } catch (error) {
       next(error);
     }

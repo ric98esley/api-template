@@ -117,6 +117,83 @@ router.patch(
   }
 );
 
+
+router.patch(
+  '/:id/add',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getWarehouse, 'params'),
+  // validatorHandler(createMovement, 'body'),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { quantity, notes, inTransit } = req.body;
+      const user = req.user;
+      const warehouseProduct = await service.finOne({
+        id,
+      });
+
+      const newQuantity = math.evaluate(`${warehouseProduct.dataValues.quantity} + ${quantity}`)
+
+      const movement = await movementService.create({
+        warehouseProductId: id,
+        quantity,
+        notes,
+        inTransit,
+        type: 'add',
+        createdById: user.sub,
+      });
+
+      await warehouseProduct.update({
+        quantity: newQuantity,
+      });
+
+      res.status(201).json(movement);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.patch(
+  '/:id/sub',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getWarehouse, 'params'),
+  // validatorHandler(createMovement, 'body'),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { quantity, notes, inTransit } = req.body;
+      const user = req.user;
+      const warehouseProduct = await service.finOne({
+        id,
+      });
+
+      // imprime resultado
+      const newQuantity = math.evaluate(`${warehouseProduct.dataValues.quantity} - ${quantity}`)
+
+      if(Number(newQuantity) < 0) throw boom.badRequest('El consumo no puede ser mayor a la existencia en el almacén')
+      const movement = await movementService.create({
+        warehouseProductId: id,
+        quantity: Number(quantity),
+        notes,
+        inTransit,
+        type: 'sub',
+        createdById: user.sub,
+      });
+
+      await warehouseProduct.update({
+        quantity: newQuantity,
+      });
+
+      res.status(201).json(movement);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),

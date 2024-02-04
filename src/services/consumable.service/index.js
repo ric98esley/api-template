@@ -42,6 +42,7 @@ class WarehouseService {
     id,
     search,
     location,
+    locationId,
     groupId,
     category,
     limit = 10,
@@ -53,6 +54,9 @@ class WarehouseService {
       ...(id && {
         id,
       }),
+      ...(locationId && {
+        locationId
+      })
     };
     const options = {
       limit: Number(limit),
@@ -159,6 +163,7 @@ class WarehouseService {
       rows,
     };
   }
+
   async update({ changes, id }) {
     const warehouse = await this.finOne({ id });
     const rta = await warehouse.update(changes);

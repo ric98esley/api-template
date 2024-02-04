@@ -26,7 +26,7 @@ class ProductService {
     return newProduct;
   }
 
-  async finOne({ id }) {
+  async findOne({ id }) {
     const product = await models.Product.findByPk(id, {
       include: [
         {
@@ -158,13 +158,13 @@ class ProductService {
     };
   }
   async update({ changes, id }) {
-    const product = await this.finOne({ id });
+    const product = await this.findOne({ id });
     const rta = await product.update(changes);
 
     return rta;
   }
   async delete({ id }) {
-    const product = await this.finOne({ id });
+    const product = await this.findOne({ id });
     const rta = await product.destroy();
 
     return rta;
