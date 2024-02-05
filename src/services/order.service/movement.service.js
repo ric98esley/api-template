@@ -245,7 +245,6 @@ class MovementService {
     toId,
     orderId,
   }) {
-    console.log(all);
     const where = {
       ...(movementType && {
         type: movementType,

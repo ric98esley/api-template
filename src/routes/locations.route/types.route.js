@@ -26,8 +26,6 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
-
-      console.log(query);
       const types = await locationTypeService.find(query);
 
       res.status(200).json(types);

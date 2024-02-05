@@ -17,24 +17,20 @@ class AssetsServices {
       },
     });
     const { prefix, next, zeroFill } = settings.dataValues;
-    console.log(next);
     const filled = `${next}`.padStart(zeroFill, '0');
     const tag = `${prefix}${filled}`;
     await settings.update({
       next: next + 1,
     });
-    console.log(tag);
     return { tag };
   }
 
   async create({ assets, user }) {
-    console.log('create');
     const createdById = user.sub;
     const newAssets = await Promise.all(
       assets.map(async (asset) => {
         try {
           let specifications = undefined;
-          console.log(asset.specifications);
           if (asset.specifications) {
             specifications = asset.specifications.map((specificaction) => ({
               ...specificaction,
