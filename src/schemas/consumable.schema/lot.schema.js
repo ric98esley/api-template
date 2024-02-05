@@ -1,20 +1,34 @@
 const Joi = require('joi');
 
 const id = Joi.number().integer();
-const quantity = Joi.string().pattern(/^\d+(\.[0-9][0-9]?)?(\/\d+?)?$/, { name: 'numbers'})
-const customer = Joi.string().min(8);
+const quantity = Joi.string().pattern(/^\d+(\.[0-9][0-9]?)?(\/\d+?)?$/, {
+  name: 'numbers',
+});
+const min = Joi.number().integer();
+const customer = Joi.string();
 const type = Joi.string();
 const description = Joi.string();
 const target = Joi.object({
   productId: id,
-  quantity
-})
-const targets = Joi.array().items(target.required())
+  quantity,
+  min,
+});
+const targets = Joi.array().items(target.required());
 
 const createLot = Joi.object({
-  customer: customer.required(),
+  customer: customer.required().min(8),
   description: description.required(),
-  targets
+  targets,
 });
 
-module.exports = { createLot };
+const findLot = Joi.object({
+  customer,
+  type,
+  description,
+});
+
+const getLot = Joi.object({
+  id: id.required(),
+});
+
+module.exports = { createLot, findLot, getLot };

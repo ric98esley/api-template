@@ -63,9 +63,13 @@ const LotSchema = {
 
 class Lot extends Model {
   static associate(models) {
-    this.hasMany(models.Product, {
+    this.hasMany(models.ProductHistory, {
       as: 'movements',
       foreignKey: 'lotId',
+    });
+    this.belongsTo(models.User, {
+      as: 'createdBy',
+      foreignKey: 'createdById'
     })
   }
   

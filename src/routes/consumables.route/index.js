@@ -10,23 +10,20 @@ const LocationsServices = require('../../services/locations.service');
 const WarehouseService = require('../../services/consumable.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const {
-  findConsumable,
-  createWarehouseProduct,
-} = require('../../schemas/consumable.schema');
+const { findConsumable } = require('../../schemas/consumable.schema');
 const {
   searchLocationSchema,
   getLocationSchema,
 } = require('../../schemas/location.schema');
-const {
-  getProduct,
-} = require('../../schemas/consumable.schema/product.schema');
 
 const router = express.Router();
-const logService = new LogService();
 const lotService = new LotService();
 const warehouseService = new WarehouseService();
 const locationService = new LocationsServices();
+
+const lotRoute = require('./lot.route');
+
+router.use('/lots', lotRoute );
 
 const { createLot } = require('../../schemas/consumable.schema/lot.schema');
 
@@ -98,14 +95,34 @@ router.post(
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
+      const { id } = req.params;
       const user = req.user;
       const createdById = user.sub;
       const body = req.body;
-      const { targets } = body;
+      const { targets = [] } = body;
       body.type = 'checking';
       body.createdById = createdById;
 
-      const lot = await lotService.create(body);
+      const movements = [];
+
+      for (const target of targets) {
+        const product = await warehouseService.add({
+          locationId: id,
+          createdById,
+          ...target,
+        });
+        if (product.error) {
+        } else {
+          const movement = {
+            targetId: product.id,
+            quantity: target.quantity,
+          };
+
+          movements.push(movement);
+        }
+      }
+
+      const lot = await lotService.create({ ...body, movements });
 
       res.status(201).json(lot);
     } catch (error) {
@@ -113,60 +130,50 @@ router.post(
     }
   }
 );
+router.post(
+  '/:id/checkout',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getLocationSchema, 'params'),
+  validatorHandler(createLot, 'body'),
+  checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+      const createdById = user.sub;
+      const body = req.body;
+      const { targets = [] } = body;
+      body.type = 'checkout';
+      body.createdById = createdById;
 
-// router.post(
-//   '/',
-//   passport.authenticate('jwt', { session: false }),
-//   checkUser(),
-//   validatorHandler(createWarehouseProduct, 'body'),
-//   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.CREATE }),
-//   async (req, res, next) => {
-//     try {
-//       const body = req.body;
-//       const { locationId, description , content , notes, ...product } = body;
+      const movements = [];
 
-//       const user = req.user;
-//       const createdById = user.sub
+      for (const target of targets) {
+        const product = await warehouseService.sub({
+          locationId: id,
+          createdById,
+          ...target,
+        });
 
-//       const targets = [];
+        if (product.error) {
+        } else {
+          const movement = {
+            targetId: product.id,
+            quantity: target.quantity,
+          };
 
-//       const newAsset = await warehouseService.create({ ...product, locationId, createdById });
+          movements.push(movement);
+        }
+      }
 
-//         const details = {
-//           message: `Se ha agregado el consumible`,
-//         };
+      const lot = await lotService.create({ ...body, movements });
 
-//       targets.push({
-//         quantity: product.quantity,
-//         assetId: newAsset.dataValues.productId,
-//       });
-
-//       await logService.create({
-//         type: ACTIONS.CREATE,
-//         table: 'consumables',
-//         targetId: newAsset.dataValues.id,
-//         details,
-//         ip: req.ip,
-//         createdById: user.sub,
-//       });
-
-//       const data = {
-//         targets,
-//         locationId,
-//         type: 'checking',
-//         description,
-//         notes,
-//         content,
-//         createdById: user.sub,
-//       };
-
-//       const order = await orderService.createAssignments(data);
-
-//       res.status(201).json(newAsset);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      res.status(201).json(lot);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;

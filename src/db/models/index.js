@@ -25,6 +25,7 @@ const { CategoryClass, CategoryClassSchema } = require('./category.model/categor
 const { Permission, PermissionSchema } = require('./user.model/permissions.model');
 const { Role, RoleSchema } = require('./user.model/role.model');
 const { Lot, LotSchema } = require('./consumable.model/lot.model');
+const { ProductHistory, ProductHistorySchema } = require('./consumable.model/history.model');
 
 function setupModels(sequelize) {
 
@@ -54,6 +55,7 @@ function setupModels(sequelize) {
   Lot.init(LotSchema, Lot.config(sequelize));
   Product.init(ProductSchema, Product.config(sequelize));
   LocationProducts.init(LocationProductsSchema, LocationProducts.config(sequelize));
+  ProductHistory.init(ProductHistorySchema, ProductHistory.config(sequelize));
 
   Settings.init(SettingSchema, Settings.config(sequelize));
 
@@ -86,6 +88,7 @@ function setupModels(sequelize) {
 
   Product.associate(sequelize.models);
   LocationProducts.associate(sequelize.models);
+  Lot.associate(sequelize.models);
 
   VMovement.associate(sequelize.models);
 

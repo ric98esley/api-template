@@ -1,5 +1,8 @@
+const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
-const { Op } = require('sequelize');
+const math = require('mathjs');
+
+const { Op, where } = require('sequelize');
 
 class WarehouseService {
   constructor() {}
@@ -55,8 +58,8 @@ class WarehouseService {
         id,
       }),
       ...(locationId && {
-        locationId
-      })
+        locationId,
+      }),
     };
     const options = {
       limit: Number(limit),
@@ -169,6 +172,80 @@ class WarehouseService {
     const rta = await warehouse.update(changes);
 
     return rta;
+  }
+
+  async add({ locationId, createdById, min, productId, quantity }) {
+    const product = await models.Product.findByPk(productId);
+    const location = await models.Location.findByPk(locationId);
+
+    if(!location) {
+      throw boom.notFound('Deposito no encontrado');
+    }
+
+    if (!product) return {
+      error: true
+    }
+
+    const [stock, created] = await models.LocationProducts.findOrCreate({
+      where: {
+        locationId,
+        productId,
+      },
+      defaults: {
+        quantity,
+        createdById,
+        min,
+      },
+    });
+
+    if (!created) {
+      const newQuantity = math.evaluate(`${stock.quantity} + ${quantity}`);
+      stock.update({
+        quantity: newQuantity,
+      });
+    }
+
+    return stock;
+  }
+  async sub({ locationId, createdById, min, productId, quantity }) {
+    const product = await models.Product.findByPk(productId);
+    const location = await models.Location.findByPk(locationId);
+
+    if(!location) {
+      throw boom.notFound('Deposito no encontrado');
+    }
+
+    if (!product) return {
+      error: true
+    }
+
+    const [stock, created] = await models.LocationProducts.findOrCreate({
+      where: {
+        locationId,
+        productId,
+      },
+      defaults: {
+        quantity,
+        createdById,
+        min,
+      },
+    });
+
+    if (!created) {
+      const newQuantity = math.evaluate(`${stock.quantity} - ${quantity}`);
+
+      if (Number(newQuantity) < 0) {
+        return {
+          error: true
+        }
+      }
+
+      stock.update({
+        quantity: newQuantity,
+      });
+    }
+
+    return stock;
   }
   async delete({ id }) {
     const warehouse = await this.finOne({ id });

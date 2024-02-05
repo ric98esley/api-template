@@ -8,34 +8,44 @@ const LogService = require('../../services/log.service');
 const LotService = require('../../services/consumable.service/lot.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const { createLot } = require('../../schemas/consumable.schema/lot.schema');
+const { findLot, getLot } = require('../../schemas/consumable.schema/lot.schema');
 
 const router = express.Router();
 const logService = new LogService();
 const lotService = new LotService();
 
-router.post(
-  '/checking',
+router.get(
+  '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(createLot, 'body'),
+  validatorHandler(findLot, 'query'),
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const user = req.user;
-      const createdById = user.sub;
-      const body = req.body;
-      body.type = 'checking';
-      body.createdById = createdById;
+      const query = req.query;
 
-      console.log(req.params)
+      const lots = await lotService.find(query);
 
-
-      const lot = await lotService.create(body)
-
-      res.status(201).json(lot)
+      res.json(lots);
     } catch (error) {
-      next(error)
+      next(error);
+    }
+  }
+);
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getLot, 'params'),
+  checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const lot = await lotService.findOne({ id });
+
+      res.json(lot);
+    } catch (error) {
+      next(error);
     }
   }
 );
