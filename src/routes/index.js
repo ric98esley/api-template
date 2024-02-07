@@ -17,7 +17,7 @@ const rolesRouter = require('./roles.route');
 
 function routerApi(app) {
   const router = express.Router();
-  app.use('/v1', router);
+  app.use('/v3', router);
   router.use('/auth', authRouter);
   router.use('/users', usersRouter);
   router.use('/customers', customerRouter);

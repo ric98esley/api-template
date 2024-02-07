@@ -2,7 +2,9 @@ const { Model, DataTypes, Sequelize } = require('sequelize');
 
 const PRODUCT_HISTORY = 'product_history';
 const { LOT_TABLE } = require('./lot.model');
-const { LOCATION_PRODUCTS_TABLE } = require('../warehouse.model/locationProducts.model');
+const {
+  LOCATION_PRODUCTS_TABLE,
+} = require('../warehouse.model/locationProducts.model');
 
 /**
  * @description description of each field in the table
@@ -28,23 +30,23 @@ const ProductHistorySchema = {
     field: 'lot_id',
     references: {
       model: LOT_TABLE,
-      key: 'id'
+      key: 'id',
     },
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   },
   targetId: {
     type: DataTypes.INTEGER,
     field: 'target_id',
     references: {
       model: LOCATION_PRODUCTS_TABLE,
-      key: 'id'
-    }
+      key: 'id',
+    },
   },
   quantity: {
     allowNull: false,
-    type: DataTypes.DECIMAL(9,2),
+    type: DataTypes.DECIMAL(9, 2),
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   },
   createdAt: {
     allowNull: false,
@@ -56,25 +58,10 @@ const ProductHistorySchema = {
 
 class ProductHistory extends Model {
   static associate(models) {
-    this.belongsToMany(models.Product, {
-      through: models.WarehouseProducts,
-      as: 'product',
-      foreignKey: 'productId'
+    this.belongsTo(models.LocationProducts, {
+      as: 'target',
+      foreignKey: 'id'
     })
-    this.belongsToMany(models.Deposit, {
-      through: models.WarehouseProducts,
-      as: 'deposit',
-      foreignKey: 'depositId'
-    })
-    this.belongsTo(models.User, {
-      foreignKey: 'createdById',
-      as: 'createdBy'
-    })
-    this.belongsTo(models.WarehouseProducts,
-      {
-        as: 'warehouse',
-        foreignKey: 'warehouseProductId'
-      })
   }
 
   static config(sequelize) {

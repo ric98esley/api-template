@@ -6,6 +6,8 @@ const quantity = Joi.string().pattern(/^\d+(\.[0-9][0-9]?)?(\/\d+?)?$/, {
 });
 const min = Joi.number().integer();
 const customer = Joi.string();
+const limit = Joi.number().integer();
+const offset = Joi.number().integer();
 const type = Joi.string();
 const description = Joi.string();
 const target = Joi.object({
@@ -25,6 +27,8 @@ const findLot = Joi.object({
   customer,
   type,
   description,
+  limit,
+  offset,
 });
 
 const getLot = Joi.object({

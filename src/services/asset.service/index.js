@@ -442,6 +442,10 @@ class AssetsServices {
     sort = 'createdAt',
     order = 'DESC',
   }) {
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
     const options = {
       limit: Number(limit),
       offset: Number(offset),

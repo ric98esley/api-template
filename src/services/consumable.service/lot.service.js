@@ -19,7 +19,7 @@ class LotService {
     );
     return lot;
   }
-  async find({ customer, type, description }) {
+  async find({ limit = 10, offset = 0, customer, type, description }) {
     const where = {
       ...(customer && {
         customer: {
@@ -27,13 +27,13 @@ class LotService {
         },
       }),
       ...(type && {
-        type
+        type,
       }),
       ...(description && {
         description: {
-          [Op.like]: `%${description}%`
-        }
-      })
+          [Op.like]: `%${description}%`,
+        },
+      }),
     };
     const include = [
       {
@@ -44,7 +44,10 @@ class LotService {
     ];
     const { rows, count } = await models.Lot.findAndCountAll({
       where,
-      include
+      include,
+      order: [['createdAt', 'DESC']],
+      limit: Number(limit),
+      offset: Number(offset)
     });
 
     return {
@@ -52,12 +55,10 @@ class LotService {
       rows,
     };
   }
-  async findOne({
-    id
-  }){
+  async findOne({ id }) {
     const lot = await models.Lot.findOne({
       where: {
-        id
+        id,
       },
       include: [
         {
@@ -68,11 +69,24 @@ class LotService {
         {
           model: models.ProductHistory,
           as: 'movements',
-        }
-      ]
-    })
+          include: [
+            {
+              model: models.LocationProducts,
+              as: 'target',
+              include: [
+                {
+                  model: models.Product,
+                  as: 'product',
+                  include: ['category']
+                }
+              ]
+            }
+          ]
+        },
+      ],
+    });
 
-    return lot
+    return lot;
   }
 }
 

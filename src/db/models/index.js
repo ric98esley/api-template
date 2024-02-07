@@ -89,6 +89,7 @@ function setupModels(sequelize) {
   Product.associate(sequelize.models);
   LocationProducts.associate(sequelize.models);
   Lot.associate(sequelize.models);
+  ProductHistory.associate(sequelize.models);
 
   VMovement.associate(sequelize.models);
 

@@ -174,7 +174,7 @@ class WarehouseService {
     return rta;
   }
 
-  async add({ locationId, createdById, min, productId, quantity }) {
+  async add({ locationId, createdById, min = 1, productId, quantity }) {
     const product = await models.Product.findByPk(productId);
     const location = await models.Location.findByPk(locationId);
 
@@ -207,7 +207,7 @@ class WarehouseService {
 
     return stock;
   }
-  async sub({ locationId, createdById, min, productId, quantity }) {
+  async sub({ locationId, createdById, min = 1, productId, quantity }) {
     const product = await models.Product.findByPk(productId);
     const location = await models.Location.findByPk(locationId);
 
