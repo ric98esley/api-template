@@ -33,6 +33,10 @@ class MovementService {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
+
+    if (all == 'false') all = false;
+    if (all == 'true') all = true;
+
     const where = {
       ...(movementType && {
         type: movementType,
@@ -41,10 +45,10 @@ class MovementService {
         current: current == 'true' ? true : false,
       }),
       ...(toId && {
-        toId,
+        toId: Number(toId),
       }),
       ...(fromId && {
-        fromId,
+        fromId: Number(fromId),
       }),
       ...(assetId && {
         assetId,
@@ -63,17 +67,23 @@ class MovementService {
         }),
       ...(category && {
         '$asset.model.category.name$': {
-          [Op.like]: `%${category}%`,
+          [Op.or]: category.split(',').map((c) => ({
+            [Op.like]: `%${c}%`,
+          })),
         },
       }),
       ...(brand && {
         '$asset.model.brand.name$': {
-          [Op.like]: `%${brand}%`,
+          [Op.or]: brand.split(',').map((b) => ({
+            [Op.like]: `%${b}%`,
+          })),
         },
       }),
       ...(model && {
         '$asset.model.name$': {
-          [Op.like]: `%${model}%`,
+          [Op.or]: model.split(',').map((m) => ({
+            [Op.like]: `%${m}%`,
+          })),
         },
       }),
       ...(groupId && {
@@ -132,8 +142,9 @@ class MovementService {
         '$asset.serial$': {
           [Op.like]: `%${serial}%`,
         },
-      })
+      }),
     };
+
     const options = {
       order: [[sort, order]],
       ...(paranoid != undefined && {
@@ -159,13 +170,13 @@ class MovementService {
                   model: models.Category,
                   as: 'category',
                   attributes: ['id', 'name'],
-                  paranoid: false
+                  paranoid: false,
                 },
                 {
                   model: models.Brand,
                   as: 'brand',
                   attributes: ['id', 'name'],
-                  paranoid: false
+                  paranoid: false,
                 },
               ],
             },
@@ -245,6 +256,9 @@ class MovementService {
     toId,
     orderId,
   }) {
+    if (all == 'false') all = false;
+    if (all == 'true') all = true;
+
     const where = {
       ...(movementType && {
         type: movementType,
@@ -281,19 +295,25 @@ class MovementService {
       ...(orderType && {
         type: orderType,
       }),
+      ...(model && {
+        model: {
+          [Op.or]: model.split(',').map((m) => ({
+            [Op.like]: `%${m}%`,
+          })),
+        },
+      }),
       ...(category && {
         category: {
-          [Op.like]: `%${category}%`,
+          [Op.or]: category.split(',').map((c) => ({
+            [Op.like]: `%${c}%`,
+          })),
         },
       }),
       ...(brand && {
         brand: {
-          [Op.like]: `%${brand}%`,
-        },
-      }),
-      ...(model && {
-        model: {
-          [Op.like]: `%${model}%`,
+          [Op.or]: brand.split(',').map((b) => ({
+            [Op.like]: `%${b}%`,
+          })),
         },
       }),
       ...(location && {
@@ -418,7 +438,7 @@ class MovementService {
           startDate: `${startDate}`,
           endDate: `${endDate}`,
           search: `%${search}%`,
-          orderType: `%${orderType}%`
+          orderType: `%${orderType}%`,
         },
         type: sequelize.QueryTypes.SELECT,
       }

@@ -24,7 +24,9 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
-      query.all = true;
+      if(!query.all) {
+        query.all = true;
+      }
       const movements = await movementService.find(query);
 
       res.json(movements);

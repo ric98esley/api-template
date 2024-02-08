@@ -283,6 +283,34 @@ class AssetsServices {
           [Op.eq]: status,
         },
       }),
+      ...(model && {
+        '$model.name$': {
+          [Op.or]: model.split(',').map((m) => ({
+            [Op.like]: `%${m}%`,
+          })),
+        },
+      }),
+      ...(category && {
+        '$model.category.name$': {
+          [Op.or]: category.split(',').map((c) => ({
+            [Op.like]: `%${c}%`,
+          })),
+        },
+      }),
+      ...(type && {
+        '$model.category.type$': {
+          [Op.or]: type.split(',').map((t) => ({
+            [Op.like]: `%${t}%`,
+          })),
+        },
+      }),
+      ...(brand && {
+        '$model.brand.name$': {
+          [Op.or]: brand.split(',').map((b) => ({
+            [Op.like]: `%${b}%`,
+          })),
+        },
+      }),
     };
     const options = {
       limit: Number(limit),
@@ -328,12 +356,6 @@ class AssetsServices {
             ...(modelId && {
               id: modelId,
             }),
-            ...(!modelId &&
-              model && {
-                name: {
-                  [Op.like]: `%${model}%`,
-                },
-              }),
           },
           include: [
             {
@@ -344,14 +366,6 @@ class AssetsServices {
               where: {
                 ...(categoryId && {
                   id: categoryId,
-                }),
-                ...(type && {
-                  type,
-                }),
-                ...(category && {
-                  name: {
-                    [Op.like]: `%${category}%`,
-                  },
                 }),
               },
             },
@@ -365,13 +379,6 @@ class AssetsServices {
                   !categoryId &&
                   brandId && {
                     id: brandId,
-                  }),
-                ...(!modelId &&
-                  !brandId &&
-                  brand && {
-                    name: {
-                      [Op.like]: `%${brand}%`,
-                    },
                   }),
               },
             },
@@ -455,9 +462,6 @@ class AssetsServices {
             [Op.like]: `%${serial}%`,
           },
         }),
-        ...(type && {
-          type,
-        }),
         ...(status && {
           status,
         }),
@@ -502,18 +506,31 @@ class AssetsServices {
           groupId,
         }),
         ...(model && {
-          model: {
-            [Op.like]: `%${model}%`,
+          '$model.name$': {
+            [Op.or]: model.split(',').map((m) => ({
+              [Op.like]: `%${m}%`,
+            })),
           },
         }),
         ...(category && {
-          category: {
-            [Op.like]: `%${category}%`,
+          '$model.category.name$': {
+            [Op.or]: category.split(',').map((c) => ({
+              [Op.like]: `%${c}%`,
+            })),
+          },
+        }),
+        ...(type && {
+          '$model.category.type$': {
+            [Op.or]: type.split(',').map((t) => ({
+              [Op.like]: `%${t}%`,
+            })),
           },
         }),
         ...(brand && {
-          brand: {
-            [Op.like]: `%${brand}%`,
+          '$model.brand.name$': {
+            [Op.or]: brand.split(',').map((b) => ({
+              [Op.like]: `%${b}%`,
+            })),
           },
         }),
       },
