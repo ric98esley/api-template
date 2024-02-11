@@ -10,7 +10,7 @@ const LocationsServices = require('../../services/locations.service');
 const WarehouseService = require('../../services/consumable.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const { findConsumable } = require('../../schemas/consumable.schema');
+const { findConsumable, getConsumable, updateConsumable } = require('../../schemas/consumable.schema');
 const {
   searchLocationSchema,
   getLocationSchema,
@@ -23,7 +23,7 @@ const locationService = new LocationsServices();
 
 const lotRoute = require('./lot.route');
 
-router.use('/lots', lotRoute );
+router.use('/lots', lotRoute);
 
 const { createLot } = require('../../schemas/consumable.schema/lot.schema');
 
@@ -75,11 +75,56 @@ router.get(
       const { id } = req.params;
       const query = req.query;
 
-      const location = await warehouseService.find({
+      const items = await warehouseService.find({
         ...query,
         locationId: id,
       });
-      res.json(location);
+      res.json(items);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.get(
+  '/:locationId/products/:productId',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getConsumable, 'params'),
+  checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { locationId, productId } = req.params;
+      const query = req.query;
+
+      const item = await warehouseService.findOne({
+        locationId,
+        id: productId
+      });
+      res.json(item);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.patch(
+  '/:locationId/products/:productId',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getConsumable, 'params'),
+  validatorHandler(updateConsumable, 'body'),
+  checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { locationId, productId } = req.params;
+
+      const body = req.body;
+
+      const item = await warehouseService.update({
+        locationId,
+        id: productId,
+        changes: body
+      });
+      res.json(item);
     } catch (error) {
       next(error);
     }

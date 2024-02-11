@@ -37,6 +37,8 @@ class MovementService {
     if (all == 'false') all = false;
     if (all == 'true') all = true;
 
+    sort = sort.split(',');
+
     const where = {
       ...(movementType && {
         type: movementType,
@@ -146,7 +148,10 @@ class MovementService {
     };
 
     const options = {
-      order: [[sort, order]],
+      order: [
+        [...sort, order],
+        ['asset', 'serial', 'DESC'],
+      ],
       ...(paranoid != undefined && {
         paranoid: paranoid == 'true' ? true : false,
       }),
@@ -259,6 +264,8 @@ class MovementService {
     if (all == 'false') all = false;
     if (all == 'true') all = true;
 
+    sort = sort.split(',');
+
     const where = {
       ...(movementType && {
         type: movementType,
@@ -346,7 +353,10 @@ class MovementService {
       }),
     };
     const options = {
-      order: [[sort, order]],
+      order: [
+        [...sort, order],
+        ['serial', 'DESC'],
+      ],
       limit: Number(limit),
       offset: Number(offset),
       where,

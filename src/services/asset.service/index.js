@@ -249,6 +249,8 @@ class AssetsServices {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
+    sort = sort.split(',');
+
     const where = {
       ...(serial && {
         serial: {
@@ -327,13 +329,11 @@ class AssetsServices {
         {
           model: models.Location,
           as: 'location',
-          required: true,
           attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
           include: [
             {
               model: models.LocationType,
               as: 'type',
-              required: true,
               attributes: ['id', 'name', 'status'],
             },
             {
@@ -385,35 +385,9 @@ class AssetsServices {
           ],
           attributes: ['id', 'name'],
         },
-        {
-          model: models.AssetSpec,
-          as: 'specifications',
-          ...(specificationValue && {
-            where: {
-              value: {
-                [Op.like]: `%${specificationValue}%`,
-              },
-            },
-          }),
-          include: [
-            {
-              model: models.HardwareSpec,
-              as: 'type',
-              ...(specification && {
-                where: {
-                  name: {
-                    [Op.like]: `%${specification}%`,
-                  },
-                },
-              }),
-              attributes: ['id', 'name'],
-            },
-          ],
-          attributes: ['id', 'value'],
-        },
       ],
       where,
-      order: [[sort, order]],
+      order: [[...sort, order], ['serial', 'DESC']],
       distinct: true,
       attributes: [
         'id',
@@ -506,28 +480,21 @@ class AssetsServices {
           groupId,
         }),
         ...(model && {
-          '$model.name$': {
+          model: {
             [Op.or]: model.split(',').map((m) => ({
               [Op.like]: `%${m}%`,
             })),
           },
         }),
         ...(category && {
-          '$model.category.name$': {
+          category: {
             [Op.or]: category.split(',').map((c) => ({
               [Op.like]: `%${c}%`,
             })),
           },
         }),
-        ...(type && {
-          '$model.category.type$': {
-            [Op.or]: type.split(',').map((t) => ({
-              [Op.like]: `%${t}%`,
-            })),
-          },
-        }),
         ...(brand && {
-          '$model.brand.name$': {
+          brand: {
             [Op.or]: brand.split(',').map((b) => ({
               [Op.like]: `%${b}%`,
             })),

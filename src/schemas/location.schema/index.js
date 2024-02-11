@@ -40,6 +40,7 @@ const updateLocationSchema = Joi.object({
 
 const getLocationSchema = Joi.object({
   id: id.required(),
+  productId: id
 });
 
 const searchLocationSchema = Joi.object({

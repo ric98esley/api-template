@@ -60,7 +60,7 @@ class ProductHistory extends Model {
   static associate(models) {
     this.belongsTo(models.LocationProducts, {
       as: 'target',
-      foreignKey: 'id'
+      foreignKey: 'targetId'
     })
   }
 

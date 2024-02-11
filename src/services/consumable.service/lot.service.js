@@ -47,7 +47,7 @@ class LotService {
       include,
       order: [['createdAt', 'DESC']],
       limit: Number(limit),
-      offset: Number(offset)
+      offset: Number(offset),
     });
 
     return {
@@ -69,19 +69,28 @@ class LotService {
         {
           model: models.ProductHistory,
           as: 'movements',
+          attributes: ['id', 'quantity', 'createdAt'],
           include: [
             {
               model: models.LocationProducts,
               as: 'target',
+              attributes: ['id', 'quantity', 'min', 'createdAt'],
               include: [
                 {
                   model: models.Product,
                   as: 'product',
-                  include: ['category']
-                }
-              ]
-            }
-          ]
+                  attributes: ['id', 'code', 'name', 'unit', 'description'],
+                  include: [
+                    {
+                      model: models.Category,
+                      as: 'category',
+                      attributes: ['id', 'name'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
       ],
     });

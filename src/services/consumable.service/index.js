@@ -29,15 +29,47 @@ class WarehouseService {
     return newProductsOnWarehouse;
   }
 
-  async finOne({ id }) {
-    const warehouse = await models.WarehouseProducts.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-      ],
+  async findOne({ id, locationId }) {
+    const where = {
+      id: Number(id),
+      locationId,
+    };
+
+    const include = [
+      {
+        model: models.User,
+        as: 'createdBy',
+        attributes: ['id', 'username'],
+      },
+      {
+        model: models.Product,
+        as: 'product',
+        include: [
+          {
+            model: models.Category,
+            as: 'category',
+            attributes: ['id', 'name', 'description'],
+          },
+        ],
+        attributes: [
+          'id',
+          'code',
+          'name',
+          'price',
+          'unit',
+          'description',
+          'createdAt',
+        ],
+      },
+      {
+        model: models.Location,
+        as: 'location',
+        attributes: ['id', 'code', 'name']
+      }
+    ];
+    const warehouse = await models.LocationProducts.findOne({
+      where,
+      include,
     });
     return warehouse;
   }
@@ -167,8 +199,8 @@ class WarehouseService {
     };
   }
 
-  async update({ changes, id }) {
-    const warehouse = await this.finOne({ id });
+  async update({ changes, id , locationId}) {
+    const warehouse = await this.findOne({ id, locationId});
     const rta = await warehouse.update(changes);
 
     return rta;
@@ -178,13 +210,14 @@ class WarehouseService {
     const product = await models.Product.findByPk(productId);
     const location = await models.Location.findByPk(locationId);
 
-    if(!location) {
+    if (!location) {
       throw boom.notFound('Deposito no encontrado');
     }
 
-    if (!product) return {
-      error: true
-    }
+    if (!product)
+      return {
+        error: true,
+      };
 
     const [stock, created] = await models.LocationProducts.findOrCreate({
       where: {
@@ -211,13 +244,14 @@ class WarehouseService {
     const product = await models.Product.findByPk(productId);
     const location = await models.Location.findByPk(locationId);
 
-    if(!location) {
+    if (!location) {
       throw boom.notFound('Deposito no encontrado');
     }
 
-    if (!product) return {
-      error: true
-    }
+    if (!product)
+      return {
+        error: true,
+      };
 
     const [stock, created] = await models.LocationProducts.findOrCreate({
       where: {
@@ -236,8 +270,8 @@ class WarehouseService {
 
       if (Number(newQuantity) < 0) {
         return {
-          error: true
-        }
+          error: true,
+        };
       }
 
       stock.update({
