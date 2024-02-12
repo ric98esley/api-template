@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const { USER_TABLE } = require('../user.model');
+const { LOCATION_TABLE } = require('../location.model');
 
 const LOT_TABLE = 'lot';
 
@@ -31,6 +32,15 @@ const LotSchema = {
     type: DataTypes.STRING(8),
     validate: {
       isIn: [['checking', 'checkout']],
+    },
+  },
+  locationId: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+    field: 'location_id',
+    references: {
+      model: LOCATION_TABLE,
+      key: 'id'
     },
   },
   createdById: {
@@ -70,6 +80,10 @@ class Lot extends Model {
     this.belongsTo(models.User, {
       as: 'createdBy',
       foreignKey: 'createdById'
+    });
+    this.belongsTo(models.Location, {
+      as: 'location',
+      foreignKey: 'locationId'
     })
   }
   

@@ -261,6 +261,11 @@ class MovementService {
     toId,
     orderId,
   }) {
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
+
     if (all == 'false') all = false;
     if (all == 'true') all = true;
 

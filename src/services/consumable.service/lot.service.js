@@ -4,11 +4,19 @@ const { Op } = require('sequelize');
 class LotService {
   constructor() {}
 
-  async create({ customer, type, description, createdById, movements = [] }) {
+  async create({
+    customer,
+    type,
+    description,
+    createdById,
+    movements = [],
+    locationId,
+  }) {
     const lot = await models.Lot.create(
       {
         customer,
         type,
+        locationId,
         description,
         createdById,
         movements,
@@ -19,7 +27,15 @@ class LotService {
     );
     return lot;
   }
-  async find({ limit = 10, offset = 0, customer, type, description }) {
+  async find({
+    limit = 10,
+    offset = 0,
+    customer,
+    type,
+    description,
+    locationId,
+    groupId,
+  }) {
     const where = {
       ...(customer && {
         customer: {
@@ -34,12 +50,30 @@ class LotService {
           [Op.like]: `%${description}%`,
         },
       }),
+      ...(locationId && {
+        locationId,
+      }),
+      ...(groupId && {
+        '$location.group.id$': groupId,
+      }),
     };
     const include = [
       {
         model: models.User,
         as: 'createdBy',
         attributes: ['id', 'username'],
+      },
+      {
+        model: models.Location,
+        as: 'location',
+        attributes: [ 'id' , 'code', 'name'],
+        include: [
+          {
+            model: models.Group,
+            as: 'group',
+            attributes: ['id', 'code', 'name'],
+          },
+        ],
       },
     ];
     const { rows, count } = await models.Lot.findAndCountAll({
@@ -55,10 +89,16 @@ class LotService {
       rows,
     };
   }
-  async findOne({ id }) {
+  async findOne({ id, locationId, groupId }) {
     const lot = await models.Lot.findOne({
       where: {
         id,
+        ...(locationId && {
+          locationId,
+        }),
+        ...(groupId && {
+          '$location.group.id$': groupId,
+        }),
       },
       include: [
         {

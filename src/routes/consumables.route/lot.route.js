@@ -8,14 +8,16 @@ const LogService = require('../../services/log.service');
 const LotService = require('../../services/consumable.service/lot.service');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
-const { findLot, getLot } = require('../../schemas/consumable.schema/lot.schema');
+const {
+  findLot,
+  getLot,
+} = require('../../schemas/consumable.schema/lot.schema');
 
 const router = express.Router();
-const logService = new LogService();
 const lotService = new LotService();
 
 router.get(
-  '/',
+  '/:locationId/lots',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(findLot, 'query'),
@@ -23,8 +25,9 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
+      const { locationId } = req.params;
 
-      const lots = await lotService.find(query);
+      const lots = await lotService.find({ locationId, ...query });
 
       res.json(lots);
     } catch (error) {
@@ -33,15 +36,16 @@ router.get(
   }
 );
 router.get(
-  '/:id',
+  '/:locationId/lots/:id',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getLot, 'params'),
   checkAuth({ route: SCOPE.CONSUMABLES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const { id } = req.params;
-      const lot = await lotService.findOne({ id });
+      const { locationId, id } = req.params;
+      const query = req.query;
+      const lot = await lotService.findOne({ id, locationId, query });
 
       res.json(lot);
     } catch (error) {

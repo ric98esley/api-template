@@ -23,7 +23,7 @@ const locationService = new LocationsServices();
 
 const lotRoute = require('./lot.route');
 
-router.use('/lots', lotRoute);
+router.use('/', lotRoute);
 
 const { createLot } = require('../../schemas/consumable.schema/lot.schema');
 
@@ -147,6 +147,7 @@ router.post(
       const { targets = [] } = body;
       body.type = 'checking';
       body.createdById = createdById;
+      body.locationId = id;
 
       const movements = [];
 
@@ -191,6 +192,7 @@ router.post(
       const { targets = [] } = body;
       body.type = 'checkout';
       body.createdById = createdById;
+      body.locationId = id;
 
       const movements = [];
 
