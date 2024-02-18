@@ -5,6 +5,7 @@ const validatorHandler = require('../../middlewares/validator.handler');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 
 const LogService = require('../../services/log.service');
+const ProductHistoryService = require('../../services/consumable.service/history');
 const LotService = require('../../services/consumable.service/lot.service');
 const LocationsServices = require('../../services/locations.service');
 const WarehouseService = require('../../services/consumable.service');
@@ -18,6 +19,7 @@ const {
 
 const router = express.Router();
 const lotService = new LotService();
+const historyService = new ProductHistoryService();
 const warehouseService = new WarehouseService();
 const locationService = new LocationsServices();
 
@@ -76,6 +78,28 @@ router.get(
       const query = req.query;
 
       const items = await warehouseService.find({
+        ...query,
+        locationId: id,
+      });
+      res.json(items);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+router.get(
+  '/:id/movements',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getLocationSchema, 'params'),
+  validatorHandler(findConsumable, 'query'),
+  checkAuth({ route: SCOPE.LOCATIONS, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const query = req.query;
+
+      const items = await historyService.find({
         ...query,
         locationId: id,
       });

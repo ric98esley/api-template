@@ -62,6 +62,12 @@ class ProductHistory extends Model {
       as: 'target',
       foreignKey: 'targetId'
     })
+    this.belongsTo(models.Lot,
+      {
+        as: 'lot',
+        foreignKey: 'lotId'
+      }
+      )
   }
 
   static config(sequelize) {
