@@ -461,8 +461,8 @@ class MovementService {
 
     const count = await sequelize.query(
       `SELECT
-          COUNT(locations.id) as total
-        FROM movements
+          COUNT(id) as total from
+        ( select locations.id FROM movements
           left join locations on movements.to_id = locations.id
           left join orders on orders.id = movements.order_id
           left join groups_t groups on groups.id = locations.group_id
@@ -470,6 +470,9 @@ class MovementService {
               movements.deleted_at is null and
               movements.created_at BETWEEN $startDate and $endDate
               and (locations.code like $search or locations.name like $search)
+              and orders.type like $orderType
+              group by locations.id
+              ) as movements_by
         `,
       {
         nest: true,
@@ -477,6 +480,7 @@ class MovementService {
           startDate: `${startDate}`,
           endDate: `${endDate}`,
           search: `%${search}%`,
+          orderType: `%${orderType}%`,
         },
         type: sequelize.QueryTypes.SELECT,
       }

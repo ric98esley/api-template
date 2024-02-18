@@ -18,7 +18,7 @@ const createAssetSchema = Joi.object({
   serial: serial.required(),
   modelId: id.required(),
   locationId: id.required(),
-  notes,
+  notes: notes.empty(''),
   specifications: createAssetSpecification,
 });
 

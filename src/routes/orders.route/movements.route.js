@@ -84,6 +84,10 @@ router.get(
 
 router.get(
   '/locations',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(searchMovementSchema, 'query'),
+  checkAuth({ route: SCOPE.MOVEMENTS, crud: ACTIONS.READ }),
   async (req, res, next) => {
   try {
     const query = req.query;

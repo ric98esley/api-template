@@ -1,7 +1,7 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op, fn, col } = require('sequelize');
+const { Op, fn, col, literal } = require('sequelize');
 
 class OrderRecordService {
   constructor() {}
@@ -22,8 +22,8 @@ class OrderRecordService {
 
     for (const target of targets) {
       const asset = await models.Asset.findByPk(target.assetId);
-      if(!asset){
-        throw boom.notFound('El activo no existe ' + target.assetId)
+      if (!asset) {
+        throw boom.notFound('El activo no existe ' + target.assetId);
       }
       movements.push({
         assetId: target.assetId,
@@ -70,15 +70,21 @@ class OrderRecordService {
   }
   async find({
     locationId,
+    location,
     sort = 'createdAt',
     order = 'DESC',
     startDate,
     endDate,
     type,
     description,
+    notes,
     limit = 10,
     offset = 0,
   }) {
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
     const where = {
       ...(locationId && {
         locationId,
@@ -92,8 +98,15 @@ class OrderRecordService {
       ...(type && {
         type,
       }),
+      ...(notes && {
+        notes: {
+          [Op.like]: `%${notes}%`,
+        },
+      }),
       ...(description && {
-        description: { [Op.like]: `%${description}%` },
+        description: {
+          [Op.like]: `%${description}%`,
+        },
       }),
     };
     const options = {
@@ -109,7 +122,31 @@ class OrderRecordService {
         {
           model: models.Location,
           as: 'location',
-          attributes: ['id', 'code', 'name', 'phone'],
+          attributes: [
+            'id',
+            'code',
+            'name',
+            'phone',
+            'typeId',
+            'zoneId',
+            'managerId',
+          ],
+          ...(location && {
+            where: {
+              [Op.or]: [
+                {
+                  name: {
+                    [Op.like]: `%${location}%`,
+                  },
+                },
+                {
+                  code: {
+                    [Op.like]: `%${location}%`,
+                  },
+                },
+              ],
+            },
+          }),
           include: [
             {
               model: models.LocationType,
@@ -133,8 +170,18 @@ class OrderRecordService {
       attributes: [
         'id',
         'type',
-        [fn('COUNT', col('OrderRecord.id')), 'count'],
+        [
+          literal(
+            `(SELECT count(*)
+              FROM movements as movements
+                  where
+              order_id = OrderRecord.id)`
+          ),
+          'count',
+        ],
         'description',
+        'notes',
+        'content',
         'delivered',
         'closed',
         'createdAt',
@@ -142,14 +189,7 @@ class OrderRecordService {
       limit: Number(limit),
       offset: Number(offset),
     };
-    const count = await models.OrderRecord.count(options);
-    options.include.push({
-      model: models.Movement,
-      as: 'movements',
-      attributes: [],
-    });
-    options.group = ['OrderRecord.id'];
-    const rows = await models.OrderRecord.findAll(options);
+    const { count, rows } = await models.OrderRecord.findAndCountAll(options);
     return {
       total: count,
       rows,
