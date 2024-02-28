@@ -74,6 +74,7 @@ class OrderRecordService {
     sort = 'createdAt',
     order = 'DESC',
     startDate,
+    groupId,
     endDate,
     type,
     description,
@@ -122,17 +123,20 @@ class OrderRecordService {
         {
           model: models.Location,
           as: 'location',
+          required: true,
           attributes: [
             'id',
             'code',
             'name',
             'phone',
+            'groupId',
             'typeId',
             'zoneId',
             'managerId',
           ],
-          ...(location && {
-            where: {
+          where: {
+            groupId,
+            ...(location && {
               [Op.or]: [
                 {
                   name: {
@@ -145,8 +149,8 @@ class OrderRecordService {
                   },
                 },
               ],
-            },
-          }),
+            }),
+          },
           include: [
             {
               model: models.LocationType,

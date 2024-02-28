@@ -19,7 +19,7 @@ const LocationsService = require('../../services/locations.service');
 const LogService = require('../../services/log.service');
 const logService = new LogService();
 const locationsService = new LocationsService();
-const { ACTIONS } = require('../../utils/roles');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
 const { parseCSV } = require('../../helpers/parseCSV.helper');
 
 const router = express.Router();
@@ -194,7 +194,7 @@ router.delete(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getGroup, 'params'),
-  checkAuth({ route: 'categories', crud: ACTIONS.DELETE }),
+  checkAuth({ route: SCOPE.GROUPS, crud: ACTIONS.DELETE }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
