@@ -267,6 +267,7 @@ class OrderRecordService {
         'type',
         'description',
         'content',
+        'notes',
         [fn('COUNT', col('OrderRecord.id')), 'count'],
         'delivered',
         'closed',
