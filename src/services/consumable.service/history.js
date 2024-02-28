@@ -5,25 +5,25 @@ const math = require('mathjs');
 const { Op, where } = require('sequelize');
 
 class ProductHistoryService {
-  async find({ locationId, search, limit = 10, offset = 0 }) {
+  async find({ locationId, search, limit = 10, offset = 0, sort = 'target,product,code', order = 'DESC'}) {
     const where = {
       ...(locationId && {
         '$lot.location.id$': locationId,
       }),
       ...(search && {
-        [Op.or] : [
+        [Op.or]: [
           {
             '$target.product.name$': {
-              [Op.like]: `%${search}%`
-            }
+              [Op.like]: `%${search}%`,
+            },
           },
           {
             '$target.product.code$': {
-              [Op.like]: `%${search}%`
-            }
+              [Op.like]: `%${search}%`,
+            },
           },
-        ]
-      })
+        ],
+      }),
     };
 
     const include = [
@@ -66,12 +66,18 @@ class ProductHistoryService {
       offset: Number(offset),
       where,
       include,
+      order: [
+        ['createdAt', 'DESC'],
+        [...sort.split(','), order],
+      ],
     };
-    const {count, rows} = await models.ProductHistory.findAndCountAll(options);
+    const { count, rows } = await models.ProductHistory.findAndCountAll(
+      options
+    );
 
     return {
       total: count,
-      rows
+      rows,
     };
   }
 }
