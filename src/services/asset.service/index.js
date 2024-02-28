@@ -230,8 +230,7 @@ class AssetsServices {
     sort = 'createdAt',
     order = 'DESC',
     location,
-    specification,
-    specificationValue,
+    group,
     type,
     groupId,
     status,
@@ -250,7 +249,6 @@ class AssetsServices {
       endDate = Number(endDate);
     }
     sort = sort.split(',');
-
     const where = {
       ...(serial && {
         serial: {
@@ -313,6 +311,7 @@ class AssetsServices {
           })),
         },
       }),
+      ...(group && {}),
     };
     const options = {
       limit: Number(limit),
@@ -340,6 +339,22 @@ class AssetsServices {
               model: models.Group,
               as: 'group',
               attributes: ['id', 'code', 'name'],
+              ...(group && {
+                where: {
+                  [Op.or]: [
+                    {
+                      code: {
+                        [Op.like]: `%${group}%`,
+                      },
+                    },
+                    {
+                      name: {
+                        [Op.like]: `%${group}%`,
+                      },
+                    },
+                  ],
+                },
+              }),
             },
           ],
           where: {
@@ -352,6 +367,7 @@ class AssetsServices {
           model: models.Model,
           as: 'model',
           required: true,
+          paranoid: false,
           where: {
             ...(modelId && {
               id: modelId,
@@ -362,6 +378,7 @@ class AssetsServices {
               model: models.Category,
               as: 'category',
               required: true,
+              paranoid: false,
               attributes: ['id', 'name'],
               where: {
                 ...(categoryId && {
@@ -373,6 +390,7 @@ class AssetsServices {
               model: models.Brand,
               as: 'brand',
               required: true,
+              paranoid: false,
               attributes: ['id', 'name'],
               where: {
                 ...(!modelId &&
@@ -387,7 +405,10 @@ class AssetsServices {
         },
       ],
       where,
-      order: [[...sort, order], ['serial', 'DESC']],
+      order: [
+        [...sort, order],
+        ['serial', 'DESC'],
+      ],
       distinct: true,
       attributes: [
         'id',

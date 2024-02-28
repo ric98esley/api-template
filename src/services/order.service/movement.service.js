@@ -6,7 +6,7 @@ const sequelize = require('../../libs/sequelize');
 
 class MovementService {
   async find({
-    paranoid,
+    paranoid = false,
     all,
     orderType,
     movementType,
@@ -36,6 +36,9 @@ class MovementService {
 
     if (all == 'false') all = false;
     if (all == 'true') all = true;
+
+    if (paranoid == 'false') paranoid = false;
+    if (paranoid == 'true') paranoid = true;
 
     sort = sort.split(',');
 
@@ -152,17 +155,19 @@ class MovementService {
         [...sort, order],
         ['asset', 'serial', 'DESC'],
       ],
-      ...(paranoid != undefined && {
-        paranoid: paranoid == 'true' ? true : false,
-      }),
+
       limit: Number(limit),
       offset: Number(offset),
+      paranoid: false,
       where,
       include: [
         {
           model: models.Asset,
           as: 'asset',
-          paranoid: false,
+          ...(paranoid != undefined && {
+            paranoid,
+          }),
+          required: true,
           attributes: ['id', 'serial'],
           include: [
             {
@@ -396,6 +401,7 @@ class MovementService {
   async getByLocations({
     limit = 10,
     offset = 0,
+    groupId,
     startDate = '',
     endDate = '',
     search = '',
@@ -438,22 +444,24 @@ class MovementService {
           left join groups_t on groups_t.id = locations.group_id
             WHERE locations.deleted_at is null and
               movements.deleted_at is null and
-              movements.created_at BETWEEN $startDate and $endDate
-              and (locations.code like $search or locations.name like $search)
-              and orders.type like $orderType
+              movements.created_at BETWEEN :startDate and :endDate
+              and (locations.code like :search or locations.name like :search)
+              and orders.type like :orderType
+              and groups_t.id in (:groupId)
         GROUP BY locations.id
         ORDER BY locations.name ASC
-        LIMIT $limit OFFSET $offset
+        LIMIT :limit OFFSET :offset
         `,
       {
         nest: true,
-        bind: {
-          limit,
-          offset,
+        replacements: {
+          limit: Number(limit),
+          offset: Number(offset),
           startDate: `${startDate}`,
           endDate: `${endDate}`,
           search: `%${search}%`,
           orderType: `%${orderType}%`,
+          groupId: groupId,
         },
         type: sequelize.QueryTypes.SELECT,
       }
@@ -468,19 +476,21 @@ class MovementService {
           left join groups_t groups on groups.id = locations.group_id
             WHERE locations.deleted_at is null and
               movements.deleted_at is null and
-              movements.created_at BETWEEN $startDate and $endDate
-              and (locations.code like $search or locations.name like $search)
-              and orders.type like $orderType
+              movements.created_at BETWEEN :startDate and :endDate
+              and (locations.code like :search or locations.name like :search)
+              and orders.type like :orderType
+              and groups.id in (:groupId)
               group by locations.id
               ) as movements_by
         `,
       {
         nest: true,
-        bind: {
+        replacements: {
           startDate: `${startDate}`,
           endDate: `${endDate}`,
           search: `%${search}%`,
           orderType: `%${orderType}%`,
+          groupId: groupId
         },
         type: sequelize.QueryTypes.SELECT,
       }

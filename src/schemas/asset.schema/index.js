@@ -52,6 +52,7 @@ const searchAsset = Joi.object({
   type: toSearch,
   // status, model, brand, category will be to string to search matches
   status: toSearch,
+  group: toSearch,
   location: toSearch,
   model: toSearch,
   brand: toSearch,
