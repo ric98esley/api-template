@@ -10,8 +10,16 @@ const OrderRecordService = require('../../services/order.service');
 const MovementService = require('../../services/order.service/movement.service');
 const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { createOrderRecordSchema, searchOrderRecordSchema, getOrderRecordSchema, createCheckingRecordSchema } = require('../../schemas/order.schema');
-const { getMovementSchema, searchMovementSchema } = require('../../schemas/order.schema/movement.schema');
+const {
+  createOrderRecordSchema,
+  searchOrderRecordSchema,
+  getOrderRecordSchema,
+  createCheckingRecordSchema,
+} = require('../../schemas/order.schema');
+const {
+  getMovementSchema,
+  searchMovementSchema,
+} = require('../../schemas/order.schema/movement.schema');
 
 const logService = new LogService();
 const orderService = new OrderRecordService();
@@ -25,11 +33,10 @@ router.get(
   checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-
       const query = req.query;
       const orders = await orderService.find(query);
 
-      res.json(orders)
+      res.json(orders);
     } catch (error) {
       next(error);
     }
@@ -40,14 +47,14 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getOrderRecordSchema, 'params'),
-  checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.CHECKOUT }),
+  checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
+      const { id } = req.params;
+      const { groupId } = req.query;
+      const order = await orderService.findOne({ id, groupId });
 
-      const { id } = req.params
-      const order = await orderService.findOne({id})
-
-      res.json(order)
+      res.json(order);
     } catch (error) {
       next(error);
     }
@@ -59,13 +66,18 @@ router.get(
   checkUser(),
   validatorHandler(getOrderRecordSchema, 'params'),
   validatorHandler(searchMovementSchema, 'query'),
-  checkAuth({ route: SCOPE.ORDERS, crud: ACTIONS.CHECKOUT }),
+  checkAuth({ route: SCOPE.MOVEMENTS, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
       const queries = req.query;
 
-      const movements = await movementService.find({...queries, orderId: id, all: true, paranoid: true});
+      const movements = await movementService.find({
+        ...queries,
+        orderId: id,
+        all: true,
+        paranoid: true,
+      });
 
       res.json(movements);
     } catch (error) {

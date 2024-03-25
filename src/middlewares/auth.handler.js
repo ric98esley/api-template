@@ -114,7 +114,8 @@ function checkAuth({ route, crud }) {
       if (ability == 'none') {
         throw boom.forbidden('No tienes permisos para acceder a esta ruta');
       }
-
+      
+      if(!ability) throw boom.forbidden('No tienes permisos para acceder a esta ruta');
       next();
     } catch (error) {
       return next(error);
@@ -124,11 +125,11 @@ function checkAuth({ route, crud }) {
 async function checkPermissions(req, res, next) {
   try {
     const user = req.user;
-
+    
     if (user.role == 'superuser' || user.role == 'auditor') return next();
-
+    
     const groupId = await getGroups(user.sub, next);
-
+    
     const method = req.method;
 
     if (method == 'GET') {

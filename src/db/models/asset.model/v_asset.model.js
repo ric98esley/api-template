@@ -60,6 +60,7 @@ const VAssetSchema = {
     type: DataTypes.INTEGER,
   },
   group: {
+    field: 'group_name',
     allowNull: true,
     type: DataTypes.INTEGER,
   },
