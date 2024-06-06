@@ -26,6 +26,7 @@ const { Permission, PermissionSchema } = require('./user.model/permissions.model
 const { Role, RoleSchema } = require('./user.model/role.model');
 const { Lot, LotSchema } = require('./consumable.model/lot.model');
 const { ProductHistory, ProductHistorySchema } = require('./consumable.model/history.model');
+const { AbilityModel, AbilitySchema } = require('./user.model/abillities.model');
 
 function setupModels(sequelize) {
 
@@ -44,6 +45,7 @@ function setupModels(sequelize) {
   HardwareSpec.init(HardwareSpecSchema, HardwareSpec.config(sequelize));
   CategorySpec.init(CategorySpecSchema, CategorySpec.config(sequelize));
   AssetSpec.init(AssetSpecSchema, AssetSpec.config(sequelize));
+  AbilityModel.init(AbilitySchema, AbilityModel.config(sequelize))
 
   Zone.init(ZoneSchema, Zone.config(sequelize));
   LocationType.init(LocationTypeSchema, LocationType.config(sequelize));
@@ -78,6 +80,7 @@ function setupModels(sequelize) {
   CategorySpec.associate(sequelize.models);
   AssetSpec.associate(sequelize.models);
   HardwareSpec.associate(sequelize.models);
+  AbilityModel.associate(sequelize.models);
 
   Zone.associate(sequelize.models);
   LocationType.associate(sequelize.models);

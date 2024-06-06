@@ -7,15 +7,15 @@ const { LOCATION_TABLE } = require('../models/location.model');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.addColumn(LOT_TABLE, 'location_id', {
-      allowNull: true,
-      type: DataTypes.INTEGER,
-      field: 'location_id',
-      references: {
-        model: LOCATION_TABLE,
-        key: 'id'
-      },
-    })
+    // await queryInterface.addColumn(LOT_TABLE, 'location_id', {
+    //   allowNull: true,
+    //   type: DataTypes.INTEGER,
+    //   field: 'location_id',
+    //   references: {
+    //     model: LOCATION_TABLE,
+    //     key: 'id'
+    //   },
+    // })
   },
 
   async down (queryInterface, Sequelize) {

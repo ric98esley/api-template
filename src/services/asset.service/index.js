@@ -82,6 +82,7 @@ class AssetsServices {
       where: {
         serial: assetSerial,
       },
+      paranoid: false
     });
 
     const assetToCreate =

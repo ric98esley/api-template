@@ -173,6 +173,5 @@ async function checkSuperuser(req, res, next) {
 module.exports = {
   checkUser,
   checkSuperuser,
-  checkPermissions,
   checkAuth,
 };

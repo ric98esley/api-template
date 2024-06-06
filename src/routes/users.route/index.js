@@ -5,7 +5,6 @@ const boom = require('@hapi/boom');
 const UserService = require('../../services/user.service');
 const validatorHandler = require('../../middlewares/validator.handler');
 const {
-  checkPermissions,
   checkUser,
   checkAuth,
 } = require('../../middlewares/auth.handler');
