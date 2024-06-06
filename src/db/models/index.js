@@ -27,6 +27,7 @@ const { Role, RoleSchema } = require('./user.model/role.model');
 const { Lot, LotSchema } = require('./consumable.model/lot.model');
 const { ProductHistory, ProductHistorySchema } = require('./consumable.model/history.model');
 const { AbilityModel, AbilitySchema } = require('./user.model/abillities.model');
+const { GeoAsset, GeoAssetSchema } = require('./asset.model/geo-assets.model');
 
 function setupModels(sequelize) {
 
@@ -42,6 +43,7 @@ function setupModels(sequelize) {
   Brand.init(BrandSchema, Brand.config(sequelize));
   AssetModel.init(ModelSchema, AssetModel.config(sequelize));
   Asset.init(AssetSchema, Asset.config(sequelize));
+  GeoAsset.init(GeoAssetSchema, GeoAsset.config(sequelize));
   HardwareSpec.init(HardwareSpecSchema, HardwareSpec.config(sequelize));
   CategorySpec.init(CategorySpecSchema, CategorySpec.config(sequelize));
   AssetSpec.init(AssetSpecSchema, AssetSpec.config(sequelize));
@@ -77,6 +79,7 @@ function setupModels(sequelize) {
   Brand.associate(sequelize.models);
   AssetModel.associate(sequelize.models);
   Asset.associate(sequelize.models);
+  GeoAsset.associate(sequelize.models);
   CategorySpec.associate(sequelize.models);
   AssetSpec.associate(sequelize.models);
   HardwareSpec.associate(sequelize.models);

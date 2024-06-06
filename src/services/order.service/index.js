@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
 const { Op, fn, col, literal } = require('sequelize');
+const sequelize = require('../../libs/sequelize');
 
 class OrderRecordService {
   constructor() {}
@@ -16,27 +17,27 @@ class OrderRecordService {
     createdById,
     targets,
   }) {
-    const assets = targets.map((asset) => asset.assetId);
-
     const movements = [];
 
     for (const target of targets) {
-      const asset = await models.Asset.findByPk(target.assetId);
-      if (!asset) {
-        throw boom.notFound('El activo no existe ' + target.assetId);
-      }
-      movements.push({
-        assetId: target.assetId,
-        quantity: 1,
-        type: movementType,
-        toId: target.locationId,
-        fromId: asset.dataValues.locationId,
-        createdById,
+      const asset = await models.Asset.findByPk(target.assetId, {
+        paranoid: false,
       });
+      if (asset) {
+        movements.push({
+          assetId: target.assetId,
+          quantity: 1,
+          type: movementType,
+          toId: target.locationId,
+          fromId: asset.dataValues.locationId,
+          createdById,
+        });
 
-      asset.update({ locationId: target.locationId });
+        asset.update({ locationId: target.locationId });
+      }
     }
 
+    const assets = targets.map((asset) => asset.assetId);
     const updateOldMovements = await models.Movement.update(
       { current: 0 },
       {
@@ -86,6 +87,63 @@ class OrderRecordService {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
+
+    if (startDate == '' || endDate == '') {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+      endDate = new Date();
+    }
+
+    startDate = new Date(startDate)
+      .toISOString()
+      .replace('T', ' ')
+      .replace('Z', '')
+      .split('.')[0];
+    endDate = new Date(endDate)
+      .toISOString()
+      .replace('T', ' ')
+      .replace('Z', '')
+      .split('.')[0];
+
+    const orders = await sequelize.query(`
+      SELECT 
+        orders.id,
+        orders.type,
+          orders.description,
+          orders.notes,
+          orders.content,
+          orders.delivered,
+          orders.closed,
+          orders.created_at as 'createdAt',
+          location.id as 'location.id',
+          location.code as 'location.code',
+          location.\`type.id\` as 'location.type.id',
+          location.\`type.name\` as 'location.type.name',
+          location.\`zone.id\` as 'location.zone.id',
+          location.\`zone.name\` as 'location.zone.name',
+          users.id as 'createdBy.id',
+          users.username as 'createdBy.username'
+          FROM orders
+              left join users on orders.created_by_id = users.id
+              left join movements on movements.order_id = orders.id
+              left join locations as \`to\` on movements.to_id = \`to\`.id
+              left join locations as \`from\` on movements.from_id = \`from\`.id
+              left join ( select
+            locations.id,
+                  locations.code,
+                  locations.name,
+                  location_types.id as 'type.id',
+                  location_types.name as 'type.name',
+                  zones.id as 'zone.id',
+                  zones.name as 'zone.name'
+                  from locations
+                  left join location_types on locations.type_id = location_types.id
+                  left join zones on locations.zone_id = zones.id
+              ) as location on location.id = orders.location_id
+              where \`to\`.group_id in (133) or \`from\`.group_id in (133)
+          group by orders.id
+              order by id desc;
+      `);
     const where = {
       ...(locationId && {
         locationId,
@@ -121,9 +179,33 @@ class OrderRecordService {
           attributes: ['id', 'username'],
         },
         {
+          model: models.Movement,
+          as: 'movements',
+          nested: false,
+          include: [
+            {
+              model: models.Location,
+              as: 'to',
+              include: {
+                model: models.Group,
+                as: 'group',
+                required: true,
+                where: {
+                  ...(groupId && {
+                    group: literal(
+                      '`movements->to->group`.`id` in (' + groupId + ')'
+                    ),
+                  }),
+                },
+              },
+            },
+          ],
+          // attributes: [],
+        },
+        {
           model: models.Location,
           as: 'location',
-          required: true,
+          required: false,
           attributes: [
             'id',
             'code',
@@ -135,7 +217,6 @@ class OrderRecordService {
             'managerId',
           ],
           where: {
-            groupId,
             ...(location && {
               [Op.or]: [
                 {
@@ -196,7 +277,7 @@ class OrderRecordService {
     const { count, rows } = await models.OrderRecord.findAndCountAll(options);
     return {
       total: count,
-      rows,
+      rows: orders,
     };
   }
 
@@ -212,7 +293,7 @@ class OrderRecordService {
     return createdAssets;
   }
 
-  async findOne({ id }) {
+  async findOne({ id, groupId }) {
     const order = await models.OrderRecord.findByPk(id, {
       include: [
         {
@@ -258,7 +339,18 @@ class OrderRecordService {
         {
           model: models.Movement,
           as: 'movements',
-          attributes: [],
+          nested: false,
+          include: [
+            {
+              model: models.Location,
+              as: 'to',
+              where: {
+                groupId,
+              },
+            },
+            'from',
+          ],
+          // attributes: [],
         },
       ],
       group: ['OrderRecord.id'],
