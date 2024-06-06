@@ -29,6 +29,14 @@ const GeoAssetSchema = {
     type: DataTypes.STRING(45),
     allowNull: true,
   },
+  latitude: {
+    type: DataTypes.DECIMAL,
+    allowNull: true
+  },
+  longitude: {
+    type: DataTypes.DECIMAL,
+    allowNull: true
+  },
   createdAt: {
     field: 'created_at',
     type: DataTypes.DATE,
