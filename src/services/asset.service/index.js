@@ -586,6 +586,13 @@ class AssetsServices {
 
     return rta;
   }
+  async restore({ id }) {
+    const asset = await this.findOne({ id, enabled: true, paranoid: false });
+
+    const rta = await asset.restore();
+
+    return rta;
+  }
 }
 
 module.exports = AssetsServices;

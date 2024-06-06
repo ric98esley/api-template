@@ -168,7 +168,7 @@ class MovementService {
             paranoid,
           }),
           required: true,
-          attributes: ['id', 'serial'],
+          attributes: ['id', 'serial', 'deletedAt', 'createdAt'],
           include: [
             {
               model: models.Model,

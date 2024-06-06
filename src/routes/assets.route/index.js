@@ -304,6 +304,43 @@ router.patch(
   }
 );
 
+router.patch(
+  '/:id/restore',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  validatorHandler(deleteAssetSchema, 'body'),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.DELETE }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { message } = req.body;
+      const user = req.user;
+
+      const asset = await service.restore({ id });
+
+      const details = {
+        message: `Se ha restaurado el activo ${asset.dataValues.serial} motivado a ${message}`,
+      };
+      await logService.create({
+        type: ACTIONS.RECOVERY,
+        table: 'assets',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
+      res.status(202).json({
+        message: 'Has restaurado ' + asset.serial,
+        target: asset,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
