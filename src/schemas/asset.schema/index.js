@@ -57,9 +57,9 @@ const searchAsset = Joi.object({
   model: toSearch,
   brand: toSearch,
   category: toSearch,
-  startDate: createdAt,
   specification: toSearch,
   specificationValue: toSearch,
+  startDate: createdAt,
   endDate: createdAt.greater(Joi.ref('startDate')),
 })
   .with('startDate', 'endDate')

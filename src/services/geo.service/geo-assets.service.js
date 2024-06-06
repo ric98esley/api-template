@@ -34,6 +34,8 @@ class GeoAssets {
     offset,
     startDate,
     endDate,
+    sort = 'createdAt',
+    order = 'DESC',
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
@@ -51,6 +53,7 @@ class GeoAssets {
       limit: Number(limit),
       offset: Number(offset),
       where,
+      order: [[sort, order]],
     });
 
     return {
