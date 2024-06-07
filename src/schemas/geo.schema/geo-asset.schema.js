@@ -14,9 +14,9 @@ const order = Joi.string().valid('ASC', 'DESC');
 const createGeoAssetSchema = Joi.object({
   serial: serial.required(),
   alert,
-  alertType: alertType.required(),
-  latitude: latitude.required(),
-  longitude: longitude.required(),
+  alertType: alertType,
+  latitude: latitude,
+  longitude: longitude,
 });
 
 const findGeoAssetSchema = Joi.object({
@@ -25,6 +25,8 @@ const findGeoAssetSchema = Joi.object({
   alert,
   alertType,
   latitude,
+  sort,
+  order,
   startDate: createdAt,
   endDate: createdAt.greater(Joi.ref('startDate')),
 })
