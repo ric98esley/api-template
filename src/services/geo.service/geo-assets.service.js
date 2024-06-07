@@ -12,9 +12,9 @@ const mapGeo = (data) => {
   };
 };
 
-class GeoAssets {
+class GeoAssetServices {
   async create({ ip, serial, alert, alertType, latitude, longitude }) {
-    const geoAsset = await models.GeoAssets.create({
+    const geoAsset = await models.GeoAsset.create({
       ip,
       serial,
       alert,
@@ -30,8 +30,8 @@ class GeoAssets {
     serial,
     alert,
     alertType,
-    limit,
-    offset,
+    limit = 10,
+    offset = 0,
     startDate,
     endDate,
     sort = 'createdAt',
@@ -49,7 +49,7 @@ class GeoAssets {
     if (alert) where.alert = alert;
     if (alertType) where.alertType = { [Op.like]: `%${alertType}%` };
 
-    const { count, rows } = await models.GeoAssets.findAndCountAll({
+    const { count, rows } = await models.GeoAsset.findAndCountAll({
       limit: Number(limit),
       offset: Number(offset),
       where,
@@ -63,4 +63,4 @@ class GeoAssets {
   }
 }
 
-module.exports = { GeoAssets };
+module.exports = GeoAssetServices;

@@ -7,14 +7,20 @@ const AssetsService = require('../../services/asset.service');
 const LogService = require('../../services/log.service');
 const MovementService = require('../../services/order.service/movement.service');
 const OrderRecordService = require('../../services/order.service');
+const { GeoAssetServices } = require('../../services/geo.service');
+
+// Middlewares
+const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
+const { upload } = require('../../middlewares/upload.handler');
+
+// Utils
+const { generateExcel } = require('../../helpers/toExcel.helper');
+const { ACTIONS, SCOPE } = require('../../utils/roles');
+const { parseCSV } = require('../../helpers/parseCSV.helper');
+
+// Validators schema
 
 const validatorHandler = require('../../middlewares/validator.handler');
-const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
-
-// import routes
-
-const modelRoute = require('./model.route');
-
 const {
   updateAssetSchema,
   getAssetSchema,
@@ -23,19 +29,25 @@ const {
   importAssetSchema,
   deleteAssetSchema,
 } = require('../../schemas/asset.schema');
-const { generateExcel } = require('../../helpers/toExcel.helper');
-const { ACTIONS, SCOPE } = require('../../utils/roles');
 const {
   searchMovementSchema,
 } = require('../../schemas/order.schema/movement.schema');
-const { upload } = require('../../middlewares/upload.handler');
-const { parseCSV } = require('../../helpers/parseCSV.helper');
+const {
+  findGeoAssetSchema,
+} = require('../../schemas/geo.schema/geo-asset.schema');
+
+// import routes
+
+const modelRoute = require('./model.route');
 
 const router = express.Router();
+
+// Services
 const service = new AssetsService();
 const logService = new LogService();
 const orderService = new OrderRecordService();
 const movementService = new MovementService();
+const geoService = new GeoAssetServices();
 
 router.use('/models', modelRoute);
 
@@ -127,7 +139,7 @@ router.get(
         id,
         type: 'asset',
         groupId,
-        paranoid: false
+        paranoid: false,
       });
       res.json(asset);
     } catch (error) {
@@ -147,12 +159,39 @@ router.get(
       const { id } = req.params;
       const logs = await logService.find({
         table: 'assets',
-        targetId: id
-      })
+        targetId: id,
+      });
 
-      res.json(logs)
+      res.json(logs);
     } catch (error) {
       next(error);
+    }
+  }
+);
+router.get(
+  '/:id/geo',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  validatorHandler(findGeoAssetSchema, 'query'),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
+  async (req, res, next) => {
+    try {
+      const { groupId, ...query } = req.query;
+      const { id } = req.params;
+      const asset = await service.findOne({
+        id,
+        paranoid: false,
+        type: 'asset',
+        groupId,
+      });
+      const geo = await geoService.find({
+        ...query,
+        serial: asset.serial,
+      });
+      res.status(200).json(geo);
+    } catch (error) {
+      return next(error);
     }
   }
 );

@@ -1,5 +1,5 @@
-const { GeoAsset } = require("../../db/models/asset.model/geo-assets.model");
+const GeoAssetServices = require("./geo-assets.service");
 
 module.exports = {
-  GeoAsset
+  GeoAssetServices
 }
