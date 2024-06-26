@@ -8,6 +8,7 @@ const ACTIONS = {
   CHECKOUT: 'checkout',
   IMPORT: 'import',
   EXPORT: 'export',
-}
+  GEO: 'geolocation',
+};
 
 module.exports = ACTIONS;

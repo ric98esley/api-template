@@ -1,10 +1,12 @@
 const ROLES = {
-  CUSTOMER: 'customer',
-  SELLER: 'seller',
-  RECEPTOR: 'receptor',
-  ADMIN: 'admin',
-  AUDIT: 'auditor',
   SUPERUSER: 'superuser',
+  AUDIT: 'auditor',
+  ASSISTANT: 'asistente',
+  RECEPTOR: 'receptor',
+  VIEWER: 'observador',
+  ADMIN: 'administrador',
+  SECRETARY: 'secretaria',
+  TAQUILLA: 'taquilla',
 };
 
 module.exports = ROLES;
