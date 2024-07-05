@@ -76,7 +76,7 @@ router.get(
         ...queries,
         orderId: id,
         all: true,
-        paranoid: true,
+        paranoid: false,
       });
 
       res.json(movements);

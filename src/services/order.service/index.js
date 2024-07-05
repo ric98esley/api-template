@@ -3,6 +3,7 @@ const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op, fn, col, literal } = require('sequelize');
 const sequelize = require('../../libs/sequelize');
+const { not } = require('joi');
 
 class OrderRecordService {
   constructor() {}
@@ -69,17 +70,15 @@ class OrderRecordService {
     const record = await models.OrderRecord.findByPk(id);
     record.update({ acceptSign: sign });
   }
+
   async find({
-    locationId,
-    location,
-    sort = 'createdAt',
-    order = 'DESC',
+    location = '',
     startDate,
     groupId,
     endDate,
-    type,
-    description,
-    notes,
+    type = '',
+    description = '',
+    notes = '',
     limit = 10,
     offset = 0,
   }) {
@@ -88,10 +87,10 @@ class OrderRecordService {
       endDate = Number(endDate);
     }
 
-    if (startDate == '' || endDate == '') {
+    if (!startDate || !endDate) {
       startDate = new Date();
       startDate.setDate(startDate.getDate() - 7);
-      endDate = new Date();
+      endDate = new Date().getTime();
     }
 
     startDate = new Date(startDate)
@@ -105,178 +104,112 @@ class OrderRecordService {
       .replace('Z', '')
       .split('.')[0];
 
-    const orders = await sequelize.query(`
-      SELECT 
+    const orders = await sequelize.query(
+      `
+      SELECT
         orders.id,
         orders.type,
-          orders.description,
-          orders.notes,
-          orders.content,
-          orders.delivered,
-          orders.closed,
-          orders.created_at as 'createdAt',
-          location.id as 'location.id',
-          location.code as 'location.code',
-          location.\`type.id\` as 'location.type.id',
-          location.\`type.name\` as 'location.type.name',
-          location.\`zone.id\` as 'location.zone.id',
-          location.\`zone.name\` as 'location.zone.name',
-          users.id as 'createdBy.id',
-          users.username as 'createdBy.username'
+        orders.description,
+        orders.notes,
+        orders.content,
+        orders.delivered,
+        orders.closed,
+        orders.created_at as 'createdAt',
+        count(movements.id) as count,
+        location.id as 'location.id',
+        location.code as 'location.code',
+        location.name as 'location.name',
+        location.\`type.id\` as 'location.type.id',
+        location.\`type.name\` as 'location.type.name',
+        location.\`zone.id\` as 'location.zone.id',
+        location.\`zone.name\` as 'location.zone.name',
+        users.id as 'createdBy.id',
+        users.username as 'createdBy.username'
           FROM orders
               left join users on orders.created_by_id = users.id
               left join movements on movements.order_id = orders.id
               left join locations as \`to\` on movements.to_id = \`to\`.id
               left join locations as \`from\` on movements.from_id = \`from\`.id
               left join ( select
-            locations.id,
-                  locations.code,
-                  locations.name,
-                  location_types.id as 'type.id',
-                  location_types.name as 'type.name',
-                  zones.id as 'zone.id',
-                  zones.name as 'zone.name'
-                  from locations
-                  left join location_types on locations.type_id = location_types.id
-                  left join zones on locations.zone_id = zones.id
-              ) as location on location.id = orders.location_id
-              where \`to\`.group_id in (133) or \`from\`.group_id in (133)
-          group by orders.id
-              order by id desc;
-      `);
-    const where = {
-      ...(locationId && {
-        locationId,
-      }),
-      ...(startDate &&
-        endDate && {
-          createdAt: {
-            [Op.between]: [new Date(startDate), new Date(endDate)],
-          },
-        }),
-      ...(type && {
-        type,
-      }),
-      ...(notes && {
-        notes: {
-          [Op.like]: `%${notes}%`,
+                    locations.id,
+                    locations.code,
+                    locations.name,
+                    location_types.id as 'type.id',
+                    location_types.name as 'type.name',
+                    zones.id as 'zone.id',
+                    zones.name as 'zone.name'
+                    from locations
+                    left join location_types on locations.type_id = location_types.id
+                    left join zones on locations.zone_id = zones.id
+                  ) as location on location.id = orders.location_id
+              where
+                orders.type = :type and
+                orders.created_at BETWEEN :startDate and :endDate and
+                (\`to\`.group_id in (:groupId) or \`from\`.group_id in (:groupId)) and
+                orders.description like :description and
+                (orders.notes LIKE :notes or (orders.notes is null and :notes = '%%')) and
+                ((location.name like :location or location.code like :location) or (location.name is null and location.code is null and :location = '%%'))
+              group by orders.id
+              order by orders.created_at desc
+              limit :limit offset :offset;
+        `,
+      {
+        nest: true,
+        replacements: {
+          type,
+          groupId: groupId,
+          limit: Number(limit),
+          offset: Number(offset),
+          startDate: `${startDate}`,
+          endDate: `${endDate}`,
+          description: `%${description}%`,
+          notes: `%${notes}%`,
+          location: `%${location}%`,
         },
-      }),
-      ...(description && {
-        description: {
-          [Op.like]: `%${description}%`,
+      }
+    );
+    const count = await sequelize.query(
+      `
+      SELECT
+        count(orders.id) as total from
+          orders
+              left join movements on movements.order_id = orders.id
+              left join locations as \`to\` on movements.to_id = \`to\`.id
+              left join locations as \`from\` on movements.from_id = \`from\`.id
+              left join ( select
+                    locations.id,
+                    locations.code,
+                    locations.name,
+                    location_types.id as 'type.id',
+                    location_types.name as 'type.name',
+                    zones.id as 'zone.id',
+                    zones.name as 'zone.name'
+                    from locations
+                    left join location_types on locations.type_id = location_types.id
+                    left join zones on locations.zone_id = zones.id
+                  ) as location on location.id = orders.location_id
+              where
+                orders.type = :type and
+                orders.created_at BETWEEN :startDate and :endDate and
+                (\`to\`.group_id in (:groupId) or \`from\`.group_id in (:groupId)) and
+                orders.description like :description and
+                (orders.notes LIKE :notes or (orders.notes is null and :notes = '%%')) and
+                (location.name like :location or location.code like :location)
+              `,
+      {
+        replacements: {
+          type,
+          groupId: groupId,
+          startDate: `${startDate}`,
+          endDate: `${endDate}`,
+          description: `%${description}%`,
+          notes: `%${notes}%`,
+          location: `%${location}%`,
         },
-      }),
-    };
-    const options = {
-      ...(limit && { limit: Number(limit) }),
-      ...(offset && { offset: Number(offset) }),
-      where,
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Movement,
-          as: 'movements',
-          nested: false,
-          include: [
-            {
-              model: models.Location,
-              as: 'to',
-              include: {
-                model: models.Group,
-                as: 'group',
-                required: true,
-                where: {
-                  ...(groupId && {
-                    group: literal(
-                      '`movements->to->group`.`id` in (' + groupId + ')'
-                    ),
-                  }),
-                },
-              },
-            },
-          ],
-          // attributes: [],
-        },
-        {
-          model: models.Location,
-          as: 'location',
-          required: false,
-          attributes: [
-            'id',
-            'code',
-            'name',
-            'phone',
-            'groupId',
-            'typeId',
-            'zoneId',
-            'managerId',
-          ],
-          where: {
-            ...(location && {
-              [Op.or]: [
-                {
-                  name: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-                {
-                  code: {
-                    [Op.like]: `%${location}%`,
-                  },
-                },
-              ],
-            }),
-          },
-          include: [
-            {
-              model: models.LocationType,
-              as: 'type',
-              attributes: ['id', 'name'],
-            },
-            {
-              model: models.Zone,
-              as: 'zone',
-              attributes: ['id', 'name'],
-            },
-            {
-              model: models.Customer,
-              as: 'manager',
-            },
-          ],
-        },
-      ],
-      distinct: true,
-      order: [[sort, order]],
-      attributes: [
-        'id',
-        'type',
-        [
-          literal(
-            `(SELECT count(*)
-              FROM movements as movements
-                  where
-              order_id = OrderRecord.id)`
-          ),
-          'count',
-        ],
-        'description',
-        'notes',
-        'content',
-        'delivered',
-        'closed',
-        'createdAt',
-      ],
-      limit: Number(limit),
-      offset: Number(offset),
-    };
-    const { count, rows } = await models.OrderRecord.findAndCountAll(options);
+      }
+    );
     return {
-      total: count,
+      total: count[0].total ?? 0,
       rows: orders,
     };
   }
