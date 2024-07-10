@@ -2,8 +2,6 @@ const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
-// const AssignmentService = require('../orders.service/assignments.service');
-// const assignmentsService = new AssignmentService();
 
 class LocationsServices {
   constructor() {}
@@ -16,8 +14,32 @@ class LocationsServices {
   async createMany(data) {
     const newLocations = await models.Location.bulkCreate(data, {
       returning: true,
-      updateOnDuplicate: ['id','code', 'name', 'phone', 'rif', 'address', 'typeId', 'zoneId', 'managerId', 'groupId', 'createdById'],
-      fields: ['id', 'code', 'name', 'phone', 'rif', 'address', 'createdById', 'typeId', 'zoneId', 'managerId', 'groupId'],
+      updateOnDuplicate: [
+        'id',
+        'code',
+        'name',
+        'phone',
+        'rif',
+        'address',
+        'typeId',
+        'zoneId',
+        'managerId',
+        'groupId',
+        'createdById',
+      ],
+      fields: [
+        'id',
+        'code',
+        'name',
+        'phone',
+        'rif',
+        'address',
+        'createdById',
+        'typeId',
+        'zoneId',
+        'managerId',
+        'groupId',
+      ],
     });
     return newLocations;
   }
@@ -89,12 +111,20 @@ class LocationsServices {
     sort = 'createdAt',
     order = 'DESC',
     groupId,
+    zone,
     zoneId,
+    type,
     typeId,
+    manager,
     managerId,
     startDate,
     endDate,
   }) {
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
+
     const where = {
       ...(search && {
         [Op.or]: [
@@ -141,8 +171,32 @@ class LocationsServices {
       ...(zoneId && {
         zoneId,
       }),
+      ...(zone && {
+            '$zone.name$': {
+              [Op.like]: `%${zone}%`,
+            },
+      }),
       ...(typeId && {
         typeId,
+      }),
+      ...(type && {
+        '$type.name$': {
+          [Op.like]: `%${type}%`,
+        },
+      }),
+      ...(manager && {
+        [Op.or]: [
+          {
+            '$manager.name$': {
+              [Op.like]: `%${manager}%`,
+            },
+          },
+          {
+            '$manager.last_name$': {
+              [Op.like]: `%${manager}%`,
+            },
+          },
+        ],
       }),
       ...(managerId && {
         managerId,
@@ -155,7 +209,10 @@ class LocationsServices {
       ...(startDate &&
         endDate && {
           createdAt: {
-            [Op.between]: [startDate, endDate],
+            [Op.between]: [
+              new Date(startDate).toISOString(),
+              new Date(endDate).toISOString(),
+            ],
           },
         }),
       ...(group && {

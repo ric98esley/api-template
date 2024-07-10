@@ -50,6 +50,7 @@ const searchLocationSchema = Joi.object({
   group: toSearch,
   manager: toSearch,
   type: toSearch,
+  zone: toSearch,
   rif,
   status : toSearch,
   groupId: id,

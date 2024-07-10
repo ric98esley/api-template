@@ -171,7 +171,7 @@ class OrderRecordService {
     const count = await sequelize.query(
       `
       SELECT
-        count(orders.id) as total from
+        COUNT(DISTINCT orders.id) as total from
           orders
               left join movements on movements.order_id = orders.id
               left join locations as \`to\` on movements.to_id = \`to\`.id
@@ -194,7 +194,7 @@ class OrderRecordService {
                 (\`to\`.group_id in (:groupId) or \`from\`.group_id in (:groupId)) and
                 orders.description like :description and
                 (orders.notes LIKE :notes or (orders.notes is null and :notes = '%%')) and
-                (location.name like :location or location.code like :location)
+                ((location.name like :location or location.code like :location) or (location.name is null and :location = '%%'))
               `,
       {
         replacements: {
@@ -208,8 +208,9 @@ class OrderRecordService {
         },
       }
     );
+
     return {
-      total: count[0].total ?? 0,
+      total: count[0][0].total ?? 0,
       rows: orders,
     };
   }
