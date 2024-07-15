@@ -41,6 +41,10 @@ const updateAssetSchema = Joi.object({
   notes,
 });
 
+const updateAssetSpecificationSchema = Joi.object({
+  specifications: createAssetSpecification,
+});
+
 const searchAsset = Joi.object({
   serial,
   limit,
@@ -78,6 +82,7 @@ const deleteAssetSchema = Joi.object({
 module.exports = {
   createAssetSchema,
   updateAssetSchema,
+  updateAssetSpecificationSchema,
   searchAsset,
   getAssetSchema,
   createBulkAssetSchema,

@@ -28,6 +28,7 @@ const {
   createBulkAssetSchema,
   importAssetSchema,
   deleteAssetSchema,
+  updateAssetSpecificationSchema,
 } = require('../../schemas/asset.schema');
 const {
   searchMovementSchema,
@@ -39,6 +40,9 @@ const {
 // import routes
 
 const modelRoute = require('./model.route');
+const {
+  assetSpecification,
+} = require('../../schemas/category.schema/specification.schema');
 
 const router = express.Router();
 
@@ -96,6 +100,7 @@ router.get(
           'Grupo',
           'Status',
           'fecha',
+          'fecha de eliminación',
         ],
         data: assets.rows,
         res,
@@ -192,6 +197,23 @@ router.get(
       res.status(200).json(geo);
     } catch (error) {
       return next(error);
+    }
+  }
+);
+
+router.get(
+  '/:id/specifications',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const specs = await service.getSpecifications({id, groupId: req.query.groupId});
+      res.json(specs);
+    } catch (error) {
+      next(error);
     }
   }
 );
@@ -344,6 +366,45 @@ router.patch(
 );
 
 router.patch(
+  '/:id/specifications',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  validatorHandler(assetSpecification, 'body'),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.UPDATE }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const body = req.body;
+      const user = req.user;
+      body.updatedById = user.sub;
+      const spec = await service.updateSpecification({
+        id,
+        changes: body,
+        groupId: req.query.groupId,
+        userId: user.sub,
+      });
+
+      const details = {
+        message: `Se ha modificado el activo `,
+        query: body,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'assets',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+      res.status(201).json(spec);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.patch(
   '/:id/restore',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
@@ -412,6 +473,47 @@ router.delete(
         target: asset,
       });
     } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.delete(
+  '/:id/specifications',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.DELETE }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+
+      const spec = await service.removeSpecification({
+        id,
+        typeId: req.query.typeId,
+        groupId: req.query.groupId,
+      });
+
+      const details = {
+        message: `Se ha eliminado la especificación del activo`,
+      };
+
+      await logService.create({
+        type: ACTIONS.DELETE,
+        table: 'specifications',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
+      res.status(202).json({
+        message: 'Has eliminado ',
+        target: spec,
+      });
+    } catch (error) {
+      console.log(error);
       next(error);
     }
   }

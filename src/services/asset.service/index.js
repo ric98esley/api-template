@@ -82,7 +82,7 @@ class AssetsServices {
       where: {
         serial: assetSerial,
       },
-      paranoid: false
+      paranoid: false,
     });
 
     const assetToCreate =
@@ -128,6 +128,9 @@ class AssetsServices {
   }
 
   async findOne({ id, enabled, status, groupId, type, paranoid = true }) {
+    if (!id) {
+      throw boom.badRequest('Id is required');
+    }
     const options = {
       where: {
         id,
@@ -432,6 +435,7 @@ class AssetsServices {
     serial,
     location,
     type,
+    all,
     group,
     status,
     model,
@@ -449,6 +453,8 @@ class AssetsServices {
       startDate = Number(startDate);
       endDate = Number(endDate);
     }
+
+    all == 'true' ? (all = true) : (all = false);
     const options = {
       limit: Number(limit),
       offset: Number(offset),
@@ -522,6 +528,16 @@ class AssetsServices {
             })),
           },
         }),
+        ...(all && {
+          deletedAt: {
+            [Op.or]: [{ [Op.is]: null }, { [Op.not]: null }],
+          },
+        }),
+        ...(!all && {
+          deletedAt: {
+            [Op.is]: null,
+          },
+        }),
       },
       order: [[sort, order]],
       distinct: true,
@@ -536,6 +552,7 @@ class AssetsServices {
         'groupCode',
         'status',
         'createdAt',
+        'deletedAt',
       ],
     };
 
@@ -552,6 +569,80 @@ class AssetsServices {
     const rta = await Asset.update(changes, { transaction });
 
     return rta;
+  }
+
+  async getSpecifications({ id, groupId }) {
+    const asset = await this.findOne({ id, groupId, enabled: true , paranoid: false});
+
+    if (asset) {
+      const specifications = await models.AssetSpec.findAndCountAll({
+        where: {
+          assetId: id,
+        },
+        include: [
+          {
+            model: models.HardwareSpec,
+            as: 'type',
+            attributes: ['id', 'name'],
+          },
+        ],
+        attributes: ['id', 'value', 'typeId'],
+      });
+
+      return {
+        total: specifications.count,
+        rows: specifications.rows,
+      };
+    }
+  }
+
+  async updateSpecification({id, changes, groupId, userId}) {
+    const asset = await this.findOne({ id, groupId, enabled: true , paranoid: false});
+
+    if (asset) {
+      let spec = await models.AssetSpec.findOne({
+        where: {
+          assetId: Number(id),
+          typeId: Number(changes.typeId),
+        },
+      });
+
+      if (spec) {
+        await spec.update({...changes, updatedById: userId});
+      } else {
+        spec = await models.AssetSpec.create({
+          ...changes,
+          assetId: id,
+          createdById: userId,
+        });
+      }
+      return spec;
+    }
+  }
+
+  async removeSpecification({id, typeId, groupId}) {
+    const asset = await this.findOne({ id, groupId, paranoid: false});
+
+    if (asset) {
+      const spec = await models.AssetSpec.findOne({
+        where: {
+          assetId: Number(id),
+          typeId: Number(typeId),
+        },
+      });
+
+      console.log('************')
+      console.log(id)
+      console.log(typeId)
+      console.log(groupId)
+      console.log(spec)
+      console.log('************')
+
+      if (spec) {
+        await spec.destroy({ force: true });
+      }
+      return spec;
+    }
   }
 
   async updateBulk({ targets, userId }) {

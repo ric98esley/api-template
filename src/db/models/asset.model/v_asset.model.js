@@ -76,6 +76,10 @@ const VAssetSchema = {
     field: 'created_at',
     type: DataTypes.DATE,
   },
+  deletedAt: {
+    field: 'deleted_at',
+    type: DataTypes.DATE,
+  },
 };
 
 class VAsset extends Model {
