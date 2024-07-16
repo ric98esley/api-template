@@ -4,6 +4,14 @@ const id = Joi.number().integer();
 const description = Joi.string();
 const cost = Joi.number().integer();
 
+const serial = Joi.string();
+const model = Joi.string();
+const brand = Joi.string();
+const category = Joi.string();
+const type = Joi.string();
+const limit = Joi.number().integer();
+const offset = Joi.number().integer();
+
 const createMaintenanceSchema = Joi.object({
   assetId: id.required(),
   maintenanceTypeId: id.required(),
@@ -20,6 +28,18 @@ const updateMaintenanceSchema = Joi.object({
 
 const getMaintenanceByIdSchema = Joi.object({
   id: id.required(),
+});
+
+const findMaintenanceSchema = Joi.object({
+  description,
+  cost,
+  serial,
+  model,
+  brand,
+  category,
+  type,
+  limit,
+  offset
 });
 
 module.exports = {
