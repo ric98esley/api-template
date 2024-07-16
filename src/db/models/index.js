@@ -28,6 +28,8 @@ const { Lot, LotSchema } = require('./consumable.model/lot.model');
 const { ProductHistory, ProductHistorySchema } = require('./consumable.model/history.model');
 const { AbilityModel, AbilitySchema } = require('./user.model/abillities.model');
 const { GeoAsset, GeoAssetSchema } = require('./asset.model/geo-assets.model');
+const { MaintenanceTypeSchema, MaintenanceType } = require('./maintecentes/maintenance_types');
+const { Maintenance, MaintenanceSchema } = require('./maintecentes/maintenances');
 
 function setupModels(sequelize) {
 
@@ -47,7 +49,9 @@ function setupModels(sequelize) {
   HardwareSpec.init(HardwareSpecSchema, HardwareSpec.config(sequelize));
   CategorySpec.init(CategorySpecSchema, CategorySpec.config(sequelize));
   AssetSpec.init(AssetSpecSchema, AssetSpec.config(sequelize));
-  AbilityModel.init(AbilitySchema, AbilityModel.config(sequelize))
+  AbilityModel.init(AbilitySchema, AbilityModel.config(sequelize));
+  MaintenanceType.init(MaintenanceTypeSchema, MaintenanceType.config(sequelize));
+  Maintenance.init(MaintenanceSchema, Maintenance.config(sequelize));
 
   Zone.init(ZoneSchema, Zone.config(sequelize));
   LocationType.init(LocationTypeSchema, LocationType.config(sequelize));
@@ -98,6 +102,9 @@ function setupModels(sequelize) {
   ProductHistory.associate(sequelize.models);
 
   VMovement.associate(sequelize.models);
+
+  MaintenanceType.associate(sequelize.models);
+  Maintenance.associate(sequelize.models);
 
   // HOOKS
 
