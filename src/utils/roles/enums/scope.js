@@ -3,6 +3,7 @@ const SCOPE = {
   USERS: 'users', //
   ROLES: 'roles', //
   GEO: 'geolocation',
+  MAINTENANCES: 'maintenances', //
   PERMISSIONS: 'permissions',
   CUSTOMER: 'customers', //
   CATEGORIES: 'categories', //

@@ -7,6 +7,7 @@ const ROLES = {
   ADMIN: 'administrador',
   SECRETARY: 'secretaria',
   TAQUILLA: 'taquilla',
+  TECNICO: 'tecnico',
 };
 
 module.exports = ROLES;
