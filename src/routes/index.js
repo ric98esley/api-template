@@ -15,6 +15,7 @@ const consumablesRouter = require('./consumables.route');
 const productsRouter = require('./consumables.route/products.route');
 const rolesRouter = require('./roles.route');
 const { geoRouter } = require('./geo.route');
+const maintenanceRouter = require('./maintenance.route');
 
 function routerApi(app) {
   const router = express.Router();
@@ -34,6 +35,8 @@ function routerApi(app) {
   router.use('/products', productsRouter);
   router.use('/roles', rolesRouter);
   router.use('/geolocation', geoRouter);
+  router.use('/maintenances', maintenanceRouter);
+
 }
 
 module.exports = routerApi;

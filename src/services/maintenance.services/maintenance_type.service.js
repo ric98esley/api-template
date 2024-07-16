@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { models } = require('../../libs/sequelize');
 
 class MaintenanceTypeService {
@@ -14,10 +15,10 @@ class MaintenanceTypeService {
     const where = {};
 
     if (name) {
-      where.name = { [Op.iLike]: `%${name}%` };
+      where.name = { [Op.like]: `%${name}%` };
     }
     if (description) {
-      where.description = { [Op.iLike]: `%${description}%` };
+      where.description = { [Op.like]: `%${description}%` };
     }
 
     const include = [
@@ -36,20 +37,25 @@ class MaintenanceTypeService {
       offset: Number(offset),
     };
 
-    const maintenanceTypes = await models.MaintenanceType.findAndCountAll(options);
-    return maintenanceTypes;
+    const { rows, count } = await models.MaintenanceType.findAndCountAll(
+      options
+    );
+    return {
+      total: count,
+      rows,
+    };
   }
 
   async getById({ id }) {
-    const maintenanceType = await models.MaintenanceType.findByPk(id,
-      {
-        include: [
-          {
-            model: models.User,
-            as: 'createdBy',
-          },
-        ],
-      });
+    const maintenanceType = await models.MaintenanceType.findByPk(id, {
+      include: [
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username'],
+        },
+      ],
+    });
     return maintenanceType;
   }
 
