@@ -11,6 +11,7 @@ const category = Joi.string();
 const type = Joi.string();
 const limit = Joi.number().integer();
 const offset = Joi.number().integer();
+const createdBy = Joi.string();
 
 const createMaintenanceSchema = Joi.object({
   assetId: id.required(),
@@ -38,6 +39,7 @@ const findMaintenanceSchema = Joi.object({
   brand,
   category,
   type,
+  createdBy,
   limit,
   offset
 });
@@ -46,6 +48,7 @@ module.exports = {
   createMaintenanceSchema,
   updateMaintenanceSchema,
   getMaintenanceByIdSchema,
+  findMaintenanceSchema
 };
 
 

@@ -5,6 +5,17 @@ const { checkUser, checkAuth } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
 
 const { SCOPE, ACTIONS } = require('../../utils/roles');
+const {
+  findMaintenanceSchema,
+  createMaintenanceSchema,
+  updateMaintenanceSchema,
+} = require('../../schemas/maintenances.schema');
+
+const MaintenanceService = require('../../services/maintenance.services/maintenance.service');
+const AssetService = require('../../services/asset.service');
+
+const maintenanceService = new MaintenanceService();
+const assetService = new AssetService();
 
 const router = express.Router();
 
@@ -14,15 +25,82 @@ router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
+  validatorHandler(findMaintenanceSchema, 'query'),
   checkAuth({ route: SCOPE.MAINTENANCES, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      res.status(200).json('Get all maintenance');
+      const body = req.query;
+      const maintenances = await maintenanceService.find(body);
+      res.status(200).json(maintenances);
     } catch (error) {
       next(error);
     }
   }
 );
 
+router.post(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(updateMaintenanceSchema, 'body'),
+  checkAuth({ route: SCOPE.MAINTENANCES, crud: ACTIONS.CREATE }),
+  async (req, res, next) => {
+    try {
+      const body = req.body;
+
+      const asset = await assetService.findOne({
+        id: body.assetId,
+        groupId: req.query.groupId,
+        paranoid: false,
+      });
+
+      if (!asset) {
+        return res.status(404).json({ message: 'Activo no encontrado' });
+      }
+
+      const maintenance = await maintenanceService.create({
+        ...body,
+        createdById: req.user.sub,
+      });
+      res.status(200).json(maintenance);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.patch(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(updateMaintenanceSchema, 'body'),
+  checkAuth({ route: SCOPE.MAINTENANCES, crud: ACTIONS.UPDATE }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const changes = req.body;
+
+      const maintenance = await maintenanceService.getById(id);
+
+      if (!maintenance) {
+        return res.status(404).json({ message: 'Mantenimiento no encontrado' });
+      }
+
+      if (maintenance.createdById !== req.user.sub) {
+        return res
+          .status(403)
+          .json({
+            message: 'No tienes permisos para actualizar este mantenimiento',
+          });
+      }
+
+      const updateMaintenance = await maintenanceService.update(id, changes);
+
+      res.status(200).json(updateMaintenance);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;

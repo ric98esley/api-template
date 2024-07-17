@@ -1,0 +1,182 @@
+const { Op } = require('sequelize');
+const { models } = require('../../libs/sequelize');
+
+class MaintenanceService {
+  async create({ cost, description, assetId, maintenanceTypeId, createdById }) {
+    const maintenance = await models.Maintenance.create({
+      description,
+      cost,
+      assetId,
+      maintenanceTypeId: maintenanceTypeId,
+      createdById,
+    });
+    return maintenance;
+  }
+
+  async find({
+    description,
+    cost,
+    serial,
+    model,
+    brand,
+    category,
+    type,
+    createdBy,
+    limit = 10,
+    offset = 0,
+  }) {
+    const where = {};
+
+    if (description) {
+      where.description = {
+        [Op.like]: `%${description}%`,
+      };
+    }
+
+    if (cost) {
+      where.cost = cost;
+    }
+
+    if (serial) {
+      where['$asset.serial$'] = {
+        [Op.like]: `%${serial}%`,
+      };
+    }
+
+    if (model) {
+      where['$asset.model.name$'] = {
+        [Op.like]: `%${model}%`,
+      };
+    }
+    if (brand) {
+      where['$asset.model.brand.name$'] = {
+        [Op.like]: `%${brand}%`,
+      };
+    }
+    if (category) {
+      where['$asset.model.category.name$'] = {
+        [Op.like]: `%${category}%`,
+      };
+    }
+    if (type) {
+      where['$maintenanceType.name$'] = {
+        [Op.like]: `%${type}%`,
+      };
+    }
+    if (createdBy) {
+      where['$createdBy.username$'] = {
+        [Op.like]: `%${createdBy}%`,
+      };
+    }
+
+    const include = [
+      {
+        model: models.User,
+        as: 'createdBy',
+        attributes: ['id', 'username'],
+      },
+      {
+        model: models.MaintenanceType,
+        as: 'maintenanceType',
+        attributes: ['id', 'name'],
+      },
+      {
+        model: models.Asset,
+        as: 'asset',
+        paranoid: false,
+        include: [
+          {
+            model: models.Model,
+            as: 'model',
+            required: true,
+            paranoid: false,
+            include: [
+              {
+                model: models.Category,
+                as: 'category',
+                required: true,
+                paranoid: false,
+                attributes: ['id', 'name'],
+              },
+              {
+                model: models.Brand,
+                as: 'brand',
+                required: true,
+                paranoid: false,
+                attributes: ['id', 'name'],
+              },
+            ],
+            attributes: ['id', 'name'],
+          },
+        ],
+        attributes: ['id', 'serial'],
+      },
+    ];
+
+    const { rows, count } = await models.Maintenance.findAndCountAll({
+      where,
+      include,
+      limit: Number(limit),
+      offset: Number(offset),
+      attributes: ['id', 'description', 'cost', 'createdAt'],
+      order: [['createdAt', 'DESC']],
+    });
+
+    return { total: count, rows };
+  }
+
+  async getById(id) {
+    const maintenance = await models.Maintenance.findByPk(id, {
+      include: [
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username'],
+        },
+        {
+          model: models.Asset,
+          as: 'asset',
+          include: [
+            {
+              model: models.Model,
+              as: 'model',
+              required: true,
+              paranoid: false,
+              include: [
+                {
+                  model: models.Category,
+                  as: 'category',
+                  required: true,
+                  paranoid: false,
+                  attributes: ['id', 'name'],
+                },
+                {
+                  model: models.Brand,
+                  as: 'brand',
+                  required: true,
+                  paranoid: false,
+                  attributes: ['id', 'name'],
+                },
+              ],
+              attributes: ['id', 'name'],
+            },
+          ],
+          attributes: ['id', 'serial'],
+        },
+      ],
+    });
+    return maintenance;
+  }
+
+  async update(id, changes) {
+    const maintenance = await this.getById(id);
+    if (!maintenance) {
+      return null;
+    }
+    await maintenance.update(changes);
+    return maintenance;
+  }
+
+}
+
+module.exports = MaintenanceService;

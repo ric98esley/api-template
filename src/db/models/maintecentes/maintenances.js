@@ -65,7 +65,7 @@ const MaintenanceSchema = {
     onUpdate: 'RESTRICT',
     onDelete: 'RESTRICT',
   },
-  createAt: {
+  createdAt: {
     field: 'created_at',
     type: DataTypes.DATE,
   },
@@ -84,6 +84,10 @@ class Maintenance extends Model {
     Maintenance.belongsTo(models.User, {
       as: 'createdBy',
       foreignKey: 'createdById',
+    });
+    Maintenance.belongsTo(models.MaintenanceType, {
+      as: 'maintenanceType',
+      foreignKey: 'maintenanceTypeId',
     });
     Maintenance.belongsTo(models.Asset, {
       as: 'asset',
