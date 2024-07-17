@@ -22,6 +22,8 @@ class MaintenanceService {
     category,
     type,
     createdBy,
+    startDate,
+    endDate,
     limit = 10,
     offset = 0,
   }) {
@@ -66,6 +68,17 @@ class MaintenanceService {
     if (createdBy) {
       where['$createdBy.username$'] = {
         [Op.like]: `%${createdBy}%`,
+      };
+    }
+
+    if (!isNaN(startDate)) {
+      startDate = Number(startDate);
+      endDate = Number(endDate);
+    }
+
+    if (startDate && endDate) {
+      where.createdAt = {
+        [Op.between]: [new Date(startDate), new Date(endDate)],
       };
     }
 

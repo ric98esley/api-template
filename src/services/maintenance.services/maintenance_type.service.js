@@ -33,6 +33,7 @@ class MaintenanceTypeService {
       where,
       include,
       attributes: ['id', 'name', 'description'],
+      order: [['id', 'DESC']],
       limit: Number(limit),
       offset: Number(offset),
     };

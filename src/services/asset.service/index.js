@@ -222,7 +222,7 @@ class AssetsServices {
     };
     const Asset = await models.Asset.findOne(options);
     if (!Asset) {
-      throw boom.notFound('Asset not found');
+      throw boom.notFound('Activo no encontrado');
     }
     return Asset;
   }
@@ -572,7 +572,12 @@ class AssetsServices {
   }
 
   async getSpecifications({ id, groupId }) {
-    const asset = await this.findOne({ id, groupId, enabled: true , paranoid: false});
+    const asset = await this.findOne({
+      id,
+      groupId,
+      enabled: true,
+      paranoid: false,
+    });
 
     if (asset) {
       const specifications = await models.AssetSpec.findAndCountAll({
@@ -596,8 +601,46 @@ class AssetsServices {
     }
   }
 
-  async updateSpecification({id, changes, groupId, userId}) {
-    const asset = await this.findOne({ id, groupId, enabled: true , paranoid: false});
+  async getMaintenance({ id }) {
+    const maintenance = await models.Maintenance.findAndCountAll({
+      where: {
+        assetId: id,
+      },
+      include: [
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username'],
+        },
+        {
+          model: models.MaintenanceType,
+          as: 'maintenanceType',
+          attributes: ['id', 'name', 'description'],
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      attributes: [
+        'id',
+        'description',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
+    });
+
+    return {
+      total: maintenance.count,
+      rows: maintenance.rows,
+    };
+  }
+
+  async updateSpecification({ id, changes, groupId, userId }) {
+    const asset = await this.findOne({
+      id,
+      groupId,
+      enabled: true,
+      paranoid: false,
+    });
 
     if (asset) {
       let spec = await models.AssetSpec.findOne({
@@ -608,7 +651,7 @@ class AssetsServices {
       });
 
       if (spec) {
-        await spec.update({...changes, updatedById: userId});
+        await spec.update({ ...changes, updatedById: userId });
       } else {
         spec = await models.AssetSpec.create({
           ...changes,
@@ -620,8 +663,8 @@ class AssetsServices {
     }
   }
 
-  async removeSpecification({id, typeId, groupId}) {
-    const asset = await this.findOne({ id, groupId, paranoid: false});
+  async removeSpecification({ id, typeId, groupId }) {
+    const asset = await this.findOne({ id, groupId, paranoid: false });
 
     if (asset) {
       const spec = await models.AssetSpec.findOne({
@@ -631,12 +674,12 @@ class AssetsServices {
         },
       });
 
-      console.log('************')
-      console.log(id)
-      console.log(typeId)
-      console.log(groupId)
-      console.log(spec)
-      console.log('************')
+      console.log('************');
+      console.log(id);
+      console.log(typeId);
+      console.log(groupId);
+      console.log(spec);
+      console.log('************');
 
       if (spec) {
         await spec.destroy({ force: true });

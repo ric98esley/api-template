@@ -210,7 +210,36 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const specs = await service.getSpecifications({id, groupId: req.query.groupId});
+      const specs = await service.getSpecifications({
+        id,
+        groupId: req.query.groupId,
+      });
+      res.json(specs);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
+  '/:id/maintenances',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetSchema, 'params'),
+  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      await service.findOne({
+        id,
+        groupId: req.query.groupId,
+        enabled: true,
+        paranoid: false,
+      });
+
+      const specs = await service.getMaintenance({
+        id,
+      });
       res.json(specs);
     } catch (error) {
       next(error);

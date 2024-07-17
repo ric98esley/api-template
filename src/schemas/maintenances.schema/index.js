@@ -13,6 +13,9 @@ const limit = Joi.number().integer();
 const offset = Joi.number().integer();
 const createdBy = Joi.string();
 
+const startDate = Joi.date();
+const endDate = Joi.date();
+
 const createMaintenanceSchema = Joi.object({
   assetId: id.required(),
   maintenanceTypeId: id.required(),
@@ -41,7 +44,9 @@ const findMaintenanceSchema = Joi.object({
   type,
   createdBy,
   limit,
-  offset
+  offset,
+  startDate,
+  endDate,
 });
 
 module.exports = {
