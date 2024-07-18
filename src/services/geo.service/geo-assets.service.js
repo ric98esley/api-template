@@ -19,8 +19,8 @@ class GeoAssetServices {
       serial,
       alert,
       alertType,
-      latitude,
-      longitude,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
     });
     return mapGeo(geoAsset);
   }
