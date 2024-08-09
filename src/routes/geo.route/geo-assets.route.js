@@ -19,12 +19,12 @@ const router = express.Router();
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
-  validatorHandler(findGeoAssetSchema),
+  validatorHandler(findGeoAssetSchema, 'query'),
   checkUser(),
   checkAuth({ route: SCOPE.GEO, crud: ACTIONS.READ }),
   async (req, res, next) => {
     try {
-      const query = req.body;
+      const query = req.query;
       const geo = await geoService.find(query);
 
       res.status(200).json(geo)

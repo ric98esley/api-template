@@ -3,9 +3,6 @@ const boom = require('@hapi/boom');
 const sequelize = require('../libs/sequelize');
 const { models } = require('../libs/sequelize');
 
-const { grants, POSSESSION } = require('../utils/roles');
-const authHandlers = require('../utils/roles/handlers');
-
 function checkUser() {
   return async (req, res, next) => {
     try {

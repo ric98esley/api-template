@@ -3,12 +3,15 @@ const { models } = require('../../libs/sequelize');
 
 const mapGeo = (data) => {
   return {
-    ip: data.id,
+    id: data.id,
+    ip: data.ip,
     serial: data.serial,
     alert: data.alert,
     alertType: data.alertType,
     latitude: data.latitude,
     longitude: data.longitude,
+    createdAt: data.createdAt,
+    location: data.asset?.location,
   };
 };
 
@@ -52,6 +55,20 @@ class GeoAssetServices {
     const { count, rows } = await models.GeoAsset.findAndCountAll({
       limit: Number(limit),
       offset: Number(offset),
+      include: [
+        {
+          model: models.Asset,
+          as: 'asset',
+          attributes: ['serial'],
+          include: [
+            {
+              model: models.Location,
+              as: 'location',
+              attributes: ['id', 'name', 'code'],
+            }
+          ]
+        }
+      ],
       where,
       order: [[sort, order]],
     });

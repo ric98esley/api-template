@@ -19,7 +19,7 @@ const maintenanceRouter = require('./maintenance.route');
 
 function routerApi(app) {
   const router = express.Router();
-  app.use('/v3', router);
+  app.use('/v4', router);
   router.use('/auth', authRouter);
   router.use('/users', usersRouter);
   router.use('/customers', customerRouter);

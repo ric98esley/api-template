@@ -20,6 +20,8 @@ const createGeoAssetSchema = Joi.object({
 });
 
 const findGeoAssetSchema = Joi.object({
+  limit: Joi.number().integer(),
+  offset: Joi.number().integer(),
   ip,
   serial,
   alert,
