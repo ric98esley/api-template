@@ -227,6 +227,108 @@ class AssetsServices {
     return Asset;
   }
 
+  async findBySerial({
+    serial,
+    enabled,
+    status,
+    groupId,
+    type,
+    paranoid = true,
+  }) {
+    const options = {
+      where: {
+        serial,
+        ...(enabled && {
+          enabled: Boolean(enabled),
+        }),
+      },
+      include: [
+        {
+          model: models.User,
+          as: 'createdBy',
+          attributes: ['id', 'username'],
+        },
+        {
+          model: models.Location,
+          as: 'location',
+          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
+          include: [
+            {
+              model: models.LocationType,
+              as: 'type',
+              attributes: ['id', 'name', 'status'],
+              where: {
+                ...(status && {
+                  status,
+                }),
+              },
+            },
+            {
+              model: models.Group,
+              as: 'group',
+              attributes: ['id', 'name'],
+            },
+          ],
+          where: {
+            ...(groupId && {
+              groupId,
+            }),
+          },
+        },
+        {
+          model: models.Model,
+          as: 'model',
+          required: true,
+          attributes: ['id', 'name'],
+          include: [
+            {
+              model: models.Category,
+              as: 'category',
+              required: true,
+              attributes: ['id', 'name', 'type'],
+              where: {
+                ...(type && {
+                  type,
+                }),
+              },
+            },
+            {
+              model: models.Brand,
+              as: 'brand',
+              attributes: ['id', 'name'],
+            },
+          ],
+        },
+        {
+          model: models.AssetSpec,
+          as: 'specifications',
+          include: [
+            {
+              model: models.HardwareSpec,
+              as: 'type',
+              attributes: ['id', 'name'],
+            },
+          ],
+          attributes: ['id', 'value'],
+        },
+      ],
+      attributes: [
+        'id',
+        'serial',
+        'notes',
+        'countChecking',
+        'enabled',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+      ],
+      paranoid,
+    };
+    const asset = await models.Asset.findOne(options);
+
+    return asset;
+  }
+
   async find({
     serial,
     limit = 10,
@@ -602,30 +704,56 @@ class AssetsServices {
   }
 
   async getMaintenance({ id }) {
+    const include = [
+      {
+        model: models.User,
+        as: 'createdBy',
+        attributes: ['id', 'username'],
+      },
+      {
+        model: models.MaintenanceType,
+        as: 'maintenanceType',
+        attributes: ['id', 'name'],
+      },
+      {
+        model: models.Asset,
+        as: 'asset',
+        paranoid: false,
+        include: [
+          {
+            model: models.Model,
+            as: 'model',
+            required: true,
+            paranoid: false,
+            include: [
+              {
+                model: models.Category,
+                as: 'category',
+                required: true,
+                paranoid: false,
+                attributes: ['id', 'name'],
+              },
+              {
+                model: models.Brand,
+                as: 'brand',
+                required: true,
+                paranoid: false,
+                attributes: ['id', 'name'],
+              },
+            ],
+            attributes: ['id', 'name'],
+          },
+        ],
+        attributes: ['id', 'serial'],
+      },
+    ];
     const maintenance = await models.Maintenance.findAndCountAll({
       where: {
         assetId: id,
       },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.MaintenanceType,
-          as: 'maintenanceType',
-          attributes: ['id', 'name', 'description'],
-        }
-      ],
+      include,
       order: [['createdAt', 'DESC']],
-      attributes: [
-        'id',
-        'description',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      attributes: ['id', 'description', 'createdAt', 'updatedAt', 'deletedAt'],
     });
 
     return {

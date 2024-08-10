@@ -37,6 +37,11 @@ const GeoAssetSchema = {
     type: DataTypes.DECIMAL,
     allowNull: true
   },
+  locationId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'location_id',
+  },
   createdAt: {
     field: 'created_at',
     type: DataTypes.DATE,
@@ -57,6 +62,11 @@ class GeoAsset extends Model {
       as: 'asset',
       foreignKey: 'serial',
       targetKey: 'serial',
+    });
+    this.belongsTo(models.Location, {
+      as: 'location',
+      foreignKey: 'locationId',
+      targetKey: 'id',
     });
   }
 

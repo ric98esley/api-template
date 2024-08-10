@@ -12,7 +12,9 @@ const {
 } = require('../../schemas/geo.schema/geo-asset.schema');
 
 const { GeoAssetServices } = require('../../services/geo.service');
+const AssetsServices = require('../../services/asset.service');
 const geoService = new GeoAssetServices();
+const assetService = new AssetsServices();
 
 const router = express.Router();
 
@@ -27,9 +29,9 @@ router.get(
       const query = req.query;
       const geo = await geoService.find(query);
 
-      res.status(200).json(geo)
+      res.status(200).json(geo);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 );
@@ -39,10 +41,10 @@ router.post(
   validatorHandler(createGeoAssetSchema, 'body'),
   async (req, res, next) => {
     try {
-      console.log(req.headers);
-
       const data = req.body;
-      const geo = await geoService.create({ ...data, ip: req.ip });
+
+      const asset = await assetService.findBySerial({ serial: data.serial });
+      const geo = await geoService.create({ ...data, ip: req.ip, locationId: asset?.location?.id });
 
       res.status(202).json(geo);
     } catch (error) {

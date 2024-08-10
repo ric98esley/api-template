@@ -11,17 +11,18 @@ const mapGeo = (data) => {
     latitude: data.latitude,
     longitude: data.longitude,
     createdAt: data.createdAt,
-    location: data.asset?.location,
+    location: data.location,
   };
 };
 
 class GeoAssetServices {
-  async create({ ip, serial, alert, alertType, latitude, longitude }) {
+  async create({ ip, serial, alert, alertType, latitude, longitude, locationId }) {
     const geoAsset = await models.GeoAsset.create({
       ip,
       serial,
       alert,
       alertType,
+      locationId,
       latitude: Number(latitude),
       longitude: Number(longitude),
     });
@@ -57,17 +58,10 @@ class GeoAssetServices {
       offset: Number(offset),
       include: [
         {
-          model: models.Asset,
-          as: 'asset',
-          attributes: ['serial'],
-          include: [
-            {
-              model: models.Location,
-              as: 'location',
-              attributes: ['id', 'name', 'code'],
-            }
-          ]
-        }
+          model: models.Location,
+          as: 'location',
+          attributes: ['id', 'name', 'code'],
+        },
       ],
       where,
       order: [[sort, order]],
