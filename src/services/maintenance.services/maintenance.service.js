@@ -27,6 +27,13 @@ class MaintenanceService {
     limit = 10,
     offset = 0,
   }) {
+    if(!isNaN(startDate)) {
+      startDate = Number(startDate);
+    }
+
+    if(!isNaN(endDate)) {
+      endDate = Number(endDate);
+    }
     const where = {};
 
     if (description) {
@@ -76,9 +83,16 @@ class MaintenanceService {
       endDate = Number(endDate);
     }
 
-    if (startDate && endDate) {
+    if (startDate) {
       where.createdAt = {
-        [Op.between]: [new Date(startDate), new Date(endDate)],
+      [Op.gte]: new Date(startDate).toISOString()
+      };
+    }
+
+    if (endDate) {
+      where.createdAt = {
+      ...where.createdAt,
+      [Op.lte]: new Date(endDate).toISOString()
       };
     }
 
