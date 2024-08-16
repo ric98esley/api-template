@@ -5,6 +5,7 @@ const AuthService = require('./../../services/auth.service');
 const UsersServices = require('../../services/user.service');
 const LogService = require('../../services/log.service');
 const { ACTIONS } = require('../../utils/roles');
+const { checkRefreshToken } = require('../../middlewares/auth.handler');
 
 const router = express.Router();
 const authService = new AuthService();
@@ -22,15 +23,30 @@ router.post(
         table: 'users',
         targetId: user.id,
         details: {
-          message: `El usuario ${user.username} a entrado al sistema`
+          message: `El usuario ${user.username} a entrado al sistema`,
         },
         ip: req.ip,
         createdById: user.id,
       });
-
-      const singIn = await authService.singIn(user);
+      const singIn = await authService.singIn(user, req.ip);
 
       res.json(singIn);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post(
+  '/check',
+  passport.authenticate('refresh', { session: false }),
+  checkRefreshToken(),
+  async (req, res, next) => {
+    try {
+      const user = req.user;
+      const singIn = await authService.checkUser(user.sub);
+
+      res.json({ ...singIn });
     } catch (error) {
       next(error);
     }

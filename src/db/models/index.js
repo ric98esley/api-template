@@ -30,12 +30,14 @@ const { AbilityModel, AbilitySchema } = require('./user.model/abillities.model')
 const { GeoAsset, GeoAssetSchema } = require('./asset.model/geo-assets.model');
 const { MaintenanceTypeSchema, MaintenanceType } = require('./maintecentes/maintenance_types');
 const { Maintenance, MaintenanceSchema } = require('./maintecentes/maintenances');
+const { Session, SessionSchema } = require('./user.model/sessions.model');
 
 function setupModels(sequelize) {
 
   // INICIALIZA MODELOS
   Customer.init(CustomerSchema, Customer.config(sequelize));
   User.init(UserSchema, User.config(sequelize));
+  Session.init(SessionSchema, Session.config(sequelize));
   Role.init(RoleSchema, Role.config(sequelize));
   Permission.init(PermissionSchema, Permission.config(sequelize));
   Log.init(LogSchema, Log.config(sequelize));
@@ -74,6 +76,7 @@ function setupModels(sequelize) {
 
   Customer.associate(sequelize.models);
   User.associate(sequelize.models);
+  Session.associate(sequelize.models);
   Role.associate(sequelize.models);
   Permission.associate(sequelize.models);
   Log.associate(sequelize.models);

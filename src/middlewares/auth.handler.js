@@ -111,44 +111,36 @@ function checkAuth({ route, crud }) {
       if (ability == 'none') {
         throw boom.forbidden('No tienes permisos para acceder a esta ruta');
       }
-      
-      if(!ability) throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+
+      if (!ability)
+        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
       next();
     } catch (error) {
       return next(error);
     }
   };
 }
-async function checkPermissions(req, res, next) {
-  try {
-    const user = req.user;
-    
-    if (user.role == 'superuser' || user.role == 'auditor') return next();
-    
-    const groupId = await getGroups(user.sub, next);
-    
-    const method = req.method;
 
-    if (method == 'GET') {
-      req.query.groupId = groupId;
-    }
+function checkRefreshToken() {
+  return async (req, res, next) => {
+    try {
+      console.log(req.headers);
 
-    if (method == 'PATCH') {
-      if (req.body.groupId) {
-        const isIn = groupId.includes(req.body.groupId);
-        if (!isIn) throw new Error();
+      const refreshToken = req.headers['authorization'].split(' ')[1];
+
+      const session = await models.Session.findOne({
+        where: { token: refreshToken },
+      });
+
+      if (!session) {
+        throw boom.unauthorized('Sección expirada');
       }
 
-      req.query.groupId = groupId;
+      next();
+    } catch (error) {
+      next(boom.unauthorized());
     }
-    if (method == 'POST') {
-      const isIn = groupId.includes(req.body.groupId);
-      if (!isIn) throw new Error();
-    }
-    next();
-  } catch (error) {
-    next(boom.forbidden());
-  }
+  };
 }
 
 async function checkSuperuser(req, res, next) {
@@ -170,5 +162,6 @@ async function checkSuperuser(req, res, next) {
 module.exports = {
   checkUser,
   checkSuperuser,
+  checkRefreshToken,
   checkAuth,
 };

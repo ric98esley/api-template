@@ -34,7 +34,6 @@ class AuthService {
     }
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
-      console.error('match');
       throw boom.unauthorized('usuario o contraseña incorrecto');
     }
     delete user.dataValues.password;
@@ -66,28 +65,72 @@ class AuthService {
     return result;
   }
 
-  signToken(user) {
+  signToken(user, secret = authConfig.jwtSecret, expiresIn = '120s') {
     const payload = {
       sub: user.id,
       role: user.role,
     };
 
-    const token = jwt.sign(payload, authConfig.jwtSecret, { expiresIn: '12h' });
+    const token = jwt.sign(payload, secret, { expiresIn: expiresIn });
 
     return token;
   }
 
-  async singIn(user) {
-    const token = this.signToken(user);
+  async saveSession({ userId, token, ip }) {
+    const session = await models.Session.create({
+      token,
+      ip,
+      userId: userId,
+    });
 
+    return session;
+  }
+
+  async findSession(token) {
+    const session = await models.Session.findOne({
+      where: {
+        token,
+      },
+    });
+
+    return session;
+  }
+
+  async singIn(user, ip) {
+    const token = this.signToken(user);
+    const refreshToken = this.signToken(user, authConfig.jwtRefresh, '7d');
     const ability = await this.getPermissions(user.role);
+
+    await this.saveSession({ userId: user.id, token: refreshToken, ip });
 
     const data = {
       user,
       token,
+      refreshToken,
       ability,
     };
     return data;
+  }
+
+  async checkUser(userId) {
+    const user = await models.User.findByPk(userId, {
+      where: {
+        isActive: true,
+      },
+      attributes: ['id', 'username', 'email', 'role', 'isActive'],
+    });
+    if (!user) {
+      throw boom.unauthorized();
+    }
+
+    const ability = await this.getPermissions(user.role);
+    const token = this.signToken(user);
+
+    return {
+      user,
+      ability,
+      token,
+    };
   }
 
   async attempt({ user, ip }) {

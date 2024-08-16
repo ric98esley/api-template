@@ -19,6 +19,7 @@ const config = {
 const authConfig = {
   jwtSecret: process.env.JWT_SECRET,
   jwtRecovery: process.env.JWT_RECOVERY,
+  jwtRefresh: process.env.JWT_REFRESH,
   googleClienteSecret: process.env.GOOGLE_CLIENT_SECRET,
   googleClienteId: process.env.GOOGLE_CLIENT_ID,
 }
