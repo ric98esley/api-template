@@ -31,6 +31,7 @@ const { GeoAsset, GeoAssetSchema } = require('./asset.model/geo-assets.model');
 const { MaintenanceTypeSchema, MaintenanceType } = require('./maintecentes/maintenance_types');
 const { Maintenance, MaintenanceSchema } = require('./maintecentes/maintenances');
 const { Session, SessionSchema } = require('./user.model/sessions.model');
+const { PathRecord, PathRecordSchema } = require('./paths.model/paths.model');
 
 function setupModels(sequelize) {
 
@@ -71,6 +72,8 @@ function setupModels(sequelize) {
 
   VAsset.init(VAssetSchema, VAsset.config(sequelize))
   VMovement.init(VMovementSchema, VMovement.config(sequelize));
+
+  PathRecord.init(PathRecordSchema, PathRecord.config(sequelize));
 
   // INICIALIZA ASOCIACIONES
 

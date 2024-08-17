@@ -21,6 +21,7 @@ const SCOPE = {
   ORDERS: 'orders', //
   MOVEMENTS: 'movements', //
   CATEGORY_CLASSES: 'category_classes',
+  PATHS: 'paths',
 }
 
 module.exports = SCOPE;

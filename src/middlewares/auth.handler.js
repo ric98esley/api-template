@@ -75,7 +75,13 @@ function checkAuth({ route, crud }) {
       if (!role)
         throw boom.forbidden('No tienes permisos para acceder a esta ruta');
 
-      const ability = role.ability[route][crud];
+      const routeAbilities = role.ability[route];
+
+      console.log(routeAbilities[crud]);
+
+      if(!routeAbilities) throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+
+      const ability = routeAbilities[crud];
 
       if (ability == 'any') {
         // TODO: Mejorar este any
