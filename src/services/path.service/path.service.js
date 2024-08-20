@@ -7,7 +7,7 @@ class PathService {
     const { limit, offset, search } = data;
     const options = {
       attributes: ['id', 'path', 'name', 'isAllow', 'createdAt'],
-      order: [['id', 'DESC']],
+      order: [['createdAt', 'DESC']],
       where: {},
     };
 
