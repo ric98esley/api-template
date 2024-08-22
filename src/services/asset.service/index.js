@@ -3,10 +3,7 @@ const { Op } = require('sequelize');
 
 const sequelize = require('../../libs/sequelize');
 const { models } = require('../../libs/sequelize');
-
-// const AssignmentService = require('../orders.service/assignments.service');
-// const assignmentsService = new AssignmentService();
-
+const { assetModel, maintenanceModel, assetSpecModel } = require('../../models');
 class AssetsServices {
   constructor() {}
 
@@ -127,97 +124,26 @@ class AssetsServices {
     };
   }
 
-  async findOne({ id, enabled, status, groupId, type, paranoid = true }) {
+  async findOne({ id, enabled, status, groupId, paranoid = true }) {
     if (!id) {
-      throw boom.badRequest('Id is required');
+      throw boom.badRequest('Id es requerido');
     }
+    const where = {
+      id,
+      ...(enabled && {
+        enabled: Boolean(enabled),
+      }),
+      ...(groupId && {
+        '$location.group_id$': groupId,
+      }),
+      ...(status && {
+        '$location.type.status$': status,
+      }),
+    };
     const options = {
-      where: {
-        id,
-        ...(enabled && {
-          enabled: Boolean(enabled),
-        }),
-      },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Location,
-          as: 'location',
-          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
-          include: [
-            {
-              model: models.LocationType,
-              as: 'type',
-              attributes: ['id', 'name', 'status'],
-              where: {
-                ...(status && {
-                  status,
-                }),
-              },
-            },
-            {
-              model: models.Group,
-              as: 'group',
-              attributes: ['id', 'name'],
-            },
-          ],
-          where: {
-            ...(groupId && {
-              groupId,
-            }),
-          },
-        },
-        {
-          model: models.Model,
-          as: 'model',
-          required: true,
-          attributes: ['id', 'name'],
-          include: [
-            {
-              model: models.Category,
-              as: 'category',
-              required: true,
-              attributes: ['id', 'name', 'type'],
-              where: {
-                ...(type && {
-                  type,
-                }),
-              },
-            },
-            {
-              model: models.Brand,
-              as: 'brand',
-              attributes: ['id', 'name'],
-            },
-          ],
-        },
-        {
-          model: models.AssetSpec,
-          as: 'specifications',
-          include: [
-            {
-              model: models.HardwareSpec,
-              as: 'type',
-              attributes: ['id', 'name'],
-            },
-          ],
-          attributes: ['id', 'value'],
-        },
-      ],
-      attributes: [
-        'id',
-        'serial',
-        'notes',
-        'countChecking',
-        'enabled',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      where,
+      include: assetModel.include,
+      attributes: assetModel.attributes,
       paranoid,
     };
     const Asset = await models.Asset.findOne(options);
@@ -227,101 +153,22 @@ class AssetsServices {
     return Asset;
   }
 
-  async findBySerial({
-    serial,
-    enabled,
-    status,
-    groupId,
-    type,
-    paranoid = true,
-  }) {
+  async findBySerial({ serial, enabled, status, groupId, paranoid = true }) {
     const options = {
       where: {
         serial,
         ...(enabled && {
           enabled: Boolean(enabled),
         }),
+        ...(groupId && {
+          '$location.groupId$': groupId,
+        }),
+        ...(status && {
+          '$location.type.status$': status,
+        }),
       },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Location,
-          as: 'location',
-          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
-          include: [
-            {
-              model: models.LocationType,
-              as: 'type',
-              attributes: ['id', 'name', 'status'],
-              where: {
-                ...(status && {
-                  status,
-                }),
-              },
-            },
-            {
-              model: models.Group,
-              as: 'group',
-              attributes: ['id', 'name'],
-            },
-          ],
-          where: {
-            ...(groupId && {
-              groupId,
-            }),
-          },
-        },
-        {
-          model: models.Model,
-          as: 'model',
-          required: true,
-          attributes: ['id', 'name'],
-          include: [
-            {
-              model: models.Category,
-              as: 'category',
-              required: true,
-              attributes: ['id', 'name', 'type'],
-              where: {
-                ...(type && {
-                  type,
-                }),
-              },
-            },
-            {
-              model: models.Brand,
-              as: 'brand',
-              attributes: ['id', 'name'],
-            },
-          ],
-        },
-        {
-          model: models.AssetSpec,
-          as: 'specifications',
-          include: [
-            {
-              model: models.HardwareSpec,
-              as: 'type',
-              attributes: ['id', 'name'],
-            },
-          ],
-          attributes: ['id', 'value'],
-        },
-      ],
-      attributes: [
-        'id',
-        'serial',
-        'notes',
-        'countChecking',
-        'enabled',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      include: assetModel.include,
+      attributes: assetModel.attributes,
       paranoid,
     };
     const asset = await models.Asset.findOne(options);
@@ -344,9 +191,6 @@ class AssetsServices {
     model,
     brand,
     category,
-    modelId,
-    categoryId,
-    brandId,
     startDate,
     endDate,
   }) {
@@ -361,15 +205,16 @@ class AssetsServices {
           [Op.like]: `%${serial}%`,
         },
       }),
-      ...(startDate &&
-        endDate && {
-          createdAt: {
-            [Op.between]: [
-              new Date(startDate).toISOString(),
-              new Date(endDate).toISOString(),
-            ],
-          },
-        }),
+      ...(startDate && {
+        createdAt: {
+          [Op.gte]: new Date(startDate).toISOString(),
+        },
+      }),
+      ...(endDate && {
+        createdAt: {
+          [Op.lte]: new Date(endDate).toISOString(),
+        },
+      }),
       ...(location && {
         [Op.or]: [
           {
@@ -417,7 +262,23 @@ class AssetsServices {
           })),
         },
       }),
-      ...(group && {}),
+      ...(group && {
+        [Op.or]: [
+          {
+            '$location.group.name$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+          {
+            '$location.group.code$': {
+              [Op.like]: `%${group}%`,
+            },
+          },
+        ],
+      }),
+      ...(groupId && {
+        '$location.group_id$': groupId,
+      }),
     };
     const options = {
       limit: Number(limit),
@@ -425,107 +286,14 @@ class AssetsServices {
       ...(all == 'true' && {
         paranoid: false,
       }),
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Location,
-          as: 'location',
-          attributes: ['id', 'name', 'code', 'typeId', 'groupId'],
-          include: [
-            {
-              model: models.LocationType,
-              as: 'type',
-              attributes: ['id', 'name', 'status'],
-            },
-            {
-              model: models.Group,
-              as: 'group',
-              attributes: ['id', 'code', 'name'],
-              ...(group && {
-                where: {
-                  [Op.or]: [
-                    {
-                      code: {
-                        [Op.like]: `%${group}%`,
-                      },
-                    },
-                    {
-                      name: {
-                        [Op.like]: `%${group}%`,
-                      },
-                    },
-                  ],
-                },
-              }),
-            },
-          ],
-          where: {
-            ...(groupId && {
-              groupId,
-            }),
-          },
-        },
-        {
-          model: models.Model,
-          as: 'model',
-          required: true,
-          paranoid: false,
-          where: {
-            ...(modelId && {
-              id: modelId,
-            }),
-          },
-          include: [
-            {
-              model: models.Category,
-              as: 'category',
-              required: true,
-              paranoid: false,
-              attributes: ['id', 'name'],
-              where: {
-                ...(categoryId && {
-                  id: categoryId,
-                }),
-              },
-            },
-            {
-              model: models.Brand,
-              as: 'brand',
-              required: true,
-              paranoid: false,
-              attributes: ['id', 'name'],
-              where: {
-                ...(!modelId &&
-                  !categoryId &&
-                  brandId && {
-                    id: brandId,
-                  }),
-              },
-            },
-          ],
-          attributes: ['id', 'name'],
-        },
-      ],
+      include: assetModel.include,
+      attributes: assetModel.attributes,
       where,
       order: [
         [...sort, order],
         ['serial', 'DESC'],
       ],
       distinct: true,
-      attributes: [
-        'id',
-        'serial',
-        'notes',
-        'countChecking',
-        'enabled',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
     };
     const { count, rows } = await models.Asset.findAndCountAll(options);
     return {
@@ -533,6 +301,7 @@ class AssetsServices {
       rows,
     };
   }
+
   async vFind({
     serial,
     location,
@@ -686,14 +455,8 @@ class AssetsServices {
         where: {
           assetId: id,
         },
-        include: [
-          {
-            model: models.HardwareSpec,
-            as: 'type',
-            attributes: ['id', 'name'],
-          },
-        ],
-        attributes: ['id', 'value', 'typeId'],
+        include: assetSpecModel.include,
+        attributes: assetSpecModel.attributes,
       });
 
       return {
@@ -704,56 +467,13 @@ class AssetsServices {
   }
 
   async getMaintenance({ id }) {
-    const include = [
-      {
-        model: models.User,
-        as: 'createdBy',
-        attributes: ['id', 'username'],
-      },
-      {
-        model: models.MaintenanceType,
-        as: 'maintenanceType',
-        attributes: ['id', 'name'],
-      },
-      {
-        model: models.Asset,
-        as: 'asset',
-        paranoid: false,
-        include: [
-          {
-            model: models.Model,
-            as: 'model',
-            required: true,
-            paranoid: false,
-            include: [
-              {
-                model: models.Category,
-                as: 'category',
-                required: true,
-                paranoid: false,
-                attributes: ['id', 'name'],
-              },
-              {
-                model: models.Brand,
-                as: 'brand',
-                required: true,
-                paranoid: false,
-                attributes: ['id', 'name'],
-              },
-            ],
-            attributes: ['id', 'name'],
-          },
-        ],
-        attributes: ['id', 'serial'],
-      },
-    ];
     const maintenance = await models.Maintenance.findAndCountAll({
       where: {
         assetId: id,
       },
-      include,
+      include: maintenanceModel.include,
       order: [['createdAt', 'DESC']],
-      attributes: ['id', 'description', 'createdAt', 'updatedAt', 'deletedAt'],
+      attributes: maintenanceModel.attributes,
     });
 
     return {
@@ -801,14 +521,6 @@ class AssetsServices {
           typeId: Number(typeId),
         },
       });
-
-      console.log('************');
-      console.log(id);
-      console.log(typeId);
-      console.log(groupId);
-      console.log(spec);
-      console.log('************');
-
       if (spec) {
         await spec.destroy({ force: true });
       }
