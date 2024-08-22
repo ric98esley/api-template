@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 const { Op } = require('sequelize');
 
 const { models } = require('../../libs/sequelize');
+const { userModel } = require('../../models');
 
 class UsersServices {
   constructor() {}
@@ -17,26 +18,7 @@ class UsersServices {
 
   async findOne({ id, email, username, groupId }) {
     const options = {
-      include: [
-        {
-          as: 'profile',
-          model: models.Customer,
-          attributes: [
-            'id',
-            'name',
-            'lastName',
-            'phone',
-            'cardId',
-            'createdAt',
-            'updatedAt',
-          ],
-        },
-        {
-          as: 'group',
-          model: models.Group,
-          attributes: ['id', 'name'],
-        },
-      ],
+      include: userModel.include,
       where: {
         ...(id && {
           id,
@@ -51,15 +33,7 @@ class UsersServices {
           groupId,
         }),
       },
-      attributes: [
-        'id',
-        'username',
-        'email',
-        'role',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      attributes: userModel.attributes,
     };
     const user = await models.User.findOne(options);
     if (!user) {
@@ -165,55 +139,9 @@ class UsersServices {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: [
-        {
-          model: models.Customer,
-          as: 'profile',
-          attributes: ['id', 'name', 'lastName', 'phone', 'cardId'],
-          ...(profile && {
-            where: {
-              [Op.or]: [
-                {
-                  name: {
-                    [Op.like]: `%${profile}%`,
-                  },
-                },
-                {
-                  lastName: {
-                    [Op.like]: `%${profile}%`,
-                  },
-                },
-                {
-                  cardId: {
-                    [Op.like]: `%${profile}%`,
-                  },
-                },
-                {
-                  phone: {
-                    [Op.like]: `%${profile}%`,
-                  },
-                },
-              ],
-            },
-          }),
-        },
-        {
-          model: models.Group,
-          as: 'group',
-          attributes: ['id', 'name', 'code'],
-        },
-      ],
+      include: userModel.include,
       order: [[sort, order]],
-      attributes: [
-        'id',
-        'email',
-        'username',
-        'role',
-        'isActive',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      attributes: userModel.attributes,
     };
     const { count, rows } = await models.User.findAndCountAll(options);
     return {

@@ -286,15 +286,17 @@ class AssetsServices {
       ...(all == 'true' && {
         paranoid: false,
       }),
-      include: assetModel.include,
-      attributes: assetModel.attributes,
-      where,
+      include: assetModel().include,
+      attributes: assetModel().attributes,
+      // where,
       order: [
         [...sort, order],
         ['serial', 'DESC'],
       ],
       distinct: true,
     };
+
+    console.log(options.include);
     const { count, rows } = await models.Asset.findAndCountAll(options);
     return {
       total: count,

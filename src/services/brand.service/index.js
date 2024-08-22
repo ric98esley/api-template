@@ -3,6 +3,7 @@ const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 
 const { Op, fn, col, literal } = require('sequelize');
+const { brandModel } = require('../../models');
 
 class BrandsServices {
   constructor() {}
@@ -49,16 +50,9 @@ class BrandsServices {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-      ],
+      include: brandModel.include,
       attributes: [
-        'id',
-        'name',
+        ...brandModel.attributes,
         [
           literal(
             `(SELECT count(*)
@@ -70,7 +64,6 @@ class BrandsServices {
           ),
           'count',
         ],
-        'createdAt',
       ],
       order: [[sort, order]],
     };
@@ -81,16 +74,20 @@ class BrandsServices {
 
   async findOne(id) {
     const brand = await models.Brand.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
+      include: brandModel.include,
+      attributes: [...brandModel.attributes,
+        [
+          literal(
+            `(SELECT count(*)
+              FROM assets as assets
+                left join models on assets.model_id = models.id
+                  where
+                    brand_id = Brand.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
       ],
-      attributes: {
-        exclude: ['createdById'],
-      },
     });
     if (!brand) {
       throw boom.notFound('Brand not found');

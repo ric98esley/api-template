@@ -2,6 +2,7 @@ const boom = require("@hapi/boom");
 
 const { models } = require("../../libs/sequelize");
 const { Op } = require("sequelize");
+const { zoneModel } = require("../../models");
 
 class ZonesServices {
   constructor() {}
@@ -23,7 +24,7 @@ class ZonesServices {
           }
         })
       },
-      attributes: ['name', 'id']
+      attributes: zoneModel.attributes
     }
     const {count , rows} = await models.Zone.findAndCountAll(options);
     return {
@@ -34,9 +35,7 @@ class ZonesServices {
 
   async findOne(id) {
     const zone = await models.Zone.findByPk(id,{
-      attributes: [
-        'id', 'name', 'createdAt'
-      ]
+      attributes: zoneModel.attributes
     });
 
     if (!zone) {

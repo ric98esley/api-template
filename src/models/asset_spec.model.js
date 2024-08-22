@@ -1,6 +1,6 @@
 const { models } = require('../libs/sequelize');
 
-const assetSpecModel = {
+const assetSpecModel = () => ({
   model: models.AssetSpec,
   as: 'specifications',
   include: [
@@ -11,6 +11,6 @@ const assetSpecModel = {
     },
   ],
   attributes: ['id', 'value', 'typeId', 'createdAt'],
-}
+});
 
 module.exports = assetSpecModel;

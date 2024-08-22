@@ -55,7 +55,7 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const groups = await groupService.findOne({ id });
+      const groups = await groupService.findOne({ id, groupId: req.query.groupId });
 
       res.status(201).json(groups);
     } catch (error) {

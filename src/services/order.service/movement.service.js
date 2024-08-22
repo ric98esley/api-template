@@ -3,6 +3,7 @@ const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op, literal } = require('sequelize');
 const sequelize = require('../../libs/sequelize');
+const { assetModel, locationModel, createdByModel } = require('../../models');
 
 class MovementService {
   async find({
@@ -61,15 +62,16 @@ class MovementService {
       ...(orderId && {
         orderId,
       }),
-      ...(startDate &&
-        endDate && {
-          createdAt: {
-            [Op.between]: [
-              new Date(startDate).toISOString(),
-              new Date(endDate).toISOString(),
-            ],
-          },
-        }),
+      ...(startDate && {
+        createdAt: {
+          [Op.gte]: new Date(startDate).toISOString(),
+        },
+      }),
+      ...(endDate && {
+        createdAt: {
+          [Op.lte]: new Date(endDate).toISOString(),
+        },
+      }),
       ...(category && {
         '$asset.model.category.name$': {
           [Op.or]: category.split(',').map((c) => ({
@@ -162,35 +164,11 @@ class MovementService {
       where,
       include: [
         {
-          model: models.Asset,
-          as: 'asset',
+          ...assetModel,
           ...(paranoid != undefined && {
             paranoid,
           }),
           required: true,
-          attributes: ['id', 'serial', 'deletedAt', 'createdAt'],
-          include: [
-            {
-              model: models.Model,
-              as: 'model',
-              attributes: ['id', 'name'],
-              paranoid: false,
-              include: [
-                {
-                  model: models.Category,
-                  as: 'category',
-                  attributes: ['id', 'name'],
-                  paranoid: false,
-                },
-                {
-                  model: models.Brand,
-                  as: 'brand',
-                  attributes: ['id', 'name'],
-                  paranoid: false,
-                },
-              ],
-            },
-          ],
         },
         {
           model: models.OrderRecord,
@@ -206,32 +184,18 @@ class MovementService {
           model: models.Location,
           as: 'from',
           required: false,
-          attributes: ['id', 'code', 'name', 'phone'],
-          include: [
-            {
-              model: models.Group,
-              as: 'group',
-              attributes: ['id', 'name', 'code'],
-            },
-          ],
+          attributes: [...locationModel.attributes],
+          include: [...locationModel.include.map((x) => ({ ...x }))],
         },
         {
           model: models.Location,
           as: 'to',
           required: false,
-          attributes: ['id', 'code', 'name', 'phone'],
-          include: [
-            {
-              model: models.Group,
-              as: 'group',
-              attributes: ['id', 'name', 'code'],
-            },
-          ],
+          attributes: [...locationModel.attributes],
+          include: [...locationModel.include.map((x) => ({ ...x }))],
         },
         {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
+          ...createdByModel,
         },
       ],
       attributes: ['id', 'quantity', 'type', 'current', 'createdAt'],
@@ -490,7 +454,7 @@ class MovementService {
           endDate: `${endDate}`,
           search: `%${search}%`,
           orderType: `%${orderType}%`,
-          groupId: groupId
+          groupId: groupId,
         },
         type: sequelize.QueryTypes.SELECT,
       }

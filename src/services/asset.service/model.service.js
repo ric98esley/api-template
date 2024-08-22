@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
 const { Op, literal } = require('sequelize');
+const { modelModel } = require('../../models');
 
 class ModelServices {
   constructor() {}
@@ -14,7 +15,15 @@ class ModelServices {
 
   async createMany(items) {
     const newModels = await models.Model.bulkCreate(items, {
-      fields: ['id', 'name', 'unit', 'min', 'categoryId', 'brandId', 'createdById'],
+      fields: [
+        'id',
+        'name',
+        'unit',
+        'min',
+        'categoryId',
+        'brandId',
+        'createdById',
+      ],
       updateOnDuplicate: ['id', 'name', 'unit', 'min', 'categoryId', 'brandId'],
     });
     return newModels;
@@ -33,10 +42,20 @@ class ModelServices {
   }) {
     const where = {
       ...(categoryId && {
-        categoryId: Number(categoryId)
+        categoryId: Number(categoryId),
       }),
       ...(brandId && {
-        brandId: Number(brandId)
+        brandId: Number(brandId),
+      }),
+      ...(category && {
+        '$category.name$': {
+          [Op.like]: `%${category}%`,
+        },
+      }),
+      ...(brand && {
+        '$brand.name$': {
+          [Op.like]: `%${brand}%`,
+        },
       }),
       ...(name && {
         name: {
@@ -52,43 +71,10 @@ class ModelServices {
         offset: Number(offset),
       }),
       where,
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Category,
-          as: 'category',
-          attributes: ['id', 'name'],
-          where: {
-            ...(category && {
-              name: {
-                [Op.like]: `%${category}%`,
-              },
-            }),
-          },
-        },
-        {
-          model: models.Brand,
-          as: 'brand',
-          attributes: ['id', 'name'],
-          where: {
-            ...(brand && {
-              name: {
-                [Op.like]: `%${brand}%`,
-              },
-            }),
-          },
-        },
-      ],
+      include: modelModel.include,
       order: [[sort, order]],
       attributes: [
-        'id',
-        'name',
-        'unit',
-        'min',
+        ...modelModel.attributes,
         [
           literal(
             `(SELECT count(*)
@@ -99,7 +85,7 @@ class ModelServices {
           ),
           'count',
         ],
-        'createdAt'],
+      ],
     };
 
     const { count, rows } = await models.Model.findAndCountAll(options);
@@ -111,24 +97,20 @@ class ModelServices {
 
   async findOne(id) {
     const model = await models.Model.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Category,
-          as: 'category',
-          attributes: ['id', 'name'],
-        },
-        {
-          model: models.Brand,
-          as: 'brand',
-          attributes: ['id', 'name'],
-        },
+      include: modelModel.include,
+      attributes: [
+        ...modelModel.attributes,
+        [
+          literal(
+            `(SELECT count(*)
+              FROM assets as assets
+                  where
+                    model_id = Model.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
       ],
-      attributes: ['id', 'name', 'unit', 'min', 'createdAt'],
     });
     if (!model) {
       throw boom.notFound('Model not found');

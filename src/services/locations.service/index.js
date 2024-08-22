@@ -53,44 +53,8 @@ class LocationsServices {
         }),
         id,
       },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Group,
-          as: 'group',
-          attributes: ['id', 'name', 'code'],
-        },
-        {
-          model: models.Customer,
-          as: 'manager',
-          attributes: ['id', 'name', 'lastName', 'phone'],
-        },
-        {
-          model: models.Zone,
-          as: 'zone',
-          attributes: ['id', 'name'],
-        },
-        {
-          model: models.LocationType,
-          as: 'type',
-          attributes: ['id', 'name'],
-        },
-      ],
-      attributes: [
-        'id',
-        'code',
-        'name',
-        'phone',
-        'rif',
-        'address',
-        'createdAt',
-        'updatedAt',
-        'deletedAt',
-      ],
+      include: locationModel.include,
+      attributes: locationModel.attributes,
     };
     const location = await models.Location.findOne(options);
     if (!location) {

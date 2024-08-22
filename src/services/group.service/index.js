@@ -1,6 +1,7 @@
 const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
+const { groupModel } = require('../../models');
 
 class GroupsService {
   constructor() {}
@@ -22,50 +23,25 @@ class GroupsService {
     return newGroups;
   }
 
-  async findOne({ id }) {
-    const group = await models.Group.findByPk(id, {
+  async findOne({ id, groupId }) {
+    const group = await models.Group.findOne({
+      where: {
+        id,
+      },
       include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        // manager
-        {
-          model: models.User,
-          as: 'manager',
-          attributes: ['id', 'username', 'email'],
-          include: [
-            {
-              model: models.Customer,
-              as: 'profile',
-            },
-          ],
-        },
-        // createdBy
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        // parent
+        ...groupModel.include,
         {
           model: models.Group,
           as: 'parent',
-          attributes: [
-            'id',
-            'code',
-            'name',
-            'enabled',
-            'createdAt',
-            'updatedAt',
-          ],
+          attributes: [...groupModel.attributes],
         },
       ],
-      attributes: ['id', 'code', 'name', 'enabled', 'createdAt', 'updatedAt'],
+      attributes: groupModel.attributes,
     });
 
-    if (!group) boom.notFound('Group not found');
+    if (!group || (groupId && !groupId.includes(group.id))) {
+      throw boom.notFound('Group not found');
+    }
     return group;
   }
   async find({
@@ -124,63 +100,35 @@ class GroupsService {
       ...(parent === 'null' && {
         parentId: null,
       }),
-      ...(parent && parent !== 'null' && {
-        [Op.or]: [
-          {
-            '$parent.name$': {
-              [Op.like]: `%${parent}%`,
+      ...(parent &&
+        parent !== 'null' && {
+          [Op.or]: [
+            {
+              '$parent.name$': {
+                [Op.like]: `%${parent}%`,
+              },
             },
-          },
-          {
-            '$parent.code$': {
-              [Op.like]: `%${parent}%`,
+            {
+              '$parent.code$': {
+                [Op.like]: `%${parent}%`,
+              },
             },
-          },
-        ],
-      }),
+          ],
+        }),
     };
     const options = {
       ...(limit && { limit: Number(limit) }),
       offset: Number(offset),
       where,
       include: [
-        // manager
-        {
-          model: models.User,
-          as: 'manager',
-          ...(!manager && {
-            required: false,
-          }),
-          attributes: ['id', 'username'],
-          include: [
-            {
-              model: models.Customer,
-              as: 'profile',
-              attributes: [
-                'id',
-                'name',
-                'lastName',
-                'phone',
-                'cardId',
-                'createdAt',
-              ],
-            },
-          ],
-        },
-        // createdBy
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        // parent
+        ...groupModel.include,
         {
           model: models.Group,
           as: 'parent',
-          attributes: ['id', 'code', 'name'],
+          attributes: [...groupModel.attributes],
         },
       ],
-      attributes: ['id', 'code', 'name', 'enabled', 'createdAt'],
+      attributes: groupModel.attributes,
       order: [[sort, order]],
     };
 

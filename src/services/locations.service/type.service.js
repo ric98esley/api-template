@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
+const { locationTypeModel } = require('../../models');
 
 class TypesServices {
   constructor() {}
@@ -24,6 +25,8 @@ class TypesServices {
     };
     const { rows, count } = await models.LocationType.findAndCountAll({
       where,
+      attributes: locationTypeModel().attributes,
+      include: locationTypeModel().include,
     });
     return {
       total: count,
@@ -32,7 +35,10 @@ class TypesServices {
   }
 
   async findOne(id) {
-    const type = await models.LocationType.findByPk(id);
+    const type = await models.LocationType.findByPk(id, {
+      attributes: locationTypeModel.attributes,
+      include: locationTypeModel.include,
+    });
     if (!type) {
       throw boom.notFound('location type not found');
     }

@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
 const { Op, Sequelize, fn, literal } = require('sequelize');
+const { categoryModel } = require('../../models');
 
 class CategoryServices {
   constructor() {}
@@ -98,24 +99,13 @@ class CategoryServices {
         offset: Number(offset),
       }),
       where,
-      include: [
-        {
-          model: models.HardwareSpec,
-          as: 'customFields',
-          required: false,
-          through: {
-            attributes: [],
-          },
-          attributes: ['id', 'name', 'createdAt'],
-        },
-      ],
+      include: categoryModel.include,
       order: [[sort, order]],
       attributes: [
-        'id',
-        'name',
+        ...categoryModel.attributes,
         [
           literal(
-            `(SELECT count(*) 
+            `(SELECT count(*)
               FROM assets as assets
                 left join models on assets.model_id = models.id
                   where
@@ -124,9 +114,6 @@ class CategoryServices {
           ),
           'count',
         ],
-        'description',
-        'type',
-        'createdAt',
       ],
     };
 
@@ -142,18 +129,21 @@ class CategoryServices {
 
   async findOne(id) {
     const category = await models.Category.findByPk(id, {
-      include: [
-        {
-          model: models.HardwareSpec,
-          as: 'customFields',
-          through: {
-            attributes: [],
-          },
-        },
+      include: categoryModel.include,
+      attributes: [
+        ...categoryModel.attributes,
+        [
+          literal(
+            `(SELECT count(*)
+              FROM assets as assets
+                left join models on assets.model_id = models.id
+                  where
+                    category_id = Category.id and
+                    assets.deleted_at is null)`
+          ),
+          'count',
+        ],
       ],
-      attributes: {
-        exclude: ['createdById'],
-      },
     });
     if (!category) {
       throw boom.notFound('Category not found');
