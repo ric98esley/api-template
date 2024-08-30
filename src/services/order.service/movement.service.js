@@ -3,7 +3,12 @@ const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op, literal } = require('sequelize');
 const sequelize = require('../../libs/sequelize');
-const { assetModel, locationModel, createdByModel } = require('../../models');
+const {
+  assetModel,
+  locationModel,
+  createdByModel,
+  movementsModel,
+} = require('../../models');
 
 class MovementService {
   async find({
@@ -150,6 +155,9 @@ class MovementService {
           [Op.like]: `%${serial}%`,
         },
       }),
+      ...(orderType && {
+        '$order.type$': orderType,
+      }),
     };
 
     const options = {
@@ -162,43 +170,8 @@ class MovementService {
       offset: Number(offset),
       paranoid: false,
       where,
-      include: [
-        {
-          ...assetModel,
-          ...(paranoid != undefined && {
-            paranoid,
-          }),
-          required: true,
-        },
-        {
-          model: models.OrderRecord,
-          as: 'order',
-          attributes: ['id', 'type', 'description'],
-          where: {
-            ...(orderType && {
-              type: orderType,
-            }),
-          },
-        },
-        {
-          model: models.Location,
-          as: 'from',
-          required: false,
-          attributes: [...locationModel.attributes],
-          include: [...locationModel.include.map((x) => ({ ...x }))],
-        },
-        {
-          model: models.Location,
-          as: 'to',
-          required: false,
-          attributes: [...locationModel.attributes],
-          include: [...locationModel.include.map((x) => ({ ...x }))],
-        },
-        {
-          ...createdByModel,
-        },
-      ],
-      attributes: ['id', 'quantity', 'type', 'current', 'createdAt'],
+      include: movementsModel().include,
+      attributes: movementsModel().attributes,
     };
 
     const { rows, count } = await models.Movement.findAndCountAll(options);

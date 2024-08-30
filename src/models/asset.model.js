@@ -13,7 +13,7 @@ const assetModel = () => {
     include: [
       { ...createdBy, paranoid: false },
       { ...location, paranoid: false },
-      // { ...model, paranoid: false },
+      { ...model, paranoid: false },
     ],
     attributes: [
       'id',

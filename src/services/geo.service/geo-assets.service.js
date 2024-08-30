@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { models } = require('../../libs/sequelize');
+const geolocationModel = require('../../models/geo.model');
 
 const mapGeo = (data) => {
   return {
@@ -56,13 +57,8 @@ class GeoAssetServices {
     const { count, rows } = await models.GeoAsset.findAndCountAll({
       limit: Number(limit),
       offset: Number(offset),
-      include: [
-        {
-          model: models.Location,
-          as: 'location',
-          attributes: ['id', 'name', 'code'],
-        },
-      ],
+      include: geolocationModel().include,
+      attributes: geolocationModel().attributes,
       where,
       order: [[sort, order]],
     });

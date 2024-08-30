@@ -8,7 +8,12 @@ class ModelServices {
   constructor() {}
 
   async create(data) {
-    const newModel = await models.Model.create(data);
+    const newModel = await models.Model.create(data, 
+      {
+        include: modelModel().include,
+        attributes: modelModel().attributes,
+      }
+    );
     const model = this.findOne(newModel.id);
     return model;
   }
@@ -71,10 +76,10 @@ class ModelServices {
         offset: Number(offset),
       }),
       where,
-      include: modelModel.include,
+      include: modelModel().include,
       order: [[sort, order]],
       attributes: [
-        ...modelModel.attributes,
+        ...modelModel().attributes,
         [
           literal(
             `(SELECT count(*)

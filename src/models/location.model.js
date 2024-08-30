@@ -36,7 +36,6 @@ const locationModel = () => {
       {
         ...customer,
         paranoid: false,
-        requiere: false,
       },
       {
         ...zone,

@@ -3,7 +3,11 @@ const { Op } = require('sequelize');
 
 const sequelize = require('../../libs/sequelize');
 const { models } = require('../../libs/sequelize');
-const { assetModel, maintenanceModel, assetSpecModel } = require('../../models');
+const {
+  assetModel,
+  maintenanceModel,
+  assetSpecModel,
+} = require('../../models');
 class AssetsServices {
   constructor() {}
 
@@ -22,63 +26,41 @@ class AssetsServices {
     return { tag };
   }
 
-  async create({ assets, user }) {
+  async create({ asset, user }) {
     const createdById = user.sub;
-    const newAssets = await Promise.all(
-      assets.map(async (asset) => {
-        try {
-          let specifications = undefined;
-          if (asset.specifications) {
-            specifications = asset.specifications.map((specificaction) => ({
-              ...specificaction,
-              createdById,
-              updatedById: createdById,
-            }));
-          }
-
-          const toCreate = {
-            ...asset,
+    const newAsset = await models.Asset.create(
+      {
+        ...asset,
+        createdById,
+        updatedById: createdById,
+        countChecking: 1,
+        ...(asset.specifications && {
+          specifications: asset.specifications.map((specification) => ({
+            ...specification,
             createdById,
-            ...(specifications && {
-              specifications,
-            }),
-            countChecking: 1,
-          };
-
-          const newAsset = await models.Asset.create(toCreate, {
-            include: ['specifications'],
-          });
-
-          return newAsset;
-        } catch (error) {
-          console.log(error);
-          return asset;
-        }
-      })
+            updatedById: createdById,
+          })),
+        }),
+      },
+      {
+        include: ['specifications'],
+      }
     );
 
-    const createdAssets = newAssets.filter(
-      (asset) => asset.id !== null && asset.id !== undefined
-    );
-    const errorAssets = newAssets.filter(
-      (asset) => asset.id === null || asset.id === undefined
-    );
+    const res = await this.findOne({ id: newAsset.id });
 
-    return {
-      created: createdAssets,
-      errors: errorAssets,
-    };
+    return res;
   }
 
   async createBulk({ assets, user }) {
-    const createdById = user.sub;
-
     const assetSerial = assets.map((asset) => String(asset.serial).trim());
 
     const assetsFound = await models.Asset.findAll({
       where: {
         serial: assetSerial,
       },
+      attributes: assetModel().attributes,
+      include: assetModel().include,
       paranoid: false,
     });
 
@@ -97,29 +79,15 @@ class AssetsServices {
         })
         .filter((asset) => asset !== undefined) || [];
 
-    const data = assetToCreate.map((asset) => {
-      return {
-        ...asset,
-        createdById,
-        updatedById: createdById,
-        countChecking: 1,
-        ...(asset.specifications && {
-          specifications: asset.specifications.map((specification) => ({
-            ...specification,
-            createdById,
-            updatedById: createdById,
-          })),
-        }),
-      };
-    });
+    const data = []
 
-    const newAssets = await models.Asset.bulkCreate(data, {
-      include: ['specifications'],
-      ignoreDuplicates: true,
-    });
+    for(const asset of assetToCreate) {
+      const created = await this.create({ asset, user });
+      data.push(created);
+    }
 
     return {
-      created: newAssets,
+      created: data,
       errors: assetsFound,
     };
   }
@@ -142,8 +110,8 @@ class AssetsServices {
     };
     const options = {
       where,
-      include: assetModel.include,
-      attributes: assetModel.attributes,
+      include: assetModel().include,
+      attributes: assetModel().attributes,
       paranoid,
     };
     const Asset = await models.Asset.findOne(options);
@@ -167,8 +135,8 @@ class AssetsServices {
           '$location.type.status$': status,
         }),
       },
-      include: assetModel.include,
-      attributes: assetModel.attributes,
+      include: assetModel().include,
+      attributes: assetModel().attributes,
       paranoid,
     };
     const asset = await models.Asset.findOne(options);
@@ -288,7 +256,7 @@ class AssetsServices {
       }),
       include: assetModel().include,
       attributes: assetModel().attributes,
-      // where,
+      where,
       order: [
         [...sort, order],
         ['serial', 'DESC'],
@@ -296,7 +264,6 @@ class AssetsServices {
       distinct: true,
     };
 
-    console.log(options.include);
     const { count, rows } = await models.Asset.findAndCountAll(options);
     return {
       total: count,
@@ -457,8 +424,8 @@ class AssetsServices {
         where: {
           assetId: id,
         },
-        include: assetSpecModel.include,
-        attributes: assetSpecModel.attributes,
+        include: assetSpecModel().include,
+        attributes: assetSpecModel().attributes,
       });
 
       return {
@@ -473,9 +440,9 @@ class AssetsServices {
       where: {
         assetId: id,
       },
-      include: maintenanceModel.include,
+      include: maintenanceModel().include,
       order: [['createdAt', 'DESC']],
-      attributes: maintenanceModel.attributes,
+      attributes: maintenanceModel().attributes,
     });
 
     return {

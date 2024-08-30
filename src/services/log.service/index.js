@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { models } = require('../../libs/sequelize');
+const { createdByModel, assetModel } = require('../../models');
 
 class LogService {
   async create({ type, table, targetId, details, ip, createdById }) {
@@ -22,11 +23,7 @@ class LogService {
   }
   async find({ table, type, targetId }) {
     const include = [
-      {
-        model: models.User,
-        as: 'createdBy',
-        attributes: ['id', 'username'],
-      },
+      createdByModel()
     ];
 
     const where = {
@@ -40,10 +37,7 @@ class LogService {
     };
 
     if (table == 'asset') {
-      include.push({
-        model: models.Asset,
-        as: 'asset',
-      });
+      include.push(assetModel());
     }
 
     const { rows, count } = await models.Log.findAndCountAll({

@@ -8,6 +8,7 @@ const locationModel = require("./location.model");
 const locationTypeModel = require("./location_type.model");
 const maintenanceModel = require("./maintenances.model");
 const modelModel = require("./model.model");
+const movementsModel = require("./movements.model");
 const userModel = require("./user.model");
 const zoneModel = require("./zone.model");
 
@@ -23,5 +24,6 @@ module.exports = {
   groupModel,
   zoneModel,
   locationTypeModel,
-  userModel
+  userModel,
+  movementsModel,
 }

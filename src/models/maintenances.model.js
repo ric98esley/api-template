@@ -5,13 +5,13 @@ const createdByModel = require('./created_by.model');
 
 const maintenanceModel = () => ({
   include: [
-    { ...createdByModel },
+    { ...createdByModel() },
     {
       model: models.MaintenanceType,
       as: 'maintenanceType',
       attributes: ['id', 'name'],
     },
-    { ...assetModel },
+    { ...assetModel(), paranoid: false },
   ],
   attributes: ['id', 'description', 'createdAt', 'updatedAt', 'deletedAt'],
 });
