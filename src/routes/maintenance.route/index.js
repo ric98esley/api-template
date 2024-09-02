@@ -42,7 +42,7 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  validatorHandler(updateMaintenanceSchema, 'body'),
+  validatorHandler(createMaintenanceSchema, 'body'),
   checkAuth({ route: SCOPE.MAINTENANCES, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
@@ -80,18 +80,13 @@ router.patch(
       const { id } = req.params;
       const changes = req.body;
 
-      const maintenance = await maintenanceService.getById(id);
+      const maintenance = await maintenanceService.getById(id, req.groupId);
 
-      if (!maintenance) {
-        return res.status(404).json({ message: 'Mantenimiento no encontrado' });
-      }
-
-      if (maintenance.createdById !== req.user.sub) {
-        return res
-          .status(403)
-          .json({
-            message: 'No tienes permisos para actualizar este mantenimiento',
-          });
+      if (maintenance.createdBy.id !== req.user.sub) {
+        return res.status(403).json({
+          message:
+            'No tienes permisos para actualizar este mantenimiento, solo el usuario que lo creo puede actualizarlo',
+        });
       }
 
       const updateMaintenance = await maintenanceService.update(id, changes);

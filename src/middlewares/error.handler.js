@@ -4,7 +4,7 @@ const { ValidationError, ForeignKeyConstraintError } = require('sequelize');
 
 function logErrors(err, req, res, next) {
   console.error('log errors'.red);
-  console.error(err.red);
+  console.error(err);
   next(err);
 }
 
@@ -12,7 +12,7 @@ function errorHandler(err, req, res, next) {
   console.error('error handler'.red);
   console.log(err);
   res.status(500).json({
-    message: err.message,
+    message: 'Ha ocurrido un error no controlado, por favor intente más tarde',
   });
 }
 
@@ -30,9 +30,8 @@ function boomErrorHandler(err, req, res, next) {
 function handleSQLError(err, req, res, next) {
   if (err instanceof ValidationError) {
     console.error('SQL error handler'.red);
-    throw boom.conflict(`${err.errors[0].message}: ${err.errors[0].value}`, {
-      path: err.errors[0].path,
-    });
+    console.log(err);
+    throw boom.conflict('Ha ocurrido un error interno, por favor intente más tarde, si el problema persiste contacte al administrador del sistema');
   } else {
     next(err);
   }
@@ -41,7 +40,8 @@ function handleSQLError(err, req, res, next) {
 function handleFKError(err, req, res, next) {
   if (err instanceof ForeignKeyConstraintError) {
     console.error('FK error handler'.red);
-    throw boom.conflict(err);
+    console.log(err);
+    throw boom.conflict('Ha ocurrido un error interno, por favor intente más tarde, si el problema persiste contacte al administrador del sistema');
   } else {
     next(err);
   }

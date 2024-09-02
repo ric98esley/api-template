@@ -3,18 +3,19 @@ const createdByModel = require('./created_by.model');
 const locationModel = require('./location.model');
 const modelModel = require('./model.model');
 
-const assetModel = () => {
-  const createdBy = createdByModel();
-  const location = locationModel();
-  const model = modelModel();
+const assetModel = (showLocation = true) => {
+  const include = [
+    { ...createdByModel(), paranoid: false },
+    { ...modelModel(), paranoid: false },
+  ];
+
+  if (showLocation) {
+    include.push({ ...locationModel(), paranoid: false });
+  }
   return {
     model: models.Asset,
     as: 'asset',
-    include: [
-      { ...createdBy, paranoid: false },
-      { ...location, paranoid: false },
-      { ...model, paranoid: false },
-    ],
+    include,
     attributes: [
       'id',
       'serial',

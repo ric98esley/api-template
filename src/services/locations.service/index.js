@@ -203,8 +203,8 @@ class LocationsServices {
       where,
       limit: Number(limit),
       offset: Number(offset),
-      include: locationModel.include,
-      attributes: locationModel.attributes,
+      include: locationModel().include,
+      attributes: locationModel().attributes,
       order: [[sort, order]],
     };
     const { count, rows } = await models.Location.findAndCountAll(options);

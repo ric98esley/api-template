@@ -1,16 +1,11 @@
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { Op, Sequelize, fn, literal } = require('sequelize');
+const { Op, literal } = require('sequelize');
 const { categoryModel } = require('../../models');
 
 class CategoryServices {
   constructor() {}
-
-  userId(user) {
-    return user.sub;
-  }
-
   async create({ data, user }) {
     const { name, customFields, type, description } = data;
 
@@ -18,7 +13,7 @@ class CategoryServices {
       name,
       type,
       description,
-      createdById: this.userId(user),
+      createdById: user.sub,
     };
 
     const newCategory = await models.Category.create(toCreate);
@@ -35,7 +30,7 @@ class CategoryServices {
       });
     }
 
-    return newCategory;
+    return this.findOne(newCategory.id);
   }
 
   async createMany(items) {
@@ -99,10 +94,10 @@ class CategoryServices {
         offset: Number(offset),
       }),
       where,
-      include: categoryModel.include,
+      include: categoryModel().include,
       order: [[sort, order]],
       attributes: [
-        ...categoryModel.attributes,
+        ...categoryModel().attributes,
         [
           literal(
             `(SELECT count(*)
@@ -129,9 +124,9 @@ class CategoryServices {
 
   async findOne(id) {
     const category = await models.Category.findByPk(id, {
-      include: categoryModel.include,
+      include: categoryModel().include,
       attributes: [
-        ...categoryModel.attributes,
+        ...categoryModel().attributes,
         [
           literal(
             `(SELECT count(*)

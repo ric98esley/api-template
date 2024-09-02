@@ -1,5 +1,7 @@
 const { Op } = require('sequelize');
+const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
+const { maintenanceModel } = require('../../models');
 
 class MaintenanceService {
   async create({ cost, description, assetId, maintenanceTypeId, createdById }) {
@@ -10,7 +12,7 @@ class MaintenanceService {
       maintenanceTypeId: maintenanceTypeId,
       createdById,
     });
-    return maintenance;
+    return await this.getById(maintenance.id);
   }
 
   async find({
@@ -23,15 +25,16 @@ class MaintenanceService {
     type,
     createdBy,
     startDate,
+    groupId,
     endDate,
     limit = 10,
     offset = 0,
   }) {
-    if(!isNaN(startDate)) {
+    if (!isNaN(startDate)) {
       startDate = Number(startDate);
     }
 
-    if(!isNaN(endDate)) {
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
     const where = {};
@@ -78,6 +81,10 @@ class MaintenanceService {
       };
     }
 
+    if (groupId) {
+      where['$asset.location.group_id$'] = groupId;
+    }
+
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
       endDate = Number(endDate);
@@ -85,125 +92,58 @@ class MaintenanceService {
 
     if (startDate) {
       where.createdAt = {
-      [Op.gte]: new Date(startDate).toISOString()
+        [Op.gte]: new Date(startDate).toISOString(),
       };
     }
 
     if (endDate) {
       where.createdAt = {
-      ...where.createdAt,
-      [Op.lte]: new Date(endDate).toISOString()
+        ...where.createdAt,
+        [Op.lte]: new Date(endDate).toISOString(),
       };
     }
 
-    const include = [
-      {
-        model: models.User,
-        as: 'createdBy',
-        attributes: ['id', 'username'],
-      },
-      {
-        model: models.MaintenanceType,
-        as: 'maintenanceType',
-        attributes: ['id', 'name'],
-      },
-      {
-        model: models.Asset,
-        as: 'asset',
-        paranoid: false,
-        include: [
-          {
-            model: models.Model,
-            as: 'model',
-            required: true,
-            paranoid: false,
-            include: [
-              {
-                model: models.Category,
-                as: 'category',
-                required: true,
-                paranoid: false,
-                attributes: ['id', 'name'],
-              },
-              {
-                model: models.Brand,
-                as: 'brand',
-                required: true,
-                paranoid: false,
-                attributes: ['id', 'name'],
-              },
-            ],
-            attributes: ['id', 'name'],
-          },
-        ],
-        attributes: ['id', 'serial'],
-      },
-    ];
-
     const { rows, count } = await models.Maintenance.findAndCountAll({
       where,
-      include,
+      include: maintenanceModel().include,
       limit: Number(limit),
       offset: Number(offset),
-      attributes: ['id', 'description', 'cost', 'createdAt'],
+      attributes: maintenanceModel().attributes,
       order: [['createdAt', 'DESC']],
     });
 
-    return { total: count, rows };
+    return {
+      total: count,
+      rows: rows.map((row) => {
+        delete row.dataValues.asset.dataValues.location;
+        return row;
+      }),
+    };
   }
 
-  async getById(id) {
+  async getById(id, groupId) {
+    console.log('id', id);
     const maintenance = await models.Maintenance.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Asset,
-          as: 'asset',
-          include: [
-            {
-              model: models.Model,
-              as: 'model',
-              required: true,
-              paranoid: false,
-              include: [
-                {
-                  model: models.Category,
-                  as: 'category',
-                  required: true,
-                  paranoid: false,
-                  attributes: ['id', 'name'],
-                },
-                {
-                  model: models.Brand,
-                  as: 'brand',
-                  required: true,
-                  paranoid: false,
-                  attributes: ['id', 'name'],
-                },
-              ],
-              attributes: ['id', 'name'],
-            },
-          ],
-          attributes: ['id', 'serial'],
-        },
-      ],
+      include: maintenanceModel().include,
+      attributes: maintenanceModel().attributes,
+      where: {
+        ...(groupId && {
+          '$asset.location.group_id$': 1,
+        }),
+      },
     });
+
+    if (!maintenance) {
+      throw boom.conflict('Maintenance not found');
+    }
     return maintenance;
   }
 
   async update(id, changes) {
     const maintenance = await this.getById(id);
-    if (!maintenance) {
-      return null;
-    }
     await maintenance.update(changes);
     return maintenance;
   }
-
 }
 
 module.exports = MaintenanceService;

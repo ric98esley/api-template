@@ -1,5 +1,9 @@
 const { Op } = require('sequelize');
+const boom = require('@hapi/boom');
+
 const { models } = require('../../libs/sequelize');
+const { createdByModel } = require('../../models');
+const maintenanceTypeModel = require('../../models/maintenances_type.model');
 
 class MaintenanceTypeService {
   async create({ name, description, createdById }) {
@@ -8,7 +12,8 @@ class MaintenanceTypeService {
       description,
       createdById,
     });
-    return maintenanceType;
+
+    return await this.getById({ id: maintenanceType.id });
   }
 
   async find({ name, description, limit = 10, offset = 0 }) {
@@ -21,18 +26,12 @@ class MaintenanceTypeService {
       where.description = { [Op.like]: `%${description}%` };
     }
 
-    const include = [
-      {
-        model: models.User,
-        as: 'createdBy',
-        attributes: ['id', 'username'],
-      },
-    ];
+    const include = [createdByModel()];
 
     const options = {
       where,
       include,
-      attributes: ['id', 'name', 'description'],
+      attributes: maintenanceTypeModel().attributes,
       order: [['id', 'DESC']],
       limit: Number(limit),
       offset: Number(offset),
@@ -49,23 +48,19 @@ class MaintenanceTypeService {
 
   async getById({ id }) {
     const maintenanceType = await models.MaintenanceType.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-      ],
+      include: [createdByModel()],
+      attributes: maintenanceTypeModel().attributes,
+      paranoid: false,
     });
+
+    if (!maintenanceType) {
+      throw boom.conflict('Maintenance Type not found');
+    }
     return maintenanceType;
   }
 
   async update(id, changes) {
     const maintenanceType = await this.getById({ id });
-
-    if (!maintenanceType) {
-      throw new Error('Maintenance Type not found');
-    }
 
     await maintenanceType.update(changes);
 
@@ -74,9 +69,7 @@ class MaintenanceTypeService {
 
   async delete({ id }) {
     const type = await this.getById({ id });
-    if (!type) {
-      throw new Error('Maintenance Type not found');
-    }
+
     await type.destroy();
     return type;
   }
