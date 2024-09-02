@@ -10,7 +10,7 @@ const assetSpecModel = () => ({
       attributes: ['id', 'name'],
     },
   ],
-  attributes: ['id', 'value', 'typeId', 'createdAt'],
+  attributes: ['id', 'value', 'createdAt'],
 });
 
 module.exports = assetSpecModel;

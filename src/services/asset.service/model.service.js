@@ -14,8 +14,7 @@ class ModelServices {
         attributes: modelModel().attributes,
       }
     );
-    const model = this.findOne(newModel.id);
-    return model;
+    return await this.findOne(newModel.id);
   }
 
   async createMany(items) {
@@ -102,9 +101,9 @@ class ModelServices {
 
   async findOne(id) {
     const model = await models.Model.findByPk(id, {
-      include: modelModel.include,
+      include: modelModel().include,
       attributes: [
-        ...modelModel.attributes,
+        ...modelModel().attributes,
         [
           literal(
             `(SELECT count(*)
@@ -116,6 +115,7 @@ class ModelServices {
           'count',
         ],
       ],
+
     });
     if (!model) {
       throw boom.notFound('Model not found');
@@ -127,7 +127,7 @@ class ModelServices {
     const model = await this.findOne(id);
 
     const rta = await model.update(changes);
-    return rta;
+    return await this.findOne(id);
   }
 
   async delete({ id }) {

@@ -62,12 +62,18 @@ async function getUser(userId) {
   }
 }
 
+const checkGroupPermission = (groupId, permittedGroups) => {
+  const isIn = permittedGroups.includes(Number(groupId));
+  if (!isIn)
+    throw boom.badRequest('No tienes permisos para acceder a este grupo');
+};
+
 function checkAuth({ route, crud }) {
   return async (req, res, next) => {
     try {
       const user = req.user;
-      // if (user.role == 'superuser') return next();
 
+      // Obtener rol del usuario
       const role = await models.Role.findOne({
         where: { name: user.role },
       });
@@ -76,50 +82,40 @@ function checkAuth({ route, crud }) {
         throw boom.forbidden('No tienes permisos para acceder a esta ruta');
 
       const routeAbilities = role.ability[route];
-
-      console.log(routeAbilities[crud]);
-
-      if(!routeAbilities) throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+      if (!routeAbilities)
+        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
 
       const ability = routeAbilities[crud];
+      if (!ability || ability === 'none') {
+        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+      }
 
-      if (ability == 'any') {
-        // TODO: Mejorar este any
+      // Manejo de permisos basado en habilidad
+      let groupId;
+      if (ability === 'any') {
         const parentGroup = await sequelize.models.Group.findOne({
           where: { parentId: null },
         });
-        const groupId = await getGroups(parentGroup.id, next);
-        if (req.query.groupId) {
-          const isIn = groupId.includes(Number(req.query.groupId));
-          if (!isIn) {
-            throw boom.badRequest('No tienes permisos para acceder este grupo');
-          }
-        } else {
-          req.query.groupId = groupId;
-        }
+        groupId = await getGroups(parentGroup.id, next);
       }
-      if (ability == 'group') {
-        const groupId = await getGroups(user.groupId, next);
-        if (req.query.groupId) {
-          const isIn = groupId.includes(Number(req.query.groupId));
-          if (!isIn) {
-            throw boom.badRequest('No tienes permisos para acceder este grupo');
-          }
-        } else {
-          req.query.groupId = groupId;
-        }
+      if (ability === 'group') {
+        groupId = await getGroups(user.groupId, next);
       }
-      if (ability == 'own') {
-        const groupId = [user.groupId];
-        req.query.groupId = groupId;
+      if (ability === 'own') {
+        groupId = [user.groupId];
       }
 
-      if (ability == 'none') {
-        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
+      // Verificación de grupo en query o body
+      if (ability !== 'none') {
+        const groupIdQueryOrBody = req.query.groupId || req.body.groupId;
+        if (groupIdQueryOrBody) {
+          checkGroupPermission(groupIdQueryOrBody, groupId);
+        } else {
+          req.query.groupId = groupId;
+          req.groupId = groupId;
+        }
       }
 
-      if (!ability)
-        throw boom.forbidden('No tienes permisos para acceder a esta ruta');
       next();
     } catch (error) {
       return next(error);

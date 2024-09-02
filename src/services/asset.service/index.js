@@ -1,13 +1,13 @@
 const boom = require('@hapi/boom');
 const { Op } = require('sequelize');
 
-const sequelize = require('../../libs/sequelize');
 const { models } = require('../../libs/sequelize');
 const {
   assetModel,
   maintenanceModel,
   assetSpecModel,
 } = require('../../models');
+const { re } = require('mathjs');
 class AssetsServices {
   constructor() {}
 
@@ -52,43 +52,63 @@ class AssetsServices {
     return res;
   }
 
-  async createBulk({ assets, user }) {
-    const assetSerial = assets.map((asset) => String(asset.serial).trim());
+  async createBulk({ assets, user, groupId }) {
+    const data = [];
+    const assetsDisabled = [];
 
-    const assetsFound = await models.Asset.findAll({
+    const assetSerials = assets.map((asset) =>
+      String(asset.serial).trim().toUpperCase()
+    );
+
+    const foundAssets = await models.Asset.findAll({
       where: {
-        serial: assetSerial,
+        serial: assetSerials,
       },
-      attributes: assetModel().attributes,
-      include: assetModel().include,
       paranoid: false,
     });
 
-    const assetToCreate =
-      assets
-        .map((asset) => {
-          const found = assetsFound.find(
-            (assetFound) =>
-              assetFound.dataValues.serial ==
-              String(asset.serial).toUpperCase().trim()
-          );
+    // Filtrar activos que no existen en la base de datos
+    const foundSerials =
+      new Set(foundAssets.map((asset) => asset.serial)) || [];
 
-          if (!found) {
-            return asset;
-          }
-        })
-        .filter((asset) => asset !== undefined) || [];
+    const assetsToCreate =
+      assets.filter(
+        (asset) => !foundSerials.has(String(asset.serial).trim().toUpperCase())
+      ) || [];
 
-    const data = []
+    // Obtener todas las ubicaciones de una sola vez
+    const locations = await models.Location.findAll({
+      where: {
+        id: [...new Set(assetsToCreate.map((asset) => asset.locationId))],
+        ...(groupId && { groupId }),
+      },
+    });
 
-    for(const asset of assetToCreate) {
-      const created = await this.create({ asset, user });
-      data.push(created);
-    }
+    const validLocationIds = new Set(locations.map((location) => location.id));
+
+    const createPromises = assetsToCreate.map(async (asset) => {
+      if (validLocationIds.has(asset.locationId)) {
+        const created = await this.create({ asset, user });
+        data.push(created);
+      } else {
+        assetsDisabled.push({
+          serial: asset.serial,
+          message: 'No puede crear activos en esta ubicación',
+        });
+      }
+    });
+
+    await Promise.all(createPromises);
 
     return {
       created: data,
-      errors: assetsFound,
+      errors: [
+        ...foundAssets.map((asset) => ({
+          serial: asset.serial,
+          message: 'Activo ya existe',
+        })),
+        ...assetsDisabled,
+      ],
     };
   }
 
@@ -403,12 +423,12 @@ class AssetsServices {
     };
   }
 
-  async update(id, changes, transaction) {
-    const Asset = await this.findOne({ id });
+  async update(id, changes, groupId) {
+    const asset = await this.findOne({ id, groupId });
 
-    const rta = await Asset.update(changes, { transaction });
+    await asset.update(changes);
 
-    return rta;
+    return await this.findOne({ id });
   }
 
   async getSpecifications({ id, groupId }) {
@@ -451,76 +471,48 @@ class AssetsServices {
     };
   }
 
-  async updateSpecification({ id, changes, groupId, userId }) {
-    const asset = await this.findOne({
-      id,
-      groupId,
-      enabled: true,
-      paranoid: false,
+  async getSpecification({ assetId, typeId }) {
+    return await models.AssetSpec.findOne({
+      where: {
+        assetId: assetId,
+        typeId,
+      },
+      include: assetSpecModel().include,
+      attributes: assetSpecModel().attributes,
+    });
+  }
+
+  async updateSpecification({ id, changes, userId }) {
+    let spec = await this.getSpecification({
+      assetId: id,
+      typeId: changes.typeId,
     });
 
-    if (asset) {
-      let spec = await models.AssetSpec.findOne({
-        where: {
-          assetId: Number(id),
-          typeId: Number(changes.typeId),
-        },
+    if (spec) {
+      await spec.update({ ...changes, updatedById: userId });
+    } else {
+      spec = await models.AssetSpec.create({
+        ...changes,
+        assetId: id,
+        createdById: userId,
       });
-
-      if (spec) {
-        await spec.update({ ...changes, updatedById: userId });
-      } else {
-        spec = await models.AssetSpec.create({
-          ...changes,
-          assetId: id,
-          createdById: userId,
-        });
-      }
-      return spec;
     }
+
+    return await this.getSpecification({ assetId: id, typeId: changes.typeId });
   }
 
-  async removeSpecification({ id, typeId, groupId }) {
-    const asset = await this.findOne({ id, groupId, paranoid: false });
+  async removeSpecification({ id, typeId }) {
+    const spec = await this.getSpecification({ assetId: id, typeId });
 
-    if (asset) {
-      const spec = await models.AssetSpec.findOne({
-        where: {
-          assetId: Number(id),
-          typeId: Number(typeId),
-        },
-      });
-      if (spec) {
-        await spec.destroy({ force: true });
-      }
-      return spec;
+    if (!spec) {
+      throw boom.notFound('Especificación no encontrada');
     }
+    await spec.destroy({ force: true });
+    return spec;
   }
 
-  async updateBulk({ targets, userId }) {
-    const transaction = await sequelize.transaction();
-
-    try {
-      const assetsUpdated = await Promise.all(
-        targets.map(async (target) => {
-          const { id, ...updateFields } = target;
-          updateFields.updatedById = userId;
-          const asset = await this.update(id, updateFields, transaction);
-
-          return asset;
-        })
-      );
-
-      await transaction.commit();
-      return assetsUpdated;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
-
-  async delete({ id, deletedById }) {
-    const asset = await this.findOne({ id, enabled: true });
+  async delete({ id, deletedById, groupId }) {
+    const asset = await this.findOne({ id, groupId, enabled: true });
 
     await asset.update({
       deletedById,

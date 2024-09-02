@@ -64,9 +64,11 @@ router.get(
   async (req, res, next) => {
     const toSearch = req.query;
     toSearch.type = 'asset';
-
     try {
-      const assets = await service.find(toSearch);
+      const assets = await service.find({
+        ...toSearch,
+        groupId: req.groupId,
+      });
       res.json(assets);
     } catch (error) {
       next(error);
@@ -119,7 +121,7 @@ router.get(
   '/tag',
   passport.authenticate('jwt', { session: false }),
   checkUser(),
-  checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
+  checkAuth({ route: SCOPE.ASSETS, crud: ACTIONS.CREATE }),
   async (req, res, next) => {
     try {
       const tag = await service.getTag('gana');
@@ -138,7 +140,7 @@ router.get(
   checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
   async (req, res, next) => {
     try {
-      const { groupId } = req.query;
+      const { groupId } = req;
       const { id } = req.params;
       const asset = await service.findOne({
         id,
@@ -162,6 +164,13 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+
+      await service.findOne({
+        id,
+        groupId: req.groupId,
+        paranoid: false,
+      });
+
       const logs = await logService.find({
         table: 'assets',
         targetId: id,
@@ -173,6 +182,7 @@ router.get(
     }
   }
 );
+
 router.get(
   '/:id/geo',
   passport.authenticate('jwt', { session: false }),
@@ -182,13 +192,13 @@ router.get(
   checkAuth({ route: SCOPE.ASSETS, crud: 'read' }),
   async (req, res, next) => {
     try {
-      const { groupId, ...query } = req.query;
+      const { query } = req.query;
       const { id } = req.params;
       const asset = await service.findOne({
         id,
         paranoid: false,
         type: 'asset',
-        groupId,
+        groupId: req.groupId,
       });
       const geo = await geoService.find({
         ...query,
@@ -210,9 +220,15 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+      await service.findOne({
+        id,
+        groupId: req.groupId,
+        paranoid: false,
+      });
+
       const specs = await service.getSpecifications({
         id,
-        groupId: req.query.groupId,
+        groupId: req.groupId,
       });
       res.json(specs);
     } catch (error) {
@@ -230,10 +246,10 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+
       await service.findOne({
         id,
-        groupId: req.query.groupId,
-        enabled: true,
+        groupId: req.groupId,
         paranoid: false,
       });
 
@@ -261,7 +277,11 @@ router.post(
 
       const targets = [];
 
-      const newAssets = await service.createBulk({ assets, user });
+      const newAssets = await service.createBulk({
+        assets,
+        user,
+        groupId: req.groupId,
+      });
 
       for (const asset of newAssets.created) {
         const details = {
@@ -293,7 +313,7 @@ router.post(
         createdById: user.sub,
       };
 
-      const order = await orderService.createAssignments(data);
+      await orderService.createAssignments(data);
 
       res.status(201).json(newAssets);
     } catch (error) {
@@ -373,7 +393,7 @@ router.patch(
       const body = req.body;
       const user = req.user;
       body.updatedById = user.sub;
-      const asset = await service.update(id, body);
+      const asset = await service.update(id, body, req.query.groupId);
 
       const details = {
         message: `Se ha modificado el activo ${asset.dataValues.serial}`,
@@ -407,10 +427,16 @@ router.patch(
       const body = req.body;
       const user = req.user;
       body.updatedById = user.sub;
+
+      await service.findOne({
+        id,
+        groupId: req.groupId,
+        paranoid: false,
+      });
+
       const spec = await service.updateSpecification({
         id,
         changes: body,
-        groupId: req.query.groupId,
         userId: user.sub,
       });
 
@@ -483,11 +509,16 @@ router.delete(
       const { message } = req.body;
       const user = req.user;
 
-      const asset = await service.delete({ id, deletedById: user.sub });
+      const asset = await service.delete({
+        id,
+        deletedById: user.sub,
+        groupId: req.groupId,
+      });
 
       const details = {
         message: `Se ha ocultado el activo ${asset.dataValues.serial} motivado a ${message}`,
       };
+
       await logService.create({
         type: ACTIONS.DELETE,
         table: 'assets',
@@ -518,10 +549,15 @@ router.delete(
       const { id } = req.params;
       const user = req.user;
 
+      await service.findOne({
+        id,
+        groupId: req.groupId,
+        paranoid: false,
+      });
+
       const spec = await service.removeSpecification({
         id,
-        typeId: req.query.typeId,
-        groupId: req.query.groupId,
+        typeId: req.body.typeId,
       });
 
       const details = {
@@ -542,7 +578,6 @@ router.delete(
         target: spec,
       });
     } catch (error) {
-      console.log(error);
       next(error);
     }
   }

@@ -20,7 +20,7 @@ function boomErrorHandler(err, req, res, next) {
   if (err.isBoom) {
     console.error('Boom error handler'.red);
     const { output } = err;
-    output.payload.data = err.data
+    output.payload.data = err.data;
     res.status(output.statusCode).json(output.payload);
   } else {
     next(err);
@@ -30,8 +30,15 @@ function boomErrorHandler(err, req, res, next) {
 function handleSQLError(err, req, res, next) {
   if (err instanceof ValidationError) {
     console.error('SQL error handler'.red);
-    console.log(err);
-    throw boom.conflict('Ha ocurrido un error interno, por favor intente más tarde, si el problema persiste contacte al administrador del sistema');
+    console.error(err);
+    if (err.original.code === 'ER_DUP_ENTRY') {
+      const fields = err.errors.map((error) => error.value);
+      throw boom.conflict('El registro ya existe en la base de datos: ' + fields.join(', '));
+    }
+
+    throw boom.conflict(
+      'Ha ocurrido un error interno, por favor intente más tarde, si el problema persiste contacte al administrador del sistema'
+    );
   } else {
     next(err);
   }
@@ -40,8 +47,10 @@ function handleSQLError(err, req, res, next) {
 function handleFKError(err, req, res, next) {
   if (err instanceof ForeignKeyConstraintError) {
     console.error('FK error handler'.red);
-    console.log(err);
-    throw boom.conflict('Ha ocurrido un error interno, por favor intente más tarde, si el problema persiste contacte al administrador del sistema');
+    console.error(err);
+    throw boom.conflict(
+      'Por favor verifique que los datos relacionados existan o que no estén siendo referenciados por otro registro'
+    );
   } else {
     next(err);
   }
