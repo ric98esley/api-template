@@ -126,8 +126,6 @@ function checkAuth({ route, crud }) {
 function checkRefreshToken() {
   return async (req, res, next) => {
     try {
-      console.log(req.headers);
-
       const refreshToken = req.headers['authorization'].split(' ')[1];
 
       const session = await models.Session.findOne({

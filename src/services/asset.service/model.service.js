@@ -8,12 +8,10 @@ class ModelServices {
   constructor() {}
 
   async create(data) {
-    const newModel = await models.Model.create(data, 
-      {
-        include: modelModel().include,
-        attributes: modelModel().attributes,
-      }
-    );
+    const newModel = await models.Model.create(data, {
+      include: modelModel().include,
+      attributes: modelModel().attributes,
+    });
     return await this.findOne(newModel.id);
   }
 
@@ -41,9 +39,11 @@ class ModelServices {
     brandId,
     limit,
     offset,
+    paranoid,
     sort = 'createdAt',
     order = 'DESC',
   }) {
+    console.log(paranoid === 'true');
     const where = {
       ...(categoryId && {
         categoryId: Number(categoryId),
@@ -75,6 +75,7 @@ class ModelServices {
         offset: Number(offset),
       }),
       where,
+      paranoid: paranoid == undefined ? true : paranoid === 'true',
       include: modelModel().include,
       order: [[sort, order]],
       attributes: [
@@ -99,8 +100,9 @@ class ModelServices {
     };
   }
 
-  async findOne(id) {
+  async findOne(id, paranoid = true) {
     const model = await models.Model.findByPk(id, {
+      paranoid,
       include: modelModel().include,
       attributes: [
         ...modelModel().attributes,
@@ -115,7 +117,6 @@ class ModelServices {
           'count',
         ],
       ],
-
     });
     if (!model) {
       throw boom.notFound('Model not found');
@@ -128,6 +129,12 @@ class ModelServices {
 
     const rta = await model.update(changes);
     return await this.findOne(id);
+  }
+
+  async restore(id) {
+    const model = await this.findOne(id, false);
+    const rta = await model.restore();
+    return rta;
   }
 
   async delete({ id }) {

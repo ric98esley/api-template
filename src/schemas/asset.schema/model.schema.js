@@ -2,6 +2,7 @@ const Joi = require("joi");
 
 const id = Joi.number().integer();
 const name = Joi.string();
+const paranoid = Joi.boolean();
 const limit = Joi.number().integer().greater(0);
 const offset = Joi.number().integer().greater(-1);
 
@@ -26,6 +27,7 @@ const searchModel = Joi.object({
     name,
     category: name,
     brand: name,
+    paranoid,
     categoryId: id,
     brandId: id,
     limit,

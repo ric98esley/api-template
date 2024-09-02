@@ -155,6 +155,36 @@ router.patch(
   }
 );
 
+router.patch(
+  '/:id/restore',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getAssetModel, 'params'),
+  checkAuth({ route: 'models', crud: ACTIONS.UPDATE }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+      const model = await service.restore(id);
+
+      const details = {
+        message: `Se ha restaurado el modelo ${model.dataValues.name}`,
+      };
+      await logService.create({
+        type: ACTIONS.UPDATE,
+        table: 'models',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+      res.json(model);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
