@@ -3,6 +3,7 @@ const boom = require('@hapi/boom');
 const { models } = require('../../libs/sequelize');
 const { Op, literal } = require('sequelize');
 const { categoryModel } = require('../../models');
+const { i } = require('mathjs');
 
 class CategoryServices {
   constructor() {}
@@ -17,18 +18,6 @@ class CategoryServices {
     };
 
     const newCategory = await models.Category.create(toCreate);
-
-    if (customFields) {
-      const newFields = customFields.map((field) => {
-        return {
-          ...field,
-          categoryId: newCategory.id,
-        };
-      });
-      await this.createFields({
-        customFields: newFields,
-      });
-    }
 
     return this.findOne(newCategory.id);
   }
@@ -47,6 +36,7 @@ class CategoryServices {
     name,
     type,
     description,
+    paranoid,
     limit,
     offset,
     sort = 'createdAt',
@@ -86,6 +76,10 @@ class CategoryServices {
         },
       }),
     };
+
+    if (paranoid === 'false') paranoid = false;
+    if (paranoid === 'true') paranoid = true;
+    if (paranoid === undefined) paranoid = true;
     const options = {
       ...(limit && {
         limit: Number(limit),
@@ -94,6 +88,7 @@ class CategoryServices {
         offset: Number(offset),
       }),
       where,
+      paranoid,
       include: categoryModel().include,
       order: [[sort, order]],
       attributes: [
@@ -122,9 +117,10 @@ class CategoryServices {
     };
   }
 
-  async findOne(id) {
+  async findOne(id, paranoid = true) {
     const category = await models.Category.findByPk(id, {
       include: categoryModel().include,
+      paranoid,
       attributes: [
         ...categoryModel().attributes,
         [
@@ -147,7 +143,7 @@ class CategoryServices {
   }
 
   async update({ id, data }) {
-    const { name, customFields, removeFields, type, description } = data;
+    const { name, type, description } = data;
 
     const toChange = {
       ...(name && {
@@ -161,32 +157,11 @@ class CategoryServices {
       }),
     };
 
-    if (customFields) {
-      const fields = customFields.map((field) => {
-        return {
-          ...field,
-          categoryId: id,
-        };
-      });
-      await this.createFields({
-        customFields: fields,
-      });
-    }
-
-    if (removeFields) {
-      const fields = removeFields.map(async (field) => {
-        return await this.removeFields({
-          categoryId: id,
-          typeId: field.typeId,
-        });
-      });
-    }
-
     const category = await this.findOne(id);
 
-    const rta = await category.update(toChange);
+    await category.update(toChange);
 
-    return rta;
+    return this.findOne(id);
   }
 
   async delete(id) {
@@ -195,23 +170,10 @@ class CategoryServices {
     return rta;
   }
 
-  async createFields({ customFields }) {
-    const specification = await models.CategorySpec.bulkCreate(customFields, {
-      ignoreDuplicates: true,
-    });
-
-    return specification;
-  }
-
-  async removeFields({ categoryId, typeId }) {
-    const specification = await models.CategorySpec.destroy({
-      where: {
-        categoryId,
-        typeId,
-      },
-    });
-
-    return specification;
+  async restore(id) {
+    const category = await this.findOne(id, false);
+    const rta = await category.restore();
+    return rta;
   }
 }
 

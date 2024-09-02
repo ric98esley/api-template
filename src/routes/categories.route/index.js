@@ -145,6 +145,40 @@ router.patch(
   }
 );
 
+router.patch(
+  '/:id/restore',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getCategory, 'params'),
+  checkAuth({ route: SCOPE.CATEGORIES, crud: ACTIONS.RECOVERY }),
+  async (req, res, next) => {
+    try {
+      const user = req.user;
+      const { id } = req.params;
+      const category = await service.restore(id);
+
+      const details = {
+        message: `Se ha creado restaurado la categoría`,
+      };
+      await logService.create({
+        type: ACTIONS.RECOVERY,
+        table: 'categories',
+        targetId: id,
+        details,
+        ip: req.ip,
+        createdById: user.sub,
+      });
+
+      res.status(202).json({
+        message: 'categoría restaurada ' + category.dataValues.name,
+        target: category,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -170,7 +204,7 @@ router.delete(
       });
 
       res.status(202).json({
-        message: 'category deleted ' + category.dataValues.name,
+        message: 'categoría borrada ' + category.dataValues.name,
         target: category,
       });
     } catch (error) {

@@ -160,7 +160,7 @@ router.patch(
   passport.authenticate('jwt', { session: false }),
   checkUser(),
   validatorHandler(getAssetModel, 'params'),
-  checkAuth({ route: 'models', crud: ACTIONS.UPDATE }),
+  checkAuth({ route: 'models', crud: ACTIONS.RECOVERY }),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -171,7 +171,7 @@ router.patch(
         message: `Se ha restaurado el modelo ${model.dataValues.name}`,
       };
       await logService.create({
-        type: ACTIONS.UPDATE,
+        type: ACTIONS.RECOVERY,
         table: 'models',
         targetId: id,
         details,
