@@ -82,7 +82,7 @@ router.post(
     try {
       // TODo: request for user id
       const user = req.user;
-      const { groupId } = req.query;
+      const { groupId } = req;
       const createdById = user.sub;
       const body = req.body;
       body.createdById = createdById;

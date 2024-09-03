@@ -9,7 +9,7 @@ class LocationsServices {
 
   async create(data) {
     const newLocation = await models.Location.create(data);
-    return newLocation;
+    return await this.findOne({ id: newLocation.id });
   }
 
   async createMany(data) {
@@ -53,8 +53,8 @@ class LocationsServices {
         }),
         id,
       },
-      include: locationModel.include,
-      attributes: locationModel.attributes,
+      include: locationModel().include,
+      attributes: locationModel().attributes,
     };
     const location = await models.Location.findOne(options);
     if (!location) {
@@ -137,9 +137,9 @@ class LocationsServices {
         zoneId,
       }),
       ...(zone && {
-            '$zone.name$': {
-              [Op.like]: `%${zone}%`,
-            },
+        '$zone.name$': {
+          [Op.like]: `%${zone}%`,
+        },
       }),
       ...(typeId && {
         typeId,
@@ -174,12 +174,12 @@ class LocationsServices {
       ...(startDate && {
         createdAt: {
           [Op.gte]: new Date(startDate).toISOString(),
-        }
+        },
       }),
       ...(endDate && {
         createdAt: {
           [Op.lte]: new Date(endDate).toISOString(),
-        }
+        },
       }),
       ...(group && {
         [Op.or]: [
@@ -218,8 +218,8 @@ class LocationsServices {
   async update({ id, changes, groupId }) {
     const location = await this.findOne({ id, groupId });
 
-    const rta = await location.update(changes);
-    return rta;
+    await location.update(changes);
+    return await this.findOne({ id, groupId });
   }
 
   async delete(id) {
