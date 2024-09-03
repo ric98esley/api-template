@@ -1,12 +1,7 @@
-const boom = require('@hapi/boom');
-
 const { models } = require('../../libs/sequelize');
-const { Op, literal } = require('sequelize');
+const { Op } = require('sequelize');
 const sequelize = require('../../libs/sequelize');
 const {
-  assetModel,
-  locationModel,
-  createdByModel,
   movementsModel,
 } = require('../../models');
 
