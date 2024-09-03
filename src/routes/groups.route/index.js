@@ -1,5 +1,6 @@
 const express = require('express');
 const passport = require('passport');
+const boom = require('@hapi/boom');
 
 // Middlewares
 const { checkAuth, checkUser } = require('../../middlewares/auth.handler');
@@ -37,7 +38,7 @@ router.get(
   async (req, res, next) => {
     try {
       const query = req.query;
-      const groups = await groupService.find(query);
+      const groups = await groupService.find({...query, groupId: req.groupId});
 
       res.status(200).json(groups);
     } catch (error) {
@@ -55,6 +56,13 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+
+      if (!req.groupId.includes(Number(id))) {
+        throw boom.forbidden(
+          'No puedes eliminar este grupo porque no tienes permisos sobre él'
+        );
+      }
+
       const groups = await groupService.findOne({ id, groupId: req.groupId });
 
       res.status(201).json(groups);
@@ -73,6 +81,13 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+
+      if (!req.groupId.includes(Number(id))) {
+        throw boom.forbidden(
+          'No tienes permisos para ver las ubicaciones de este grupo'
+        );
+      }
+
       const groups = await locationsService.find({ groupId: id });
 
       res.status(201).json(groups);
@@ -90,6 +105,13 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
+
+      if (!req.groupId.includes(id)) {
+        throw boom.forbidden(
+          'No tienes permisos para ver los hijos de este grupo'
+        );
+      }
+
       const groups = await groupService.find({ parentId: id });
 
       res.status(201).json(groups);
@@ -111,8 +133,8 @@ router.post(
       const body = req.body;
       body.createdById = user.sub;
 
-      if (req.groupId.includes(body.parentId)) {
-        throw boom.badRequest(
+      if (!req.groupId.includes(body.parentId)) {
+        throw boom.forbidden(
           'No puedes asignar un grupo padre que sea hijo de este grupo'
         );
       }
@@ -175,6 +197,18 @@ router.patch(
       const changes = req.body;
       const groupUpdated = await groupService.update({ changes, id });
 
+      if (!req.groupId.includes(Number(id))) {
+        throw boom.forbidden(
+          'No puedes modificar este grupo porque no tienes permisos'
+        );
+      }
+
+      if (changes.parentId && !req.groupId.includes(body.parentId)) {
+        throw boom.forbidden(
+          'No tienes permisos para asignar hijos a este grupo padre'
+        );
+      }
+
       const details = {
         message: `Se ha modificado el grupo`,
         query: changes,
@@ -204,6 +238,13 @@ router.delete(
     try {
       const { id } = req.params;
       const user = req.user;
+
+      if (!req.groupId.includes(Number(id))) {
+        throw boom.forbidden(
+          'No puedes eliminar este grupo porque no tienes permisos sobre él'
+        );
+      }
+
       const groupDeleted = await groupService.delete({ id });
 
       const details = {

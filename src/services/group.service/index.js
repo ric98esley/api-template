@@ -13,7 +13,7 @@ class GroupsService {
       parentId,
       createdById,
     });
-    return newGroup;
+    return await this.findOne({ id: newGroup.id });
   }
 
   async createMany(groups) {
@@ -29,14 +29,14 @@ class GroupsService {
         id,
       },
       include: [
-        ...groupModel.include,
+        ...groupModel().include,
         {
           model: models.Group,
           as: 'parent',
-          attributes: [...groupModel.attributes],
+          attributes: groupModel().attributes,
         },
       ],
-      attributes: groupModel.attributes,
+      attributes: groupModel().attributes,
     });
 
     if (!group || (groupId && !groupId.includes(group.id))) {
@@ -49,7 +49,6 @@ class GroupsService {
     name,
     managerId,
     parent,
-    parentId,
     manager,
     groupId,
     limit,
@@ -121,14 +120,14 @@ class GroupsService {
       offset: Number(offset),
       where,
       include: [
-        ...groupModel.include,
+        ...groupModel().include,
         {
           model: models.Group,
           as: 'parent',
-          attributes: [...groupModel.attributes],
+          attributes: groupModel().attributes,
         },
       ],
-      attributes: groupModel.attributes,
+      attributes: groupModel().attributes,
       order: [[sort, order]],
     };
 
@@ -142,7 +141,7 @@ class GroupsService {
     const group = await this.findOne({ id });
     const rta = await group.update(changes);
 
-    return rta;
+    return await this.findOne({ id: rta.id });
   }
   async delete({ id }) {
     const group = await this.findOne({ id });
