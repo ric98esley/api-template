@@ -367,8 +367,12 @@ class MovementService {
           locations.code,
           locations.name,
           locations.phone,
+          groups_t.id as 'group.id',
           groups_t.name as 'group.name',
           groups_t.code as 'group.code',
+          groups_t.enabled as 'group.enabled',
+          groups_t.created_at as 'group.createdAt',
+          groups_t.updated_at as 'group.updatedAt',
           COUNT(movements.id) as total
         FROM movements
           left join locations on movements.to_id = locations.id

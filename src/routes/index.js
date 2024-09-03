@@ -28,7 +28,6 @@ function routerApi(app) {
   router.use('/brands', brandsRouter);
   router.use('/assets', assetsRouter);
   router.use('/groups', groupsRouter);
-  router.use('/warehouses', warehouseRouter);
   router.use('/locations', locationRouter);
   router.use('/orders', orderRouter);
   router.use('/movements', movementsRouter);
