@@ -50,9 +50,9 @@ class BrandsServices {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: brandModel.include,
+      include: brandModel().include,
       attributes: [
-        ...brandModel.attributes,
+        ...brandModel().attributes,
         [
           literal(
             `(SELECT count(*)
@@ -74,8 +74,8 @@ class BrandsServices {
 
   async findOne(id) {
     const brand = await models.Brand.findByPk(id, {
-      include: brandModel.include,
-      attributes: [...brandModel.attributes,
+      include: brandModel().include,
+      attributes: [...brandModel().attributes,
         [
           literal(
             `(SELECT count(*)

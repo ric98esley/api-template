@@ -2,6 +2,7 @@ const boom = require('@hapi/boom');
 const { Op } = require('sequelize');
 
 const { models } = require('../../libs/sequelize');
+const specificationModel = require('../../models/specifications.model');
 
 class HardwareSpecificationsServices {
   constructor() {}
@@ -19,12 +20,12 @@ class HardwareSpecificationsServices {
 
     const newSpecification = await models.HardwareSpec.create(toCreate);
 
-    return newSpecification;
+    return await this.findOne({ id: newSpecification.id });
   }
 
   async findOne({ id }) {
     const options = {
-      attributes: ['id', 'name', 'createdAt'],
+      attributes: specificationModel().attributes,
     };
     const specification = await models.HardwareSpec.findByPk(id, options);
     if (!specification) {
@@ -69,7 +70,9 @@ class HardwareSpecificationsServices {
 
     const rta = specification.update(toUpdate);
 
-    return rta;
+    return this.findOne({
+      id: rta.id,
+    });
   }
 
   async delete({ id, user }) {
