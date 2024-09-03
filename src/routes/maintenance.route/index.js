@@ -50,7 +50,7 @@ router.post(
 
       const asset = await assetService.findOne({
         id: body.assetId,
-        groupId: req.query.groupId,
+        groupId: req.groupId,
         paranoid: false,
       });
 

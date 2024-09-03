@@ -55,7 +55,7 @@ router.get(
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const groups = await groupService.findOne({ id, groupId: req.query.groupId });
+      const groups = await groupService.findOne({ id, groupId: req.groupId });
 
       res.status(201).json(groups);
     } catch (error) {
@@ -110,6 +110,13 @@ router.post(
       const user = req.user;
       const body = req.body;
       body.createdById = user.sub;
+
+      if (req.groupId.includes(body.parentId)) {
+        throw boom.badRequest(
+          'No puedes asignar un grupo padre que sea hijo de este grupo'
+        );
+      }
+
       const newGroup = await groupService.create(body);
 
       const details = {
@@ -145,11 +152,9 @@ router.post(
       const importedGroups = await groupService.createMany(csvData);
       const total = importedGroups.filter((group) => group.isNewRecord);
 
-      res.status(201).json(
-        {
-          message: 'Se han importado ' + total.length + ' grupos',
-        }
-      );
+      res.status(201).json({
+        message: 'Se han importado ' + total.length + ' grupos',
+      });
     } catch (error) {
       next(error);
     }
