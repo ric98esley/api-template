@@ -1,45 +1,44 @@
-const boom = require("@hapi/boom");
+const boom = require('@hapi/boom');
 
-const { models } = require("../../libs/sequelize");
-const { Op } = require("sequelize");
-const { zoneModel } = require("../../models");
+const { models } = require('../../libs/sequelize');
+const { Op } = require('sequelize');
+const { zoneModel } = require('../../models');
 
 class ZonesServices {
   constructor() {}
 
   async create(data) {
     const newZone = await models.Zone.create(data);
-    return newZone;
+    return await this.findOne(newZone.id);
   }
 
-  async find({
-    name
-  }) {
-
+  async find({ name }) {
     const options = {
-      where:  {
+      where: {
         ...(name && {
           name: {
-            [Op.like]: `%${name}%`
-          }
-        })
+            [Op.like]: `%${name}%`,
+          },
+        }),
       },
-      attributes: zoneModel.attributes
-    }
-    const {count , rows} = await models.Zone.findAndCountAll(options);
+      attributes: zoneModel().attributes,
+      include: zoneModel().include,
+    };
+    const { count, rows } = await models.Zone.findAndCountAll(options);
     return {
       total: count,
-      rows
+      rows,
     };
   }
 
   async findOne(id) {
-    const zone = await models.Zone.findByPk(id,{
-      attributes: zoneModel.attributes
+    const zone = await models.Zone.findByPk(id, {
+      attributes: zoneModel().attributes,
+      attributes: zoneModel().include,
     });
 
     if (!zone) {
-      throw boom.notFound("Zone not found");
+      throw boom.notFound('Zone not found');
     }
     return zone;
   }
@@ -47,8 +46,9 @@ class ZonesServices {
   async update(id, changes) {
     const zone = await this.findOne(id);
 
-    const rta = await zone.update(changes);
-    return rta;
+    await zone.update(changes);
+
+    return await this.findOne(rta.id);
   }
 
   async delete(id) {

@@ -9,7 +9,7 @@ class TypesServices {
 
   async create(data) {
     const newType = await models.LocationType.create(data);
-    return newType;
+    return await this.findOne(newType.id);
   }
 
   async find({ name, status }) {
@@ -36,8 +36,8 @@ class TypesServices {
 
   async findOne(id) {
     const type = await models.LocationType.findByPk(id, {
-      attributes: locationTypeModel.attributes,
-      include: locationTypeModel.include,
+      attributes: locationTypeModel().attributes,
+      include: locationTypeModel().include,
     });
     if (!type) {
       throw boom.notFound('location type not found');
@@ -48,8 +48,8 @@ class TypesServices {
   async update(id, changes) {
     const type = await this.findOne(id);
 
-    const rta = await type.update(changes);
-    return rta;
+    await type.update(changes);
+    return this.findOne(type.id);
   }
 
   async delete(id) {
