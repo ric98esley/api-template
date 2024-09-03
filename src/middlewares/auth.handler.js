@@ -110,11 +110,8 @@ function checkAuth({ route, crud }) {
         const groupIdQueryOrBody = req.query.groupId || req.body.groupId;
         if (groupIdQueryOrBody) {
           checkGroupPermission(groupIdQueryOrBody, groupId);
-          req.groupId = groupId;
-        } else {
-          req.query.groupId = groupId;
-          req.groupId = groupId;
         }
+        req.groupId = groupId;
       }
 
       next();
