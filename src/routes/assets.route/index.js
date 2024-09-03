@@ -393,7 +393,7 @@ router.patch(
       const body = req.body;
       const user = req.user;
       body.updatedById = user.sub;
-      const asset = await service.update(id, body, req.query.groupId);
+      const asset = await service.update(id, body, req.groupId);
 
       const details = {
         message: `Se ha modificado el activo ${asset.dataValues.serial}`,
