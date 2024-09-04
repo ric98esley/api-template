@@ -2,8 +2,7 @@ const { Op } = require('sequelize');
 const boom = require('@hapi/boom');
 
 const { models } = require('../../libs/sequelize');
-const { createdByModel } = require('../../models');
-const maintenanceTypeModel = require('../../models/maintenances_type.model');
+const { maintenanceTypeModel } = require('../../models');
 
 class MaintenanceTypeService {
   async create({ name, description, createdById }) {
@@ -26,7 +25,7 @@ class MaintenanceTypeService {
       where.description = { [Op.like]: `%${description}%` };
     }
 
-    const include = [createdByModel()];
+    const include = maintenanceTypeModel().include;
 
     const options = {
       where,
@@ -48,7 +47,7 @@ class MaintenanceTypeService {
 
   async getById({ id }) {
     const maintenanceType = await models.MaintenanceType.findByPk(id, {
-      include: [createdByModel()],
+      include: maintenanceTypeModel().include,
       attributes: maintenanceTypeModel().attributes,
       paranoid: false,
     });
