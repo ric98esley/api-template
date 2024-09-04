@@ -23,7 +23,6 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "apollo-server-express": "^3.12.1",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
