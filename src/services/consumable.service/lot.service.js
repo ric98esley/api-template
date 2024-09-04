@@ -1,5 +1,6 @@
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
+const { lotModel, productHistoryModel } = require('../../models');
 
 class LotService {
   constructor() {}
@@ -25,7 +26,7 @@ class LotService {
         include: ['movements'],
       }
     );
-    return lot;
+    return this.findOne({ id: lot.id });
   }
   async find({
     limit = 10,
@@ -57,25 +58,7 @@ class LotService {
         '$location.group.id$': groupId,
       }),
     };
-    const include = [
-      {
-        model: models.User,
-        as: 'createdBy',
-        attributes: ['id', 'username'],
-      },
-      {
-        model: models.Location,
-        as: 'location',
-        attributes: [ 'id' , 'code', 'name'],
-        include: [
-          {
-            model: models.Group,
-            as: 'group',
-            attributes: ['id', 'code', 'name'],
-          },
-        ],
-      },
-    ];
+    const include = lotModel().include;
     const { rows, count } = await models.Lot.findAndCountAll({
       where,
       include,
@@ -100,42 +83,21 @@ class LotService {
           '$location.group.id$': groupId,
         }),
       },
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.ProductHistory,
-          as: 'movements',
-          attributes: ['id', 'quantity', 'createdAt'],
-          include: [
-            {
-              model: models.LocationProducts,
-              as: 'target',
-              attributes: ['id', 'quantity', 'min', 'createdAt'],
-              include: [
-                {
-                  model: models.Product,
-                  as: 'product',
-                  attributes: ['id', 'code', 'name', 'unit', 'description'],
-                  include: [
-                    {
-                      model: models.Category,
-                      as: 'category',
-                      attributes: ['id', 'name'],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      include: lotModel().include,
     });
 
     return lot;
+  }
+
+  async findMovements({ id }) {
+    const movements = await models.ProductHistory.findAll({
+      where: {
+        lotId: id,
+      },
+      include: productHistoryModel().include,
+      attributes: productHistoryModel().attributes,
+    });
+    return movements;
   }
 }
 

@@ -1,5 +1,6 @@
 const { models } = require('../../libs/sequelize');
 const { Op } = require('sequelize');
+const { productModel } = require('../../models');
 
 class ProductService {
   constructor() {}
@@ -23,23 +24,13 @@ class ProductService {
       categoryId,
       createdById,
     });
-    return newProduct;
+    return await this.findOne({ id: newProduct.id });
   }
 
   async findOne({ id }) {
     const product = await models.Product.findByPk(id, {
-      include: [
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id', 'username'],
-        },
-        {
-          model: models.Category,
-          as: 'category',
-          attributes: ['id', 'name', 'description'],
-        },
-      ],
+      include: productModel().include,
+      attributes: productModel().attributes,
     });
     return product;
   }
@@ -105,50 +96,28 @@ class ProductService {
           [Op.like]: `%${name}%`,
         },
       }),
+      ...(category && {
+        [Op.or]: [
+          {
+            '$category.name$': {
+              [Op.like]: `%${category}%`,
+            },
+          },
+          {
+            '$category.description$': {
+              [Op.like]: `%${category}%`,
+            },
+          },
+        ],
+      }),
     };
     const options = {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: [
-        // createdBy
-        {
-          model: models.User,
-          as: 'createdBy',
-          attributes: ['id',  'username', 'email'],
-        },
-        {
-          model: models.Category,
-          as: 'category',
-          where: {
-            ...(category && {
-              [Op.or]: [
-                {
-                  name: {
-                    [Op.like]: `%${category}%`,
-                  },
-                },
-                {
-                  description: {
-                    [Op.like]: `%${category}%`,
-                  },
-                },
-              ],
-            }),
-          },
-          attributes: ['id', 'name', 'description'],
-        },
-      ],
+      include: productModel().include,
+      attributes: productModel().attributes,
       order: [[sort, order]],
-      attributes: [
-        'id',
-        'name',
-        'code',
-        'price',
-        'unit',
-        'description',
-        'createdAt',
-      ],
     };
 
     const { rows, count } = await models.Product.findAndCountAll(options);
@@ -159,9 +128,9 @@ class ProductService {
   }
   async update({ changes, id }) {
     const product = await this.findOne({ id });
-    const rta = await product.update(changes);
+    await product.update(changes);
 
-    return rta;
+    return this.findOne({ id });
   }
   async delete({ id }) {
     const product = await this.findOne({ id });

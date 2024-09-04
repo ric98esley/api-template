@@ -25,7 +25,7 @@ const createWarehouseProduct = Joi.object({
 });
 
 const getConsumable = Joi.object({
-  locationId: id.required(),
+  id: id.required(),
   productId: id.required(),
 });
 

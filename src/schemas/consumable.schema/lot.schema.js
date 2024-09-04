@@ -32,7 +32,7 @@ const findLot = Joi.object({
 });
 
 const getLot = Joi.object({
-  locationId: id,
+  lotId: id,
   id: id.required(),
 });
 
