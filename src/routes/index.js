@@ -6,7 +6,6 @@ const authRouter = require('./auth.route');
 const categoriesRouter = require('./categories.route');
 const brandsRouter = require('./brands.route');
 const assetsRouter = require('./assets.route');
-const warehouseRouter = require('./warehouse.route');
 const locationRouter = require('./locations.route');
 const groupsRouter = require('./groups.route');
 const orderRouter = require('./orders.route');
