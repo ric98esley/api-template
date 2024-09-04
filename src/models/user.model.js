@@ -16,11 +16,7 @@ const userModel = () => ({
     'deletedAt',
   ],
   include: [
-    {
-      as: 'profile',
-      model: customerModel.model,
-      attributes: customerModel.attributes,
-    },
+    customerModel(),
     {
       ...groupModel(),
     },

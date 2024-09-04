@@ -11,14 +11,13 @@ class UsersServices {
     const newUser = await models.User.create(data, {
       include: ['profile'],
     });
-    delete newUser.dataValues.password;
 
-    return newUser;
+    return await this.findOne({ id: newUser.id });
   }
 
   async findOne({ id, email, username, groupId }) {
     const options = {
-      include: userModel.include,
+      include: userModel().include,
       where: {
         ...(id && {
           id,
@@ -33,11 +32,11 @@ class UsersServices {
           groupId,
         }),
       },
-      attributes: userModel.attributes,
+      attributes: userModel().attributes,
     };
     const user = await models.User.findOne(options);
     if (!user) {
-      throw boom.notFound('User not found');
+      throw boom.notFound('Usuario no encontrado');
     }
     return user;
   }
@@ -139,9 +138,9 @@ class UsersServices {
       limit: Number(limit),
       offset: Number(offset),
       where,
-      include: userModel.include,
+      include: userModel().include,
       order: [[sort, order]],
-      attributes: userModel.attributes,
+      attributes: userModel().attributes,
     };
     const { count, rows } = await models.User.findAndCountAll(options);
     return {
@@ -152,8 +151,8 @@ class UsersServices {
 
   async update({ id, changes, groupId }) {
     const user = await this.findOne({ id, groupId });
-    const rta = await user.update(changes);
-    return rta;
+    await user.update(changes);
+    return await this.findOne({ id, groupId });
   }
 
   async delete({ id, groupId }) {
