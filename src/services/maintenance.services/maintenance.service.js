@@ -12,7 +12,7 @@ class MaintenanceService {
       maintenanceTypeId: maintenanceTypeId,
       createdById,
     });
-    return await this.getById(maintenance.id);
+    return await this.findOne(maintenance.id);
   }
 
   async find({
@@ -121,7 +121,7 @@ class MaintenanceService {
     };
   }
 
-  async getById(id, groupId) {
+  async findOne(id, groupId) {
     console.log('id', id);
     const maintenance = await models.Maintenance.findByPk(id, {
       include: maintenanceModel().include,
@@ -140,7 +140,7 @@ class MaintenanceService {
   }
 
   async update(id, changes) {
-    const maintenance = await this.getById(id);
+    const maintenance = await this.findOne(id);
     await maintenance.update(changes);
     return maintenance;
   }

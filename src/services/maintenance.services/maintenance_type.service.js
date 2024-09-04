@@ -12,7 +12,7 @@ class MaintenanceTypeService {
       createdById,
     });
 
-    return await this.getById({ id: maintenanceType.id });
+    return await this.findOne({ id: maintenanceType.id });
   }
 
   async find({ name, description, limit = 10, offset = 0 }) {
@@ -45,7 +45,7 @@ class MaintenanceTypeService {
     };
   }
 
-  async getById({ id }) {
+  async findOne({ id }) {
     const maintenanceType = await models.MaintenanceType.findByPk(id, {
       include: maintenanceTypeModel().include,
       attributes: maintenanceTypeModel().attributes,
@@ -59,7 +59,7 @@ class MaintenanceTypeService {
   }
 
   async update(id, changes) {
-    const maintenanceType = await this.getById({ id });
+    const maintenanceType = await this.findOne({ id });
 
     await maintenanceType.update(changes);
 
@@ -67,7 +67,7 @@ class MaintenanceTypeService {
   }
 
   async delete({ id }) {
-    const type = await this.getById({ id });
+    const type = await this.findOne({ id });
 
     await type.destroy();
     return type;

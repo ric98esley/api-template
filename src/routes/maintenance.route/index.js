@@ -80,7 +80,7 @@ router.patch(
       const { id } = req.params;
       const changes = req.body;
 
-      const maintenance = await maintenanceService.getById(id, req.groupId);
+      const maintenance = await maintenanceService.findOne(id, req.groupId);
 
       if (maintenance.createdBy.id !== req.user.sub) {
         return res.status(403).json({

@@ -139,7 +139,7 @@ class GroupsService {
   }
   async update({ changes, id }) {
     const group = await this.findOne({ id });
-    const rta = await group.update(changes);
+    await group.update(changes);
 
     return await this.findOne({ id: rta.id });
   }
