@@ -30,11 +30,11 @@ class OrderRecordService {
           quantity: 1,
           type: movementType,
           toId: target.locationId,
-          fromId: asset.dataValues.locationId,
+          fromId: asset.locationId,
           createdById,
         });
 
-        asset.update({ locationId: target.locationId });
+        await asset.update({ locationId: target.locationId });
       }
     }
 

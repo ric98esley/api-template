@@ -65,7 +65,7 @@ class AuthService {
     return result;
   }
 
-  signToken(user, secret = authConfig.jwtSecret, expiresIn = '120s') {
+  signToken(user, secret = authConfig.jwtSecret, expiresIn = '20s') {
     const payload = {
       sub: user.id,
       role: user.role,
@@ -189,12 +189,12 @@ class AuthService {
 
   async sendMail(infoMail) {
     const config = {
-      host: 'mail.gana-loterias.com',
+      host: emailConfig.smtpHost,
       secure: true,
       port: 465,
       auth: {
-        user: 'no-responder@gana-loterias.com',
-        pass: 'y97ttAlhTB6',
+        user: emailConfig.smtpEmail,
+        pass: emailConfig.smtpPass,
       },
     };
 

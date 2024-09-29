@@ -7,7 +7,7 @@ const { include } = require('./location.model');
 const modelModel = () => ({
   model: models.Model,
   as: 'model',
-  attributes: ['id', 'name'],
+  attributes: ['id', 'name', 'createdAt', 'updatedAt'],
   include: [createdByModel(), categoryModel(), brandModel()],
 });
 

@@ -38,6 +38,12 @@ const updateUserSchema = Joi.object({
   email,
   role,
   groupId: id,
+  profile: Joi.object({
+    name,
+    lastName,
+    phone,
+    cardId,
+  }).allow(null),
 });
 
 const searchUserSchema = Joi.object({

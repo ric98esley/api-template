@@ -10,17 +10,13 @@ const userModel = () => ({
     'id',
     'username',
     'email',
+    'isActive',
     'role',
     'createdAt',
     'updatedAt',
     'deletedAt',
   ],
-  include: [
-    customerModel(),
-    {
-      ...groupModel(),
-    },
-  ],
+  include: [{ ...customerModel(), as: 'profile' }, groupModel()],
 });
 
 module.exports = userModel;

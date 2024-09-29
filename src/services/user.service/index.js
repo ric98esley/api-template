@@ -17,7 +17,6 @@ class UsersServices {
 
   async findOne({ id, email, username, groupId }) {
     const options = {
-      include: userModel().include,
       where: {
         ...(id && {
           id,
@@ -32,6 +31,7 @@ class UsersServices {
           groupId,
         }),
       },
+      include: userModel().include,
       attributes: userModel().attributes,
     };
     const user = await models.User.findOne(options);
@@ -152,6 +152,14 @@ class UsersServices {
   async update({ id, changes, groupId }) {
     const user = await this.findOne({ id, groupId });
     await user.update(changes);
+    if (changes.profile) {
+      const profile = await models.Customer.findOne({
+        where: {
+          userId: user.id,
+        },
+      });
+      await profile.update(changes.profile);
+    }
     return await this.findOne({ id, groupId });
   }
 

@@ -290,7 +290,7 @@ router.post(
 
         targets.push({
           quantity: '1',
-          locationId: asset.locationId,
+          locationId: asset.location.id,
           assetId: asset.id,
         });
 
