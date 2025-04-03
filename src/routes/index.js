@@ -19,7 +19,7 @@ const pathRouter = require('./path.route/path.route');
 
 function routerApi(app) {
   const router = express.Router();
-  app.use('/v4', router);
+  app.use('/v5', router);
   router.use('/auth', authRouter);
   router.use('/users', usersRouter);
   router.use('/customers', customerRouter);

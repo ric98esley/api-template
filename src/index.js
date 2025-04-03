@@ -30,7 +30,7 @@ app.use(morgan("tiny"));
 // CORS
 
 const whiteList = [
-  "http://localhost:8080",
+  "http://localhost:3000",
   "https://indexa-inventario.onrender.com",
   "http://192.168.9.105",
   "http://192.168.3.107",
@@ -46,6 +46,7 @@ const options = {
   },
 };
 
+app.set('trust proxy', 'loopback')
 app.use(cors());
 
 // Routers

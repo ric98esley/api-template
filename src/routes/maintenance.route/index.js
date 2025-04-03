@@ -9,6 +9,7 @@ const {
   findMaintenanceSchema,
   createMaintenanceSchema,
   updateMaintenanceSchema,
+  getMaintenanceByIdSchema,
 } = require('../../schemas/maintenances.schema');
 
 const MaintenanceService = require('../../services/maintenance.services/maintenance.service');
@@ -32,6 +33,25 @@ router.get(
       const body = req.query;
       const maintenances = await maintenanceService.find(body);
       res.status(200).json(maintenances);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  checkUser(),
+  validatorHandler(getMaintenanceByIdSchema, 'params'),
+  checkAuth({ route: SCOPE.MAINTENANCES, crud: ACTIONS.READ }),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { groupId } = req;
+
+      const data = await maintenanceService.findOne(id, groupId);
+      res.json(data);
     } catch (error) {
       next(error);
     }

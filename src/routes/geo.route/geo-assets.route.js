@@ -44,9 +44,9 @@ router.post(
       const data = req.body;
 
       const asset = await assetService.findBySerial({ serial: data.serial });
-      const geo = await geoService.create({ ...data, ip: req.ip, locationId: asset?.location?.id });
+      await geoService.create({ ...data, ip: req.ip, locationId: asset?.location?.id });
 
-      res.status(202).json(geo);
+      res.status(202);
     } catch (error) {
       next(error);
     }

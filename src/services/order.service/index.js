@@ -84,6 +84,9 @@ class OrderRecordService {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 

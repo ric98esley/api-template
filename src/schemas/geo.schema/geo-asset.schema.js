@@ -7,6 +7,7 @@ const alert = Joi.bool();
 const alertType = Joi.string();
 const latitude = Joi.number();
 const longitude = Joi.number();
+const location = Joi.string();
 const createdAt = Joi.date();
 const sort = Joi.string();
 const order = Joi.string().valid('ASC', 'DESC');
@@ -24,16 +25,15 @@ const findGeoAssetSchema = Joi.object({
   offset: Joi.number().integer(),
   ip,
   serial,
+  location,
   alert,
   alertType,
   latitude,
   sort,
   order,
   startDate: createdAt,
-  endDate: createdAt.greater(Joi.ref('startDate')),
-})
-  .with('startDate', 'endDate')
-  .with('endDate', 'startDate');
+  endDate: createdAt,
+});
 
 module.exports = {
   createGeoAssetSchema,

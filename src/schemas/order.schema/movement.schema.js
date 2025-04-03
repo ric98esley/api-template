@@ -34,10 +34,8 @@ const searchMovementSchema = Joi.object({
   sort: toSearch,
   order: toSearch.valid('ASC', 'DESC'),
   startDate: createdAt,
-  endDate: createdAt.greater(Joi.ref('startDate')),
-})
-  .with('startDate', 'endDate')
-  .with('endDate', 'startDate');
+  endDate: createdAt,
+});
 
 module.exports = {
   createMovementSchema,

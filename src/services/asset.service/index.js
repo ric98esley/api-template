@@ -7,7 +7,6 @@ const {
   maintenanceModel,
   assetSpecModel,
 } = require('../../models');
-const { re } = require('mathjs');
 class AssetsServices {
   constructor() {}
 
@@ -184,6 +183,8 @@ class AssetsServices {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
     sort = sort.split(',');
@@ -191,16 +192,6 @@ class AssetsServices {
       ...(serial && {
         serial: {
           [Op.like]: `%${serial}%`,
-        },
-      }),
-      ...(startDate && {
-        createdAt: {
-          [Op.gte]: new Date(startDate).toISOString(),
-        },
-      }),
-      ...(endDate && {
-        createdAt: {
-          [Op.lte]: new Date(endDate).toISOString(),
         },
       }),
       ...(location && {
@@ -268,6 +259,18 @@ class AssetsServices {
         '$location.group_id$': groupId,
       }),
     };
+
+    if(startDate) {
+      where.createdAt = {
+        [Op.gte]: new Date(startDate).toISOString(),
+      }
+    }
+    if(endDate) {
+      where.createdAt = {
+        ...where.createdAt,
+        [Op.lte]: new Date(endDate).toISOString()
+      }
+    }
     const options = {
       limit: Number(limit),
       offset: Number(offset),
@@ -311,6 +314,8 @@ class AssetsServices {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 

@@ -17,7 +17,15 @@ const mapGeo = (data) => {
 };
 
 class GeoAssetServices {
-  async create({ ip, serial, alert, alertType, latitude, longitude, locationId }) {
+  async create({
+    ip,
+    serial,
+    alert,
+    alertType,
+    latitude,
+    longitude,
+    locationId,
+  }) {
     const geoAsset = await models.GeoAsset.create({
       ip,
       serial,
@@ -35,6 +43,7 @@ class GeoAssetServices {
     serial,
     alert,
     alertType,
+    location,
     limit = 10,
     offset = 0,
     startDate,
@@ -44,6 +53,8 @@ class GeoAssetServices {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 
@@ -53,6 +64,14 @@ class GeoAssetServices {
     if (serial) where.serial = { [Op.like]: `%${serial}%` };
     if (alert) where.alert = alert;
     if (alertType) where.alertType = { [Op.like]: `%${alertType}%` };
+    if (location)
+      where[Op.or] = [
+        { '$location.name$': { [Op.like]: `%${location}%` } },
+        { '$location.code$': location },
+      ];
+
+    if (startDate) where.createdAt = { [Op.gte]: new Date(startDate) };
+    if (endDate) where.createdAt = { ...where.createdAt, [Op.lte]: new Date(endDate) };
 
     const { count, rows } = await models.GeoAsset.findAndCountAll({
       limit: Number(limit),

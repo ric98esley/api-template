@@ -64,10 +64,8 @@ const searchUserSchema = Joi.object({
   limit,
   offset,
   startDate: createdAt,
-  endDate: createdAt.greater(Joi.ref('startDate')),
-})
-  .with('startDate', 'endDate')
-  .with('endDate', 'startDate');
+  endDate: createdAt,
+});
 
 const getUserSchema = Joi.object({
   id: id,

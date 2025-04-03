@@ -60,7 +60,7 @@ const searchLocationSchema = Joi.object({
   order: toSearch.valid('ASD', 'DESC'),
   sort: toSearch,
   startDate: createdAt,
-  endDate: createdAt.greater(Joi.ref('startDate')),
+  endDate: createdAt,
 }).with('startDate', 'endDate')
 .with('endDate', 'startDate');
 

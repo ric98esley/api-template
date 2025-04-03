@@ -85,13 +85,13 @@ router.get(
 
       await locationService.findOne({
         id,
-        groupId: query.groupId,
+        groupId: req.groupId,
       });
 
       const items = await warehouseService.find({
         ...query,
         locationId: id,
-        groupId: query.groupId,
+        groupId: req.groupId,
       });
 
       res.json(items);
@@ -114,7 +114,7 @@ router.get(
 
       await locationService.findOne({
         id,
-        groupId: query.groupId,
+        groupId: req.groupId,
       });
 
       const items = await historyService.find({
@@ -210,7 +210,7 @@ router.get(
 
       await locationService.findOne({
         id,
-        groupId: query.groupId,
+        groupId: req.groupId,
       });
 
       const item = await warehouseService.findOne({

@@ -64,10 +64,8 @@ const searchAsset = Joi.object({
   specification: toSearch,
   specificationValue: toSearch,
   startDate: createdAt,
-  endDate: createdAt.greater(Joi.ref('startDate')),
-})
-  .with('startDate', 'endDate')
-  .with('endDate', 'startDate');
+  endDate: createdAt,
+});
 
 const getAssetSchema = Joi.object({
   id: id.required(),

@@ -32,6 +32,9 @@ class MovementService {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 
@@ -61,16 +64,6 @@ class MovementService {
       }),
       ...(orderId && {
         orderId,
-      }),
-      ...(startDate && {
-        createdAt: {
-          [Op.gte]: new Date(startDate).toISOString(),
-        },
-      }),
-      ...(endDate && {
-        createdAt: {
-          [Op.lte]: new Date(endDate).toISOString(),
-        },
       }),
       ...(category && {
         '$asset.model.category.name$': {
@@ -155,6 +148,18 @@ class MovementService {
       }),
     };
 
+    if(startDate) {
+      where.createdAt = {
+        [Op.gte]: new Date(startDate).toISOString(),
+      }
+    }
+    if(endDate) {
+      where.createdAt = {
+        ...where.createdAt,
+        [Op.lte]: new Date(endDate).toISOString(),
+      }
+    }
+
     const options = {
       order: [
         [...sort, order],
@@ -200,6 +205,9 @@ class MovementService {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 
@@ -341,6 +349,9 @@ class MovementService {
   }) {
     if (!isNaN(startDate)) {
       startDate = Number(startDate);
+    }
+
+    if (!isNaN(endDate)) {
       endDate = Number(endDate);
     }
 
